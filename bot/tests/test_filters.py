@@ -167,7 +167,7 @@ def context(api):
             "query": "wine",
             "command": "search",
             "filters": {},
-            "message_id": 1,
+            "page": 1,
         }
     }
     return ctx
