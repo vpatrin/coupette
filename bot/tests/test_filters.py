@@ -7,7 +7,6 @@ from bot.handlers.filters import (
     build_api_params,
     filter_callback,
     toggle_category,
-    toggle_family,
     toggle_price,
 )
 
@@ -29,40 +28,6 @@ class TestToggleCategory:
         filters = {"category": "rouge"}
         toggle_category(filters, "blanc")
         assert filters["category"] == "blanc"
-
-
-class TestToggleFamily:
-    def test_select(self):
-        filters = {}
-        toggle_family(filters, "vins")
-        assert filters["family"] == "vins"
-
-    def test_deselect(self):
-        filters = {"family": "vins"}
-        toggle_family(filters, "vins")
-        assert "family" not in filters
-
-    def test_switch(self):
-        filters = {"family": "vins"}
-        toggle_family(filters, "spiritueux")
-        assert filters["family"] == "spiritueux"
-
-    def test_clears_category_on_select(self):
-        filters = {"family": "vins", "category": "rouge"}
-        toggle_family(filters, "spiritueux")
-        assert filters["family"] == "spiritueux"
-        assert "category" not in filters
-
-    def test_clears_category_on_deselect(self):
-        filters = {"family": "vins", "category": "rouge"}
-        toggle_family(filters, "vins")
-        assert "family" not in filters
-        assert "category" not in filters
-
-    def test_preserves_price(self):
-        filters = {"family": "vins", "price": "15-25"}
-        toggle_family(filters, "spiritueux")
-        assert filters["price"] == "15-25"
 
 
 class TestTogglePrice:
@@ -168,36 +133,6 @@ class TestBuildApiParams:
         params = build_api_params(state, None)
         assert params["category"] == ["Vin rouge"]
 
-    def test_family_without_subgroup_expands_all_groups(self):
-        """Family only → expand all child groups into one category list."""
-        state = {"query": None, "command": "search", "filters": {"family": "vins"}}
-        params = build_api_params(state, self._grouped)
-        # vins has rouge, blanc, bulles in _grouped (rose/fortifie absent)
-        expected = [
-            "Vin rouge",
-            "Vin blanc",
-            "Champagne",
-            "Champagne rosé",
-            "Vin mousseux",
-            "Vin mousseux rosé",
-        ]
-        assert sorted(params["category"]) == sorted(expected)
-
-    def test_subgroup_takes_precedence_over_family(self):
-        """When both family and category set, only the subgroup is expanded."""
-        state = {
-            "query": None,
-            "command": "search",
-            "filters": {"family": "vins", "category": "rouge"},
-        }
-        params = build_api_params(state, self._grouped)
-        assert params["category"] == ["Vin rouge"]
-
-    def test_unknown_family_no_category_param(self):
-        state = {"query": None, "command": "search", "filters": {"family": "nonexistent"}}
-        params = build_api_params(state, self._grouped)
-        assert "category" not in params
-
 
 # ── Filter callback handler ───────────────────────────────────
 
@@ -264,16 +199,8 @@ async def test_filter_toggles_price(update, context):
     assert context.user_data["search"]["filters"]["price"] == "15-25"
 
 
-async def test_filter_toggles_family(update, context):
-    update.callback_query.data = "f:fam:vins"
-    await filter_callback(update, context)
-
-    assert context.user_data["search"]["filters"]["family"] == "vins"
-
-
 async def test_filter_clear(update, context):
     context.user_data["search"]["filters"] = {
-        "family": "vins",
         "category": "rouge",
         "price": "15-25",
     }

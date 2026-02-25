@@ -5,11 +5,10 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from bot.api_client import BackendAPIError, BackendClient, BackendUnavailableError
-from bot.categories import expand_family, expand_group
+from bot.categories import expand_group
 from bot.config import (
     CALLBACK_CAT,
     CALLBACK_CLEAR,
-    CALLBACK_FAM,
     CALLBACK_PAGE_NEXT,
     CALLBACK_PAGE_PREV,
     CALLBACK_PRICE,
@@ -22,16 +21,6 @@ from bot.formatters import format_product_list
 from bot.keyboards import build_filter_keyboard
 
 #! Toggle helpers — pure dict mutations, no Telegram logic:
-
-
-def toggle_family(filters: dict[str, Any], family_key: str) -> None:
-    """Toggle a family filter. Selecting a family always clears any subgroup."""
-    if filters.get("family") == family_key:
-        filters.pop("family", None)
-        filters.pop("category", None)
-    else:
-        filters["family"] = family_key
-        filters.pop("category", None)
 
 
 def toggle_category(filters: dict[str, Any], value: str) -> None:
@@ -66,14 +55,9 @@ def build_api_params(
     # Reads active filters from state
     active_filters = state.get("filters", {})
 
-    # Translate category filters → list of raw DB category values
-    # Subgroup takes precedence: "rouge" → just red wines; family alone → all wines
+    # Translate category filter → list of raw DB category values
     if active_filters.get("category"):
         db_values = expand_group(active_filters["category"], grouped_categories)
-        if db_values:
-            params["category"] = db_values
-    elif active_filters.get("family"):
-        db_values = expand_family(active_filters["family"], grouped_categories)
         if db_values:
             params["category"] = db_values
 
@@ -138,8 +122,6 @@ async def filter_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         state["page"] = 1
         if data == CALLBACK_CLEAR:
             active_filters.clear()
-        elif data.startswith(CALLBACK_FAM):
-            toggle_family(active_filters, data.removeprefix(CALLBACK_FAM))
         elif data.startswith(CALLBACK_CAT):
             toggle_category(active_filters, data.removeprefix(CALLBACK_CAT))
         elif data.startswith(CALLBACK_PRICE):
