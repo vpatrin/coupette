@@ -189,7 +189,7 @@ class TestGetAvailabilityMap:
         assert result == {}
 
 
-class TestEmitRestockEvent:
+class TestEmitStockEvent:
     @pytest.mark.asyncio
     async def test_executes_and_commits(self) -> None:
         mock_session = AsyncMock()
