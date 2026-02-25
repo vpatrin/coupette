@@ -9,6 +9,7 @@ from loguru import logger
 from sqlalchemy.exc import SQLAlchemyError
 
 from .config import settings
+from .constants import EXIT_FATAL, EXIT_OK, EXIT_PARTIAL
 from .db import (
     clear_delisted,
     emit_restock_event,
@@ -28,10 +29,10 @@ setup_logging(settings.SERVICE_NAME, level=settings.LOG_LEVEL)
 def _exit_code(saved: int, errors: int) -> int:
     """Determine process exit code from scrape results."""
     if errors == 0:
-        return 0  # Clean run
+        return EXIT_OK
     if saved > 0:
-        return 1  # Partial failure
-    return 2  # Total failure
+        return EXIT_PARTIAL
+    return EXIT_FATAL
 
 
 def _needs_scrape(entry: SitemapEntry, updated_dates: dict[str, date]) -> bool:
@@ -75,7 +76,7 @@ async def main() -> int:
             rp = load_robots(settings.ROBOTS_URL)
         except Exception:
             logger.error("Cannot fetch robots.txt — aborting to ensure compliance")
-            return 2
+            return EXIT_FATAL
 
         # Filter URLs disallowed by robots.txt
         before_robots = len(entries)

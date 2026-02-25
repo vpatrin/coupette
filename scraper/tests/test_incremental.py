@@ -1,6 +1,7 @@
 from datetime import date
 
 from src.__main__ import _exit_code, _needs_scrape
+from src.constants import EXIT_FATAL, EXIT_OK, EXIT_PARTIAL
 from src.sitemap import SitemapEntry
 
 
@@ -79,13 +80,13 @@ class TestSkuValidation:
 
 class TestExitCode:
     def test_clean_run(self) -> None:
-        assert _exit_code(saved=10, errors=0) == 0
+        assert _exit_code(saved=10, errors=0) == EXIT_OK
 
     def test_no_work_is_clean(self) -> None:
-        assert _exit_code(saved=0, errors=0) == 0
+        assert _exit_code(saved=0, errors=0) == EXIT_OK
 
     def test_partial_failure(self) -> None:
-        assert _exit_code(saved=8, errors=2) == 1
+        assert _exit_code(saved=8, errors=2) == EXIT_PARTIAL
 
     def test_total_failure(self) -> None:
-        assert _exit_code(saved=0, errors=5) == 2
+        assert _exit_code(saved=0, errors=5) == EXIT_FATAL
