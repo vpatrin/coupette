@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- HTTP 404s logged as warnings instead of errors, counted separately in run summary (#197)
 - Two-level category filter keyboard: 3 families (Vins/Spiritueux/Autres) with expandable subgroups (#190)
 - Skip ~1,500 non-product URLs (recipes, accessories) during scrape, saving ~50 min per run (#188)
 
