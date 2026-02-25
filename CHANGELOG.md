@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Programmatic robots.txt compliance — scraper filters disallowed URLs and aborts if robots.txt is unreachable (#196)
+
 ### Changed
 
 - Skip ~1,500 non-product URLs (recipes, accessories) during scrape, saving ~50 min per run (#188)
