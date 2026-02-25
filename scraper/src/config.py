@@ -31,6 +31,9 @@ class ScraperSettings(BaseSettings):
     # Logging (per-service override — scraper might want DEBUG while backend stays INFO)
     LOG_LEVEL: str = "INFO"
 
+    # Housekeeping
+    RESTOCK_EVENT_RETENTION_DAYS: Annotated[int, Field(ge=1)] = 7
+
     # robots.txt and sitemap URLs
     ROBOTS_URL: str = "https://www.saq.com/robots.txt"
     SITEMAP_URL: str = "https://www.saq.com/media/sitemaps/fr/sitemap_product.xml"

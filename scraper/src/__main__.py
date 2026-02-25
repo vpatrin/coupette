@@ -13,6 +13,7 @@ from .config import settings
 from .constants import EXIT_FATAL, EXIT_OK, EXIT_PARTIAL
 from .db import (
     clear_delisted,
+    delete_old_restock_events,
     emit_restock_event,
     get_availability_map,
     get_delisted_skus,
@@ -190,6 +191,9 @@ async def main() -> int:
             logger.info("Relisted {} products (back in sitemap)", relisted)
     except SQLAlchemyError:
         logger.error("Delist detection failed, skipping")
+
+    # Housekeeping: purge old restock events
+    await delete_old_restock_events(days=settings.RESTOCK_EVENT_RETENTION_DAYS)
 
     # Run summary
     elapsed = time.monotonic() - start

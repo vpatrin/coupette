@@ -229,6 +229,46 @@ class TestEmitRestockEvent:
         mock_session.commit.assert_not_called()
 
 
+class TestDeleteOldRestockEvents:
+    @pytest.mark.asyncio
+    async def test_executes_and_commits(self) -> None:
+        mock_session = AsyncMock()
+        mock_session.execute.return_value = MagicMock(rowcount=5)
+
+        mock_ctx = MagicMock()
+        mock_ctx.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_ctx.__aexit__ = AsyncMock(return_value=False)
+
+        mock_factory = MagicMock(return_value=mock_ctx)
+
+        with patch("src.db._SessionLocal", mock_factory):
+            from src.db import delete_old_restock_events
+
+            await delete_old_restock_events(days=90)
+
+        mock_session.execute.assert_called_once()
+        mock_session.commit.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_swallows_error_on_db_failure(self) -> None:
+        mock_session = AsyncMock()
+        mock_session.execute.side_effect = SQLAlchemyError("connection lost")
+
+        mock_ctx = MagicMock()
+        mock_ctx.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_ctx.__aexit__ = AsyncMock(return_value=False)
+
+        mock_factory = MagicMock(return_value=mock_ctx)
+
+        with patch("src.db._SessionLocal", mock_factory):
+            from src.db import delete_old_restock_events
+
+            # Should NOT raise
+            await delete_old_restock_events(days=90)
+
+        mock_session.commit.assert_not_called()
+
+
 class TestUpsertProduct:
     @pytest.mark.asyncio
     async def test_commits_on_successful_upsert(self) -> None:

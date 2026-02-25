@@ -1,9 +1,9 @@
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 
 from core.db.base import create_session_factory
 from core.db.models import Product, RestockEvent
 from loguru import logger
-from sqlalchemy import select, update
+from sqlalchemy import delete, select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -82,6 +82,24 @@ async def emit_restock_event(sku: str, available: bool) -> None:
         except SQLAlchemyError:
             await session.rollback()
             logger.error("Failed to emit restock event for SKU {}", sku)
+
+
+async def delete_old_restock_events(days: int) -> None:
+    """Delete restock events older than the given number of days.
+
+    Best-effort — swallows errors so a failed cleanup never crashes the scraper.
+    """
+    cutoff = datetime.now(UTC) - timedelta(days=days)
+    async with _SessionLocal() as session:
+        stmt = delete(RestockEvent).where(RestockEvent.detected_at < cutoff)
+        try:
+            result = await session.execute(stmt)
+            await session.commit()
+            if result.rowcount:
+                logger.info("Purged {} restock events older than {} days", result.rowcount, days)
+        except SQLAlchemyError:
+            await session.rollback()
+            logger.error("Restock event cleanup failed, skipping")
 
 
 async def upsert_product(product_data: ProductData) -> None:
