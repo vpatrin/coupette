@@ -4,7 +4,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from sqlalchemy.exc import SQLAlchemyError
 
-from src.parser import ProductData
+from src.products import ProductData
+from src.stores import StoreData
 
 
 class TestGetDelistedSkus:
@@ -312,6 +313,71 @@ class TestUpsertProduct:
 
             with pytest.raises(SQLAlchemyError):
                 await upsert_product(product)
+
+        mock_session.rollback.assert_called_once()
+        mock_session.commit.assert_not_called()
+
+
+class TestUpsertStores:
+    def _make_store(self, saq_store_id: str = "23009") -> StoreData:
+        return StoreData(
+            saq_store_id=saq_store_id,
+            name="Du Parc - Fairmount Ouest",
+            city="Montréal",
+            temporarily_closed=False,
+            store_type="SAQ",
+            address="5610, avenue du Parc",
+            postcode="H2V 4H9",
+            telephone="514-274-0498",
+            latitude=45.5234,
+            longitude=-73.5987,
+        )
+
+    @pytest.mark.asyncio
+    async def test_skips_empty_list(self) -> None:
+        from src.db import upsert_stores
+
+        # Should return None without touching the DB
+        result = await upsert_stores([])
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_executes_and_commits(self) -> None:
+        mock_session = AsyncMock()
+
+        mock_ctx = MagicMock()
+        mock_ctx.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_ctx.__aexit__ = AsyncMock(return_value=False)
+
+        mock_factory = MagicMock(return_value=mock_ctx)
+
+        stores = [self._make_store("23009"), self._make_store("23132")]
+
+        with patch("src.db._SessionLocal", mock_factory):
+            from src.db import upsert_stores
+
+            await upsert_stores(stores)
+
+        mock_session.execute.assert_called_once()
+        mock_session.commit.assert_called_once()
+        mock_session.rollback.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_rolls_back_and_raises_on_db_error(self) -> None:
+        mock_session = AsyncMock()
+        mock_session.execute.side_effect = SQLAlchemyError("connection lost")
+
+        mock_ctx = MagicMock()
+        mock_ctx.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_ctx.__aexit__ = AsyncMock(return_value=False)
+
+        mock_factory = MagicMock(return_value=mock_ctx)
+
+        with patch("src.db._SessionLocal", mock_factory):
+            from src.db import upsert_stores
+
+            with pytest.raises(SQLAlchemyError):
+                await upsert_stores([self._make_store()])
 
         mock_session.rollback.assert_called_once()
         mock_session.commit.assert_not_called()
