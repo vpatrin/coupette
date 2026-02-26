@@ -20,7 +20,7 @@ from core.db.base import Base
 class Store(Base):
     """SAQ physical store location.
 
-    Populated via scraper --stores flag (one-shot per deployment).
+    Populated automatically on first scraper run when the stores table is empty.
     Primary key is the SAQ store identifier (e.g. "23009"), stable across API versions.
     """
 
