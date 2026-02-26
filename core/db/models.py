@@ -130,10 +130,10 @@ class Watch(Base):
         return f"<Watch(user_id={self.user_id!r}, sku={self.sku!r})>"
 
 
-class RestockEvent(Base):
+class StockEvent(Base):
     """Records product availability transitions detected during scrape."""
 
-    __tablename__ = "restock_events"
+    __tablename__ = "stock_events"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     sku = Column(
@@ -162,4 +162,4 @@ class RestockEvent(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<RestockEvent(sku={self.sku!r}, available={self.available!r})>"
+        return f"<StockEvent(sku={self.sku!r}, available={self.available!r})>"

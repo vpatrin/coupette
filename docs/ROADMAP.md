@@ -93,7 +93,7 @@ See [STORE_AVAILABILITY.md](STORE_AVAILABILITY.md) for API reference and enginee
 - [ ] Extract `magento_id` + `online_qty` during product scrape (#148)
 - [ ] Per-product store availability checker — paginated AJAX, diff alerts (#149)
 - [ ] Filter by store availability (in-store / online) (#150)
-- [ ] Emit destock events when availability flips True → False (#144)
+- [x] Emit destock events when availability flips True → False (#144)
 
 ### Phase 5c — Bilingual Support
 

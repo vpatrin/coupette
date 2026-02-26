@@ -29,6 +29,7 @@ migrate:
 revision:
 	@test -n "$(msg)" || (echo "Usage: make revision msg=\"description\"" && exit 1)
 	cd core && poetry run alembic revision --autogenerate -m "$(msg)"
+	make format
 
 reset-db:
 	cd core && poetry run alembic downgrade base && poetry run alembic upgrade head

@@ -229,7 +229,7 @@ class TestEmitStockEvent:
         mock_session.commit.assert_not_called()
 
 
-class TestDeleteOldRestockEvents:
+class TestDeleteOldStockEvents:
     @pytest.mark.asyncio
     async def test_executes_and_commits(self) -> None:
         mock_session = AsyncMock()
@@ -242,9 +242,9 @@ class TestDeleteOldRestockEvents:
         mock_factory = MagicMock(return_value=mock_ctx)
 
         with patch("src.db._SessionLocal", mock_factory):
-            from src.db import delete_old_restock_events
+            from src.db import delete_old_stock_events
 
-            await delete_old_restock_events(days=90)
+            await delete_old_stock_events(days=90)
 
         mock_session.execute.assert_called_once()
         mock_session.commit.assert_called_once()
@@ -261,10 +261,10 @@ class TestDeleteOldRestockEvents:
         mock_factory = MagicMock(return_value=mock_ctx)
 
         with patch("src.db._SessionLocal", mock_factory):
-            from src.db import delete_old_restock_events
+            from src.db import delete_old_stock_events
 
             # Should NOT raise
-            await delete_old_restock_events(days=90)
+            await delete_old_stock_events(days=90)
 
         mock_session.commit.assert_not_called()
 
