@@ -56,7 +56,7 @@ class Store(Base):
 
 
 class Product(Base):
-    """SAQ product model - maps to ProductData from parser.
+    """SAQ product model - maps to ProductData from products.
 
     Primary key: sku (SAQ product identifier, immutable)
     All fields nullable: SAQ pages have incomplete data (out-of-stock, minimal products)
