@@ -1,4 +1,3 @@
-import dataclasses
 import json
 from dataclasses import dataclass
 from html import unescape
@@ -47,10 +46,6 @@ class ProductData:
     producer: str | None = None
     saq_code: str | None = None
     cup_code: str | None = None
-
-    def to_dict(self) -> dict[str, Any]:
-        """Convert to a plain dict matching DB column names."""
-        return dataclasses.asdict(self)
 
 
 def parse_product(html: str | bytes, url: str) -> ProductData:
