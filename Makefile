@@ -101,6 +101,8 @@ coverage-bot:
 	cd bot && poetry run pytest --cov --cov-report=xml -v && poetry run coverage report
 
 coverage: coverage-backend coverage-scraper coverage-bot
+	@echo "\n▶ Generating badges"
+	python scripts/generate_badges.py
 
 # Audit
 audit-core:
