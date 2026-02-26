@@ -9,8 +9,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  PYTHON_VERSION: "3.12"
-  POETRY_VERSION: "2.1.3"
   PYTHONDONTWRITEBYTECODE: 1
   POETRY_VIRTUALENVS_IN_PROJECT: "true"
 
@@ -43,22 +41,18 @@ jobs:
             workflows:
               - '.github/workflows/**'
 
+  # ── Lint ──────────────────────────────────────────────────────
+
   lint-backend:
     needs: [changes]
     if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.core == 'true' || needs.changes.outputs.workflows == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - uses: ./.github/actions/setup-python-service
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-      - run: pip install poetry==${{ env.POETRY_VERSION }}
-      - uses: actions/cache@v5
-        with:
-          path: backend/.venv
-          key: venv-backend-lint-${{ hashFiles('backend/poetry.lock') }}
-      - run: cd backend && poetry install --only dev --no-interaction
+          service: backend
+          install-args: --only dev
       - run: make lint-backend
 
   lint-scraper:
@@ -67,16 +61,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - uses: ./.github/actions/setup-python-service
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-      - run: pip install poetry==${{ env.POETRY_VERSION }}
-      - uses: actions/cache@v5
-        with:
-          path: scraper/.venv
-          key: venv-scraper-lint-${{ hashFiles('scraper/poetry.lock') }}
-      - run: cd scraper && poetry install --only dev --no-interaction
+          service: scraper
+          install-args: --only dev
       - run: make lint-scraper
 
   lint-core:
@@ -85,16 +73,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - uses: ./.github/actions/setup-python-service
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-      - run: pip install poetry==${{ env.POETRY_VERSION }}
-      - uses: actions/cache@v5
-        with:
-          path: core/.venv
-          key: venv-core-lint-${{ hashFiles('core/poetry.lock') }}
-      - run: cd core && poetry install --only dev --no-interaction
+          service: core
+          install-args: --only dev
       - run: make lint-core
 
   lint-bot:
@@ -103,16 +85,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - uses: ./.github/actions/setup-python-service
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-      - run: pip install poetry==${{ env.POETRY_VERSION }}
-      - uses: actions/cache@v5
-        with:
-          path: bot/.venv
-          key: venv-bot-lint-${{ hashFiles('bot/poetry.lock') }}
-      - run: cd bot && poetry install --only dev --no-interaction
+          service: bot
+          install-args: --only dev
       - run: make lint-bot
 
   lint-dockerfiles:
@@ -135,22 +111,17 @@ jobs:
           dockerfile: bot/Dockerfile
           ignore: DL3008,DL4006
 
+  # ── Test ──────────────────────────────────────────────────────
+
   test-backend:
     needs: [changes]
     if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.core == 'true' || needs.changes.outputs.workflows == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - uses: ./.github/actions/setup-python-service
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-      - run: pip install poetry==${{ env.POETRY_VERSION }}
-      - uses: actions/cache@v5
-        with:
-          path: backend/.venv
-          key: venv-backend-${{ hashFiles('backend/poetry.lock') }}
-      - run: cd backend && poetry install --no-interaction
+          service: backend
       - run: make coverage-backend
 
   test-scraper:
@@ -159,16 +130,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - uses: ./.github/actions/setup-python-service
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-      - run: pip install poetry==${{ env.POETRY_VERSION }}
-      - uses: actions/cache@v5
-        with:
-          path: scraper/.venv
-          key: venv-scraper-${{ hashFiles('scraper/poetry.lock') }}
-      - run: cd scraper && poetry install --no-interaction
+          service: scraper
       - run: make coverage-scraper
 
   test-bot:
@@ -177,17 +141,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - uses: ./.github/actions/setup-python-service
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-      - run: pip install poetry==${{ env.POETRY_VERSION }}
-      - uses: actions/cache@v5
-        with:
-          path: bot/.venv
-          key: venv-bot-${{ hashFiles('bot/poetry.lock') }}
-      - run: cd bot && poetry install --no-interaction
+          service: bot
       - run: make coverage-bot
+
+  # ── Security ──────────────────────────────────────────────────
 
   audit-core:
     needs: [changes]
@@ -195,17 +154,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - uses: ./.github/actions/setup-python-service
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-      - run: pip install poetry==${{ env.POETRY_VERSION }}
-      - uses: actions/cache@v5
-        with:
-          path: core/.venv
-          key: venv-core-${{ hashFiles('core/poetry.lock') }}
-      - run: cd core && poetry install --no-interaction
-      - run: cd core && poetry run pip-audit
+          service: core
+      - run: make audit-core
 
   audit-backend:
     needs: [changes]
@@ -213,17 +165,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - uses: ./.github/actions/setup-python-service
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-      - run: pip install poetry==${{ env.POETRY_VERSION }}
-      - uses: actions/cache@v5
-        with:
-          path: backend/.venv
-          key: venv-backend-${{ hashFiles('backend/poetry.lock') }}
-      - run: cd backend && poetry install --no-interaction
-      - run: cd backend && poetry run pip-audit
+          service: backend
+      - run: make audit-backend
 
   audit-scraper:
     needs: [changes]
@@ -231,17 +176,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - uses: ./.github/actions/setup-python-service
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-      - run: pip install poetry==${{ env.POETRY_VERSION }}
-      - uses: actions/cache@v5
-        with:
-          path: scraper/.venv
-          key: venv-scraper-${{ hashFiles('scraper/poetry.lock') }}
-      - run: cd scraper && poetry install --no-interaction
-      - run: cd scraper && poetry run pip-audit
+          service: scraper
+      - run: make audit-scraper
 
   audit-bot:
     needs: [changes]
@@ -249,17 +187,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - uses: ./.github/actions/setup-python-service
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-      - run: pip install poetry==${{ env.POETRY_VERSION }}
-      - uses: actions/cache@v5
-        with:
-          path: bot/.venv
-          key: venv-bot-${{ hashFiles('bot/poetry.lock') }}
-      - run: cd bot && poetry install --no-interaction
-      - run: cd bot && poetry run pip-audit
+          service: bot
+      - run: make audit-bot
 
   gitleaks:
     runs-on: ubuntu-latest
@@ -271,6 +202,8 @@ jobs:
       - uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ── Summary gates ─────────────────────────────────────────────
 
   lint:
     needs: [lint-backend, lint-scraper, lint-core, lint-bot, lint-dockerfiles]
