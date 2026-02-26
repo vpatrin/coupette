@@ -1,6 +1,6 @@
 from datetime import UTC, datetime
 
-from core.db.models import Product, RestockEvent, Watch
+from core.db.models import Product, StockEvent, Watch
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -43,20 +43,20 @@ async def delete(db: AsyncSession, watch: Watch) -> None:
 
 async def find_pending_notifications(
     db: AsyncSession,
-) -> list[tuple[RestockEvent, Watch, Product | None]]:
-    """Return all pending restock notifications (events x watches), with product data."""
+) -> list[tuple[StockEvent, Watch, Product | None]]:
+    """Return all pending stock event notifications (events x watches), with product data."""
     stmt = (
-        select(RestockEvent, Watch, Product)
+        select(StockEvent, Watch, Product)
         # Only events where someone is watching that SKU
-        .join(Watch, RestockEvent.sku == Watch.sku)
+        .join(Watch, StockEvent.sku == Watch.sku)
         # Attach product info if available
-        .outerjoin(Product, RestockEvent.sku == Product.sku)
+        .outerjoin(Product, StockEvent.sku == Product.sku)
         # Skip already-notified events
-        .where(RestockEvent.processed_at.is_(None))
+        .where(StockEvent.processed_at.is_(None))
         # Only "back in stock" events
-        .where(RestockEvent.available.is_(True))
+        .where(StockEvent.available.is_(True))
         # Oldest first (FIFO)
-        .order_by(RestockEvent.detected_at.asc())
+        .order_by(StockEvent.detected_at.asc())
         # Match MAX_ACK_BATCH_SIZE — bot can ack everything it receives in one call
         .limit(MAX_ACK_BATCH_SIZE)
     )
@@ -67,9 +67,9 @@ async def find_pending_notifications(
 async def ack_events(db: AsyncSession, event_ids: list[int]) -> int:
     """Mark events as processed. Returns count of rows actually updated."""
     stmt = (
-        update(RestockEvent)
-        .where(RestockEvent.id.in_(event_ids))
-        .where(RestockEvent.processed_at.is_(None))
+        update(StockEvent)
+        .where(StockEvent.id.in_(event_ids))
+        .where(StockEvent.processed_at.is_(None))
         .values(processed_at=datetime.now(UTC))
     )
     result = await db.execute(stmt)

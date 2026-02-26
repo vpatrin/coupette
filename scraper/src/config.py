@@ -32,7 +32,7 @@ class ScraperSettings(BaseSettings):
     LOG_LEVEL: str = "INFO"
 
     # Housekeeping
-    RESTOCK_EVENT_RETENTION_DAYS: Annotated[int, Field(ge=1)] = 7
+    STOCK_EVENT_RETENTION_DAYS: Annotated[int, Field(ge=1)] = 7
 
     # robots.txt and sitemap URLs
     ROBOTS_URL: str = "https://www.saq.com/robots.txt"

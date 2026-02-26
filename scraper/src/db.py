@@ -1,7 +1,7 @@
 from datetime import UTC, date, datetime, timedelta
 
 from core.db.base import create_session_factory
-from core.db.models import Product, RestockEvent
+from core.db.models import Product, StockEvent
 from loguru import logger
 from sqlalchemy import delete, select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -70,36 +70,36 @@ async def clear_delisted(skus: set[str]) -> int:
 
 
 async def emit_stock_event(sku: str, available: bool) -> None:
-    """Record an availability transition in the restock_events table.
+    """Record an availability transition in the stock_events table.
 
     Swallows errors — a missed event shouldn't crash the scraper.
     """
     async with _SessionLocal() as session:
-        stmt = pg_insert(RestockEvent).values(sku=sku, available=available)
+        stmt = pg_insert(StockEvent).values(sku=sku, available=available)
         try:
             await session.execute(stmt)
             await session.commit()
         except SQLAlchemyError:
             await session.rollback()
-            logger.error("Failed to emit restock event for SKU {}", sku)
+            logger.error("Failed to emit stock event for SKU {}", sku)
 
 
-async def delete_old_restock_events(days: int) -> None:
-    """Delete restock events older than the given number of days.
+async def delete_old_stock_events(days: int) -> None:
+    """Delete stock events older than the given number of days.
 
     Best-effort — swallows errors so a failed cleanup never crashes the scraper.
     """
     cutoff = datetime.now(UTC) - timedelta(days=days)
     async with _SessionLocal() as session:
-        stmt = delete(RestockEvent).where(RestockEvent.detected_at < cutoff)
+        stmt = delete(StockEvent).where(StockEvent.detected_at < cutoff)
         try:
             result = await session.execute(stmt)
             await session.commit()
             if result.rowcount:
-                logger.info("Purged {} restock events older than {} days", result.rowcount, days)
+                logger.info("Purged {} stock events older than {} days", result.rowcount, days)
         except SQLAlchemyError:
             await session.rollback()
-            logger.error("Restock event cleanup failed, skipping")
+            logger.error("Stock event cleanup failed, skipping")
 
 
 async def upsert_product(product_data: ProductData) -> None:
