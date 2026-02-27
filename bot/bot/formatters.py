@@ -111,4 +111,5 @@ def format_user_stores(stores: list[dict[str, Any]]) -> str:
         city = store.get("city", "")
         lines.append(f"{i}. {name} — {city}")
 
-    return f"{header}\n\n{chr(10).join(lines)}"
+    body = "\n".join(lines)
+    return f"{header}\n\n{body}"

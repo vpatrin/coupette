@@ -75,6 +75,7 @@ CALLBACK_PAGE_PREV = f"{CALLBACK_PREFIX}page:prev"
 # Store selection callbacks — shared between keyboards.py and mystores handler
 CALLBACK_STORE_PREFIX = "s:"
 CALLBACK_STORE_TOGGLE = f"{CALLBACK_STORE_PREFIX}toggle:"
+CALLBACK_STORE_REMOVE = f"{CALLBACK_STORE_PREFIX}rm:"
 CALLBACK_STORE_DONE = f"{CALLBACK_STORE_PREFIX}done"
 
 
