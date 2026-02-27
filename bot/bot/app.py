@@ -33,9 +33,11 @@ from bot.config import (
 )
 from bot.handlers.filters import filter_callback
 from bot.handlers.mystores import (
+    back_handler,
     location_handler,
     mystores_command,
     store_done_callback,
+    store_remove_callback,
     store_toggle_callback,
 )
 from bot.handlers.new import new_command
@@ -99,9 +101,13 @@ def create_app() -> Application:
     app.add_handler(MessageHandler(filters.Text([MENU_ALERTS]), alerts_command))
     app.add_handler(MessageHandler(filters.Text([MENU_STORES]), mystores_command))
     app.add_handler(MessageHandler(filters.Text([MENU_HELP]), help_command))
+    app.add_handler(MessageHandler(filters.Text(["\u2190 Back"]), back_handler))
     # Inline button callbacks — store selection ("s:") and product filters ("f:")
     app.add_handler(
         CallbackQueryHandler(store_toggle_callback, pattern=rf"^{CALLBACK_STORE_PREFIX}toggle:")
+    )
+    app.add_handler(
+        CallbackQueryHandler(store_remove_callback, pattern=rf"^{CALLBACK_STORE_PREFIX}rm:")
     )
     app.add_handler(CallbackQueryHandler(store_done_callback, pattern=rf"^{CALLBACK_STORE_DONE}$"))
     app.add_handler(CallbackQueryHandler(filter_callback, pattern=rf"^{CALLBACK_PREFIX}"))
