@@ -65,6 +65,9 @@ All services read from a single root `.env` file. See [.env.example](../.env.exa
 | `DATABASE_ECHO` | no | `false` | Log SQL queries |
 | `TELEGRAM_BOT_TOKEN` | bot only | — | Token from @BotFather |
 | `BACKEND_URL` | no | `http://localhost:8001` | API URL for the bot |
+| `SCRAPE_LIMIT` | no | `500` | Max products to scrape per run (0 = full catalog) |
+| `NOTIFICATION_POLL_INTERVAL` | no | `60` | Bot notification poll interval in seconds (21600 = 6h in prod) |
+| `ALLOWED_USER_IDS` | no | — | Comma-separated Telegram user IDs (empty = allow all) |
 
 ## Make targets
 
@@ -96,7 +99,7 @@ make clean         # remove __pycache__, .pytest_cache, .ruff_cache
 
 ## Working on the scraper
 
-The scraper is a one-shot batch job (not a long-running service). It fetches the SAQ sitemap and upserts products into PostgreSQL. See [SCRAPER.md](SCRAPER.md) for production scheduling and operations.
+The scraper is a one-shot batch job (not a long-running service). It fetches the SAQ sitemap and upserts products into PostgreSQL. See [OPERATIONS.md](OPERATIONS.md) for production scheduling and operations.
 
 ```bash
 make dev-scraper          # run the scraper (upserts ~38k products)
@@ -181,3 +184,42 @@ make coverage
 ```
 
 Tests use an in-memory SQLite database by default (no PostgreSQL required).
+
+## Migrations
+
+The model (`core/db/models.py`) is the source of truth for the DB schema. Alembic generates migrations by diffing the model against the live database.
+
+### Workflow
+
+```bash
+# 1. Edit the model
+vim core/db/models.py
+
+# 2. Autogenerate migration (requires running DB)
+make revision msg="add alcohol column"
+
+# 3. Review the generated file in core/alembic/versions/
+
+# 4. Apply
+make migrate
+
+# 5. Commit model + migration together
+git add core/db/models.py core/alembic/versions/xxxx_*.py
+```
+
+### Rules
+
+- **Model = source of truth** — columns, indexes, constraints all defined on the model
+- **Forward-only in production** — never run `downgrade()` in prod; write a new migration to fix mistakes
+- **`downgrade()` is a dev convenience** — `make reset-db` uses it to replay from scratch
+- **Autogenerate detects** new/removed columns, indexes, type changes — but NOT column renames (sees drop+add) or data migrations; hand-add those
+
+### Quick reference
+
+| Task | Command |
+| --- | --- |
+| Apply all pending | `make migrate` |
+| Generate migration | `make revision msg="description"` |
+| Full reset (dev only) | `make reset-db` |
+| Check current version | `cd core && poetry run alembic current` |
+| Show history | `cd core && poetry run alembic history` |

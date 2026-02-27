@@ -31,13 +31,14 @@ Designed as a **modular monolith** for a solo developer serving ~20 users. Servi
                           │                       │
                           └──┬──────────────┬─────┘
                              │              │
-                    ┌────────▼────┐   ┌─────▼──────────┐
-                    │ PostgreSQL  │   │  Claude API     │
-                    │             │   │  (Haiku 3.5)    │
-                    │  products   │   │                 │
-                    │  watches    │   │  NL queries     │
-                    │             │   │  Recommendations │
-                    └────────▲────┘   └────────────────┘
+                    ┌────────▼─────┐  ┌─────▼──────────┐
+                    │  PostgreSQL  │  │  Claude API     │
+                    │              │  │  (Haiku 4.5)    │
+                    │  products    │  │                 │
+                    │  watches     │  │  NL queries     │
+                    │  stock_events│  │  Recommendations│
+                    │  stores      │  └────────────────┘
+                    └────────▲─────┘
                              │
                              │ writes
                              │
@@ -99,11 +100,27 @@ The scraper writes to `products`, the backend reads from `products` and manages 
 
 ### Separate schemas per boundary
 
-- `ProductData` (scraper) — raw parsed data entering the system
-- `Product` (core) — SQLAlchemy model, single source of truth for DB schema
-- `ProductResponse` (backend) — curated API output, excludes sensitive fields
+A product passes through three stages — scraping, storage, and API response — each with different requirements. Three separate schemas, one per boundary:
 
-These overlap but are intentionally separate. The scraper can change its parsing without breaking the API contract, and vice versa.
+```text
+SAQ.com HTML                    PostgreSQL                      JSON API
+     │                               │                              │
+     ▼                               ▼                              ▼
+ ProductData                     Product                    ProductResponse
+ (dataclass)                  (SQLAlchemy)                    (Pydantic)
+     │                               │                              │
+scraper/src/products.py       core/db/models.py         backend/schemas/product.py
+```
+
+**`ProductData` — `@dataclass`**: The scraper parses messy HTML. A dataclass is a transparent container — it stores whatever you give it without fighting back. Validation happens in parser logic, not in the data structure. Pydantic here would require declaring every edge case upfront.
+
+**`Product` — SQLAlchemy model**: The ORM model is the single source of truth for the DB schema. Alembic generates migrations from it. Both services import it from `core/` — the scraper writes to it, the backend reads from it.
+
+**`ProductResponse` — Pydantic `BaseModel`**: Validates, coerces (`Decimal` → string, `datetime` → ISO 8601), and filters (drops `description`, `url`, `image` for legal reasons). FastAPI reads this schema for OpenAPI docs and response validation.
+
+Without separation: adding a scraper debug field leaks into the API; removing an API field for legal reasons breaks the scraper. With separation, each boundary evolves independently — the database is the only shared contract.
+
+**Rule of thumb:** dataclass = trusted internal input; SQLAlchemy = persistence; Pydantic = external boundary.
 
 ### API contract excludes verbatim SAQ content
 
@@ -130,8 +147,6 @@ The design principle: add infrastructure when a bottleneck is measured, not when
 
 ## Infrastructure
 
-- **Host**: Hetzner CX22 (4GB RAM, 40GB SSD, Debian 13)
-- **Reverse proxy**: Caddy (SSL + routing via victorpatrin.dev subdomains)
 - **Containers**: Docker Compose (`make run` for full dev stack, `make run-db` for bare-metal dev)
 - **Database**: PostgreSQL 16 (shared instance, `saq_sommelier` database)
 - **CI**: GitHub Actions (lint + test per service, summary gates)
@@ -147,4 +162,4 @@ SAQ scraping follows a sitemap-first approach for legal defensibility:
 - Never hotlink SAQ images
 - Respect all Disallow rules in robots.txt
 
-Scraper operations documented in [SCRAPER.md](SCRAPER.md).
+Scraper operations documented in [OPERATIONS.md](OPERATIONS.md).
