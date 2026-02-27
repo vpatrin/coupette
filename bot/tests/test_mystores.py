@@ -4,9 +4,11 @@ import pytest
 
 from bot.api_client import BackendAPIError, BackendUnavailableError
 from bot.handlers.mystores import (
+    back_handler,
     location_handler,
     mystores_command,
     store_done_callback,
+    store_remove_callback,
     store_toggle_callback,
 )
 
@@ -41,6 +43,7 @@ def callback_update():
     mock.callback_query.answer = AsyncMock()
     mock.callback_query.edit_message_reply_markup = AsyncMock()
     mock.callback_query.edit_message_text = AsyncMock()
+    mock.callback_query.message.reply_text = AsyncMock()
     return mock
 
 
@@ -92,10 +95,12 @@ async def test_mystores_shows_saved_stores(update, context, api):
     await mystores_command(update, context)
 
     api.list_user_stores.assert_called_once_with("tg:42")
-    text = update.message.reply_text.call_args[0][0]
-    assert "SAQ Du Parc" in text
-    assert "1 saved store" in text
-    assert "Share your location" in text
+    # First message: header + inline remove buttons, second: location prompt
+    assert update.message.reply_text.call_count == 2
+    header = update.message.reply_text.call_args_list[0][0][0]
+    assert "1 saved store" in header
+    location_text = update.message.reply_text.call_args_list[1][0][0]
+    assert "Share your location" in location_text
 
 
 async def test_mystores_empty(update, context, api):
@@ -129,9 +134,8 @@ async def test_location_shows_nearby_stores(update, context, api):
     await location_handler(update, context)
 
     api.get_nearby_stores.assert_called_once_with(45.52, -73.60)
-    # First reply: store selection keyboard, second: restore main menu
-    assert update.message.reply_text.call_count == 2
-    text = update.message.reply_text.call_args_list[0][0][0]
+    assert update.message.reply_text.call_count == 1
+    text = update.message.reply_text.call_args[0][0]
     assert "Nearest SAQ stores" in text
     # Nearby stores stashed in user_data
     assert context.user_data["nearby_stores"] == [_STORE_A, _STORE_B]
@@ -205,6 +209,50 @@ async def test_toggle_store_not_found(callback_update, context, api):
     callback_update.callback_query.answer.assert_any_call("Store not found.", show_alert=True)
 
 
+# ── Store remove callback ────────────────────────────────────
+
+
+async def test_remove_deletes_store(callback_update, context, api):
+    callback_update.callback_query.data = "s:rm:23009"
+    api.list_user_stores.return_value = []  # empty after removal
+
+    await store_remove_callback(callback_update, context)
+
+    api.remove_user_store.assert_called_once_with("tg:42", "23009")
+    text = callback_update.callback_query.edit_message_text.call_args[0][0]
+    assert "0 saved" in text
+
+
+async def test_remove_updates_list(callback_update, context, api):
+    callback_update.callback_query.data = "s:rm:23009"
+    # After removing A, return empty
+    api.list_user_stores.return_value = []
+
+    await store_remove_callback(callback_update, context)
+
+    callback_update.callback_query.edit_message_text.assert_called_once()
+
+
+async def test_remove_backend_unavailable(callback_update, context, api):
+    callback_update.callback_query.data = "s:rm:23009"
+    api.remove_user_store.side_effect = BackendUnavailableError("down")
+
+    await store_remove_callback(callback_update, context)
+
+    callback_update.callback_query.answer.assert_any_call("Backend unavailable.", show_alert=True)
+
+
+# ── Back handler ─────────────────────────────────────────────
+
+
+async def test_back_restores_main_menu(update, context):
+    await back_handler(update, context)
+
+    update.message.reply_text.assert_called_once()
+    text = update.message.reply_text.call_args[0][0]
+    assert "Back to main menu" in text
+
+
 # ── Done callback ────────────────────────────────────────────
 
 
@@ -218,6 +266,8 @@ async def test_done_shows_summary(callback_update, context, api):
     text = callback_update.callback_query.edit_message_text.call_args[0][0]
     assert "1 saved store" in text
     assert "SAQ Du Parc" in text
+    # Main menu restored
+    callback_update.callback_query.message.reply_text.assert_called_once()
     # Nearby stores cleaned up
     assert "nearby_stores" not in context.user_data
 
