@@ -17,7 +17,7 @@ HELP_TEXT = (
     "/mystores — Pick your SAQ spots\n\n"
     "/help — This thing right here\n\n"
     "— Made with ❤️ by @secp256k2\n\n"
-    "Like the wine? — [drop a ⭐]https://github.com/vpatrin/saq-sommelier)"
+    "Like the wine? — [drop a ⭐](https://github.com/vpatrin/saq-sommelier)"
 )
 
 
