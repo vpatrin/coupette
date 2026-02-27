@@ -5,13 +5,22 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from bot.api_client import BackendAPIError, BackendClient, BackendUnavailableError
-from bot.config import CALLBACK_STORE_TOGGLE, USER_ID_PREFIX
+from bot.config import CALLBACK_STORE_REMOVE, CALLBACK_STORE_TOGGLE, USER_ID_PREFIX
 from bot.formatters import format_user_stores
-from bot.keyboards import LOCATION_KEYBOARD, MAIN_MENU, build_store_keyboard
+from bot.keyboards import (
+    LOCATION_KEYBOARD,
+    MAIN_MENU,
+    build_saved_stores_keyboard,
+    build_store_keyboard,
+)
 
 
 def _user_id(update: Update) -> str:
     return f"{USER_ID_PREFIX}:{update.effective_user.id}"
+
+
+def _stores_header(count: int) -> str:
+    return f"\U0001f4cd *{count} saved store{'s' if count != 1 else ''}*\nTap to remove."
 
 
 async def mystores_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -26,13 +35,22 @@ async def mystores_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         await update.message.reply_text("Backend is currently unavailable. Try again later.")
         return
 
-    text = format_user_stores(prefs)
-    text += "\n\nShare your location to find nearby SAQ stores."
-    await update.message.reply_text(
-        text,
-        parse_mode="Markdown",
-        reply_markup=LOCATION_KEYBOARD,
-    )
+    keyboard = build_saved_stores_keyboard(prefs)
+    if keyboard:
+        header = _stores_header(len(prefs))
+        await update.message.reply_text(header, parse_mode="Markdown", reply_markup=keyboard)
+        await update.message.reply_text(
+            "Share your location to add more stores.",
+            reply_markup=LOCATION_KEYBOARD,
+        )
+    else:
+        text = format_user_stores(prefs)
+        text += "\n\nShare your location to find nearby stores."
+        await update.message.reply_text(
+            text,
+            parse_mode="Markdown",
+            reply_markup=LOCATION_KEYBOARD,
+        )
 
 
 async def location_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -65,8 +83,6 @@ async def location_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         "Nearest SAQ stores \u2014 tap to add/remove:",
         reply_markup=keyboard,
     )
-    # Restore main menu reply keyboard
-    await update.message.reply_text("Tap a store to add or remove it.", reply_markup=MAIN_MENU)
 
 
 async def store_toggle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -110,6 +126,43 @@ async def store_toggle_callback(update: Update, context: ContextTypes.DEFAULT_TY
         await query.edit_message_reply_markup(reply_markup=keyboard)
 
 
+async def store_remove_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Handle remove button from /mystores list."""
+    query = update.callback_query
+    await query.answer()
+
+    store_id = query.data.removeprefix(CALLBACK_STORE_REMOVE)
+    api: BackendClient = context.bot_data["api"]
+    user_id = _user_id(update)
+
+    try:
+        await api.remove_user_store(user_id, store_id)
+    except BackendAPIError as exc:
+        # 404 = already gone — treat as success
+        if exc.status_code != HTTPStatus.NOT_FOUND:
+            logger.warning("Backend error during store remove: {}", exc)
+            await query.answer("Something went wrong.", show_alert=True)
+            return
+    except BackendUnavailableError:
+        await query.answer("Backend unavailable.", show_alert=True)
+        return
+
+    try:
+        prefs = await api.list_user_stores(user_id)
+    except (BackendUnavailableError, BackendAPIError):
+        prefs = []
+
+    text = _stores_header(len(prefs)) if prefs else format_user_stores(prefs)
+    await query.edit_message_text(
+        text, parse_mode="Markdown", reply_markup=build_saved_stores_keyboard(prefs)
+    )
+
+
+async def back_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Handle "Back" button — restore main menu."""
+    await update.message.reply_text("Back to main menu.", reply_markup=MAIN_MENU)
+
+
 async def store_done_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle "Done" button — show final store summary."""
     query = update.callback_query
@@ -125,4 +178,6 @@ async def store_done_callback(update: Update, context: ContextTypes.DEFAULT_TYPE
 
     text = format_user_stores(prefs)
     await query.edit_message_text(text, parse_mode="Markdown")
+    # Restore reply keyboard — edit_message_text only touches the inline message
+    await query.message.reply_text("Back to main menu.", reply_markup=MAIN_MENU)
     context.user_data.pop("nearby_stores", None)
