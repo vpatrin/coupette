@@ -13,6 +13,8 @@ HELP_TEXT = (
     "/watch `<sku> or <url>` — Get alerts when a wine is back\n"
     "/unwatch `<sku> or <url>` — Stop watching\n"
     "/alerts — Your watched wines\n\n"
+    "*Stores*\n"
+    "/mystores — Manage your preferred SAQ stores\n\n"
     "/help — Show this message\n\n"
     "— Made with ❤️ by @secp256k2 • 🛠 [vpatrin/saq-sommelier](https://github.com/vpatrin/saq-sommelier)"
 )
