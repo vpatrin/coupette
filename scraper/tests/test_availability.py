@@ -7,9 +7,13 @@ import pytest
 from src.availability import (
     GraphQLProduct,
     fetch_store_availability,
+    fetch_targeted_availability,
     resolve_graphql_products,
     run_availability_check,
 )
+
+_STORE_A = {"23009": (45.5, -73.6)}
+_TARGET_STORES = {"23009": (45.5, -73.6), "23132": (45.6, -73.7)}
 
 
 def _make_response(data: dict, status_code: int = 200) -> httpx.Response:
@@ -163,6 +167,101 @@ class TestFetchStoreAvailability:
         assert result == {"23009": 0}
 
 
+class TestFetchTargetedAvailability:
+    @pytest.mark.asyncio
+    async def test_finds_target_store(self) -> None:
+        ajax_response = {
+            "list": [
+                {"identifier": "23009", "qty": 44},
+                {"identifier": "99999", "qty": 5},
+            ]
+        }
+        client = AsyncMock(spec=httpx.AsyncClient)
+        client.get.return_value = _make_response(ajax_response)
+
+        with patch("src.availability.asyncio.sleep"):
+            result = await fetch_targeted_availability(
+                client, magento_id=42, target_stores={"23009": (45.5, -73.6)}
+            )
+
+        assert result == {"23009": 44}
+        assert client.get.call_count == 1
+
+    @pytest.mark.asyncio
+    async def test_deduplicates_nearby_stores(self) -> None:
+        """Two target stores appear in same response — second request skipped."""
+        ajax_response = {
+            "list": [
+                {"identifier": "23009", "qty": 44},
+                {"identifier": "23132", "qty": 12},
+            ]
+        }
+        client = AsyncMock(spec=httpx.AsyncClient)
+        client.get.return_value = _make_response(ajax_response)
+
+        with patch("src.availability.asyncio.sleep"):
+            result = await fetch_targeted_availability(
+                client, magento_id=42, target_stores=_TARGET_STORES
+            )
+
+        assert result == {"23009": 44, "23132": 12}
+        assert client.get.call_count == 1  # only one request needed
+
+    @pytest.mark.asyncio
+    async def test_absent_store_gets_zero(self) -> None:
+        """Target store not in AJAX response → qty 0."""
+        ajax_response = {"list": [{"identifier": "99999", "qty": 10}]}
+        client = AsyncMock(spec=httpx.AsyncClient)
+        client.get.return_value = _make_response(ajax_response)
+
+        with patch("src.availability.asyncio.sleep"):
+            result = await fetch_targeted_availability(
+                client, magento_id=42, target_stores={"23009": (45.5, -73.6)}
+            )
+
+        assert result == {"23009": 0}
+
+    @pytest.mark.asyncio
+    async def test_http_error_returns_zero(self) -> None:
+        client = AsyncMock(spec=httpx.AsyncClient)
+        client.get.side_effect = httpx.HTTPError("timeout")
+
+        result = await fetch_targeted_availability(
+            client, magento_id=42, target_stores={"23009": (45.5, -73.6)}
+        )
+
+        assert result == {"23009": 0}
+
+    @pytest.mark.asyncio
+    async def test_passes_lat_lng_params(self) -> None:
+        ajax_response = {"list": [{"identifier": "23009", "qty": 10}]}
+        client = AsyncMock(spec=httpx.AsyncClient)
+        client.get.return_value = _make_response(ajax_response)
+
+        with patch("src.availability.asyncio.sleep"):
+            await fetch_targeted_availability(
+                client, magento_id=42, target_stores={"23009": (45.5, -73.6)}
+            )
+
+        call_params = client.get.call_args[1]["params"]
+        assert call_params["latitude"] == "45.5"
+        assert call_params["longitude"] == "-73.6"
+
+    @pytest.mark.asyncio
+    async def test_rate_limits_between_requests(self) -> None:
+        """Each request is followed by a sleep, even if store was found."""
+        # Two stores far apart — need separate requests
+        resp1 = {"list": [{"identifier": "23009", "qty": 10}]}
+        resp2 = {"list": [{"identifier": "23132", "qty": 5}]}
+        client = AsyncMock(spec=httpx.AsyncClient)
+        client.get.side_effect = [_make_response(resp1), _make_response(resp2)]
+
+        with patch("src.availability.asyncio.sleep") as mock_sleep:
+            await fetch_targeted_availability(client, magento_id=42, target_stores=_TARGET_STORES)
+
+        assert mock_sleep.call_count == 2
+
+
 class TestRunAvailabilityCheck:
     @pytest.mark.asyncio
     async def test_skips_when_no_watched_skus(self) -> None:
@@ -181,8 +280,15 @@ class TestRunAvailabilityCheck:
         with (
             patch("src.availability.get_watched_skus", return_value=["15483332"]),
             patch("src.availability.resolve_graphql_products", return_value=gql),
-            patch("src.availability.fetch_store_availability", return_value={"23009": 10}),
-            patch("src.availability.get_product_availability", return_value=(True, {"23009": 0})),
+            patch("src.availability.get_watched_store_coords", return_value=_TARGET_STORES),
+            patch(
+                "src.availability.fetch_targeted_availability",
+                return_value={"23009": 10, "23132": 0},
+            ),
+            patch(
+                "src.availability.get_product_availability",
+                return_value=(True, {"23009": 0, "23132": 0}),
+            ),
             patch("src.availability.upsert_product_availability") as mock_upsert,
             patch("src.availability.emit_stock_event") as mock_emit,
             patch("src.availability.asyncio.sleep"),
@@ -192,7 +298,7 @@ class TestRunAvailabilityCheck:
         assert events == 1
         mock_emit.assert_called_once_with("15483332", available=True, saq_store_id="23009")
         mock_upsert.assert_called_once_with(
-            "15483332", online_available=True, store_qty={"23009": 10}
+            "15483332", online_available=True, store_qty={"23009": 10, "23132": 0}
         )
 
     @pytest.mark.asyncio
@@ -203,7 +309,8 @@ class TestRunAvailabilityCheck:
         with (
             patch("src.availability.get_watched_skus", return_value=["15483332"]),
             patch("src.availability.resolve_graphql_products", return_value=gql),
-            patch("src.availability.fetch_store_availability", return_value={"23009": 0}),
+            patch("src.availability.get_watched_store_coords", return_value=_STORE_A),
+            patch("src.availability.fetch_targeted_availability", return_value={"23009": 0}),
             patch("src.availability.get_product_availability", return_value=(True, {"23009": 10})),
             patch("src.availability.upsert_product_availability"),
             patch("src.availability.emit_stock_event") as mock_emit,
@@ -222,7 +329,7 @@ class TestRunAvailabilityCheck:
         with (
             patch("src.availability.get_watched_skus", return_value=["15483332"]),
             patch("src.availability.resolve_graphql_products", return_value=gql),
-            patch("src.availability.fetch_store_availability", return_value={}),
+            patch("src.availability.get_watched_store_coords", return_value={}),
             patch("src.availability.get_product_availability", return_value=(False, {})),
             patch("src.availability.upsert_product_availability"),
             patch("src.availability.emit_stock_event") as mock_emit,
@@ -241,7 +348,8 @@ class TestRunAvailabilityCheck:
         with (
             patch("src.availability.get_watched_skus", return_value=["15483332"]),
             patch("src.availability.resolve_graphql_products", return_value=gql),
-            patch("src.availability.fetch_store_availability", return_value={"23009": 10}),
+            patch("src.availability.get_watched_store_coords", return_value=_STORE_A),
+            patch("src.availability.fetch_targeted_availability", return_value={"23009": 10}),
             patch("src.availability.get_product_availability", return_value=(True, {"23009": 10})),
             patch("src.availability.upsert_product_availability") as mock_upsert,
             patch("src.availability.emit_stock_event") as mock_emit,
@@ -251,7 +359,6 @@ class TestRunAvailabilityCheck:
 
         assert events == 1
         mock_emit.assert_called_once_with("15483332", available=False)
-        # Store fetch still happens — stores can have stock when online is OUT_OF_STOCK
         mock_upsert.assert_called_once_with(
             "15483332", online_available=False, store_qty={"23009": 10}
         )
@@ -265,17 +372,18 @@ class TestRunAvailabilityCheck:
         with (
             patch("src.availability.get_watched_skus", return_value=["15483332"]),
             patch("src.availability.resolve_graphql_products", return_value=gql),
+            patch("src.availability.get_watched_store_coords", return_value=_STORE_A),
             patch("src.availability.get_product_availability", return_value=(None, {})),
             patch("src.availability.upsert_product_availability"),
             patch(
-                "src.availability.fetch_store_availability", return_value={"23009": 5}
-            ) as mock_fetch_store,
+                "src.availability.fetch_targeted_availability", return_value={"23009": 5}
+            ) as mock_fetch,
             patch("src.availability.emit_stock_event"),
             patch("src.availability.asyncio.sleep"),
         ):
             await run_availability_check(client)
 
-        mock_fetch_store.assert_called_once_with(client, 42)
+        mock_fetch.assert_called_once_with(client, 42, _STORE_A)
 
     @pytest.mark.asyncio
     async def test_no_events_when_unchanged(self) -> None:
@@ -285,7 +393,8 @@ class TestRunAvailabilityCheck:
         with (
             patch("src.availability.get_watched_skus", return_value=["15483332"]),
             patch("src.availability.resolve_graphql_products", return_value=gql),
-            patch("src.availability.fetch_store_availability", return_value={"23009": 10}),
+            patch("src.availability.get_watched_store_coords", return_value=_STORE_A),
+            patch("src.availability.fetch_targeted_availability", return_value={"23009": 10}),
             patch("src.availability.get_product_availability", return_value=(True, {"23009": 10})),
             patch("src.availability.upsert_product_availability"),
             patch("src.availability.emit_stock_event") as mock_emit,
@@ -305,8 +414,9 @@ class TestRunAvailabilityCheck:
         with (
             patch("src.availability.get_watched_skus", return_value=["15483332"]),
             patch("src.availability.resolve_graphql_products", return_value=gql),
+            patch("src.availability.get_watched_store_coords", return_value=_TARGET_STORES),
             patch(
-                "src.availability.fetch_store_availability",
+                "src.availability.fetch_targeted_availability",
                 return_value={"23009": 44, "23132": 12},
             ),
             patch("src.availability.get_product_availability", return_value=(None, {})),
@@ -333,3 +443,75 @@ class TestRunAvailabilityCheck:
             pytest.raises(RuntimeError, match="resolved 0 of 1"),
         ):
             await run_availability_check(client)
+
+    @pytest.mark.asyncio
+    async def test_online_only_when_no_store_preferences(self) -> None:
+        """No store preferences → skip store fetch, online events still fire."""
+        client = AsyncMock(spec=httpx.AsyncClient)
+        gql = {"15483332": GraphQLProduct(magento_id=42, stock_status="IN_STOCK")}
+
+        with (
+            patch("src.availability.get_watched_skus", return_value=["15483332"]),
+            patch("src.availability.resolve_graphql_products", return_value=gql),
+            patch("src.availability.get_watched_store_coords", return_value={}),
+            patch("src.availability.get_product_availability", return_value=(False, {})),
+            patch("src.availability.upsert_product_availability") as mock_upsert,
+            patch("src.availability.emit_stock_event") as mock_emit,
+            patch("src.availability.asyncio.sleep"),
+        ):
+            events = await run_availability_check(client)
+
+        assert events == 1
+        mock_emit.assert_called_once_with("15483332", available=True)
+        mock_upsert.assert_called_once_with("15483332", online_available=True, store_qty={})
+
+    @pytest.mark.asyncio
+    async def test_new_store_preference_triggers_restock(self) -> None:
+        """User adds store B between runs — B has stock → RESTOCK event."""
+        client = AsyncMock(spec=httpx.AsyncClient)
+        gql = {"15483332": GraphQLProduct(magento_id=42, stock_status="IN_STOCK")}
+
+        with (
+            patch("src.availability.get_watched_skus", return_value=["15483332"]),
+            patch("src.availability.resolve_graphql_products", return_value=gql),
+            patch("src.availability.get_watched_store_coords", return_value=_TARGET_STORES),
+            patch(
+                "src.availability.fetch_targeted_availability",
+                return_value={"23009": 10, "23132": 5},
+            ),
+            # Old snapshot only had store 23009
+            patch("src.availability.get_product_availability", return_value=(True, {"23009": 10})),
+            patch("src.availability.upsert_product_availability"),
+            patch("src.availability.emit_stock_event") as mock_emit,
+            patch("src.availability.asyncio.sleep"),
+        ):
+            events = await run_availability_check(client)
+
+        assert events == 1
+        mock_emit.assert_called_once_with("15483332", available=True, saq_store_id="23132")
+
+    @pytest.mark.asyncio
+    async def test_removed_store_preference_no_false_destock(self) -> None:
+        """User removes store B — no false DESTOCK event for B."""
+        client = AsyncMock(spec=httpx.AsyncClient)
+        gql = {"15483332": GraphQLProduct(magento_id=42, stock_status="IN_STOCK")}
+
+        with (
+            patch("src.availability.get_watched_skus", return_value=["15483332"]),
+            patch("src.availability.resolve_graphql_products", return_value=gql),
+            # Only store 23009 in preferences now (23132 removed)
+            patch("src.availability.get_watched_store_coords", return_value=_STORE_A),
+            patch("src.availability.fetch_targeted_availability", return_value={"23009": 10}),
+            # Old snapshot had both stores
+            patch(
+                "src.availability.get_product_availability",
+                return_value=(True, {"23009": 10, "23132": 5}),
+            ),
+            patch("src.availability.upsert_product_availability"),
+            patch("src.availability.emit_stock_event") as mock_emit,
+            patch("src.availability.asyncio.sleep"),
+        ):
+            events = await run_availability_check(client)
+
+        assert events == 0
+        mock_emit.assert_not_called()

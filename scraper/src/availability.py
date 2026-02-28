@@ -11,6 +11,7 @@ from .db import (
     emit_stock_event,
     get_product_availability,
     get_watched_skus,
+    get_watched_store_coords,
     upsert_product_availability,
 )
 
@@ -113,6 +114,60 @@ async def fetch_store_availability(client: httpx.AsyncClient, magento_id: int) -
     return store_qty
 
 
+async def fetch_targeted_availability(
+    client: httpx.AsyncClient,
+    magento_id: int,
+    target_stores: dict[str, tuple[float, float]],
+) -> dict[str, int]:
+    """Fetch stock for specific stores using lat/lng proximity sorting.
+
+    Each request with a store's coordinates returns that store first among 10 results.
+    Deduplicates: if store B appears in store A's response, skip store B's request.
+    Absence from results means qty 0.
+    """
+    store_qty: dict[str, int] = {}
+    found: set[str] = set()
+
+    for store_id, (lat, lng) in target_stores.items():
+        if store_id in found:
+            continue
+
+        params = {
+            "context": "product",
+            "id": str(magento_id),
+            "latitude": str(lat),
+            "longitude": str(lng),
+        }
+        try:
+            response = await client.get(
+                _STORE_AVAILABILITY_URL,
+                params=params,
+                headers={"X-Requested-With": "XMLHttpRequest"},
+            )
+            response.raise_for_status()
+            data = response.json()
+        except (httpx.HTTPError, ValueError) as exc:
+            logger.error(
+                "Targeted availability failed (id={}, store={}): {}", magento_id, store_id, exc
+            )
+            continue
+
+        for store in data.get("list", []):
+            sid = store.get("identifier")
+            if sid and sid in target_stores:
+                store_qty[sid] = int(store.get("qty", 0))
+                found.add(sid)
+
+        await asyncio.sleep(settings.RATE_LIMIT_SECONDS)
+
+    # Target stores absent from all responses have qty 0
+    for store_id in target_stores:
+        if store_id not in store_qty:
+            store_qty[store_id] = 0
+
+    return store_qty
+
+
 async def run_availability_check(client: httpx.AsyncClient) -> int:
     """Check online + store availability for all watched SKUs.
 
@@ -133,6 +188,13 @@ async def run_availability_check(client: httpx.AsyncClient) -> int:
     unresolved = set(skus) - set(graphql_products.keys())
     if unresolved:
         logger.warning("Could not resolve {} SKUs: {}", len(unresolved), unresolved)
+
+    # Resolve which stores to check — all stores from user preferences
+    target_stores = await get_watched_store_coords()
+    if target_stores:
+        logger.info("Targeting {} preferred stores", len(target_stores))
+    else:
+        logger.info("No store preferences — online-only checks")
 
     online_restocks = 0
     online_destocks = 0
@@ -161,18 +223,22 @@ async def run_availability_check(client: httpx.AsyncClient) -> int:
                 label = "RESTOCK" if new_online else "DESTOCK"
                 logger.info("{} (online): {}", label, sku)
 
-            # Store availability — ALWAYS check, regardless of online stock_status.
+            # Store availability — targeted fetch for preferred stores only.
             # Stores can carry stock when online is OUT_OF_STOCK (verified with SKU 880500).
-            new_qty = await fetch_store_availability(client, gql.magento_id)
-            logger.info("  {} stores carrying stock", len(new_qty))
+            if target_stores:
+                new_qty = await fetch_targeted_availability(client, gql.magento_id, target_stores)
+                in_stock = sum(1 for v in new_qty.values() if v > 0)
+                logger.info("  {}/{} target stores have stock", in_stock, len(target_stores))
+            else:
+                new_qty = {}
 
             # Store diff: only emit events if we have a baseline (not first check).
             # First check establishes the snapshot — no diff to compare.
+            # Diff only target stores — stores removed from preferences are ignored.
             if is_first_check:
                 baselines += 1
-            else:
-                all_stores = set(old_qty.keys()) | set(new_qty.keys())
-                for store_id in all_stores:
+            elif target_stores:
+                for store_id in target_stores:
                     old_val = old_qty.get(store_id, 0)
                     new_val = new_qty.get(store_id, 0)
 
