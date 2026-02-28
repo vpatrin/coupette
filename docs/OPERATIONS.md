@@ -158,7 +158,9 @@ Same no-auto-retry policy as the scraper — if SAQ is down, the next daily run 
 
 ### Runtime estimate
 
-~50 watched SKUs: ~3 GraphQL calls + ~550 AJAX pages at 2s rate limit = **~18 minutes**.
+With targeted store fetching (lat/lng): ~50 SKUs × 3 preferred stores = 150 AJAX requests + 3 GraphQL calls at 2s rate limit = **~5 minutes**.
+
+Without targeting (full pagination): ~50 SKUs × ~11 pages = 550 AJAX requests = **~18 minutes**.
 
 ---
 
