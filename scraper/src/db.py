@@ -8,6 +8,7 @@ from core.db.models import (
     ProductAvailability,
     StockEvent,
     Store,
+    UserStorePreference,
     Watch,
 )
 from loguru import logger
@@ -169,6 +170,25 @@ async def get_watched_skus() -> list[str]:
         stmt = select(Watch.sku).distinct()
         result = await session.execute(stmt)
         return [row[0] for row in result.all()]
+
+
+async def get_watched_store_coords() -> dict[str, tuple[float, float]]:
+    """Get coordinates for all stores in user preferences.
+
+    Returns {saq_store_id: (latitude, longitude)} for stores that have coordinates.
+    """
+    async with _SessionLocal() as session:
+        stmt = (
+            select(Store.saq_store_id, Store.latitude, Store.longitude)
+            .join(
+                UserStorePreference,
+                Store.saq_store_id == UserStorePreference.saq_store_id,
+            )
+            .where(Store.latitude.isnot(None), Store.longitude.isnot(None))
+            .distinct()
+        )
+        result = await session.execute(stmt)
+        return {row[0]: (row[1], row[2]) for row in result.all()}
 
 
 async def get_product_availability(sku: str) -> tuple[bool | None, dict[str, int]]:
