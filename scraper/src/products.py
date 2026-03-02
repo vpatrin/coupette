@@ -138,7 +138,9 @@ def _parse_jsonld(soup: BeautifulSoup, url: str) -> dict[str, Any]:
             try:
                 fields["rating"] = float(raw_rating)
             except (ValueError, TypeError) as exc:
-                logger.warning("Bad rating value {!r} on {}: {}", rating_data["ratingValue"], url, exc)
+                logger.warning(
+                    "Bad rating value {!r} on {}: {}", rating_data["ratingValue"], url, exc
+                )
             review_count = rating_data.get("reviewCount")
             if review_count is not None:
                 try:

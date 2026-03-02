@@ -57,7 +57,9 @@ async def _process_batch(api: BackendClient, context: ContextTypes.DEFAULT_TYPE)
             await api.ack_notifications(acked_ids)
             logger.info("Acked {} event(s)", len(acked_ids))
         except (BackendUnavailableError, BackendAPIError) as exc:
-            logger.warning("Failed to ack {} events — will retry next poll: {}", len(acked_ids), exc)
+            logger.warning(
+                "Failed to ack {} events — will retry next poll: {}", len(acked_ids), exc
+            )
             return False
 
     return True

@@ -160,7 +160,9 @@ async def upsert_product(product_data: ProductData) -> None:
             await session.commit()
         except SQLAlchemyError as exc:
             await session.rollback()
-            logger.opt(exception=exc).error("DB error upserting SKU {}", product_data.sku or "unknown")
+            logger.opt(exception=exc).error(
+                "DB error upserting SKU {}", product_data.sku or "unknown"
+            )
             raise
 
 

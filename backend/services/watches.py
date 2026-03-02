@@ -20,7 +20,11 @@ async def create_watch(db: AsyncSession, user_id: str, sku: str) -> WatchWithPro
             raise ConflictError("Watch", f"user {user_id!r} already watches SKU {sku!r}") from exc
         # Assumed FK violation — SKU doesn't exist in products table.
         # Log in case a future constraint triggers this path unexpectedly.
-        logger.warning("IntegrityError on watch create (sku={}, constraint not uq_watches_user_sku): {}", sku, error_msg)
+        logger.warning(
+            "IntegrityError on watch create (sku={}, constraint not uq_watches_user_sku): {}",
+            sku,
+            error_msg,
+        )
         raise NotFoundError("Product", sku) from exc
     product = await products_repo.find_by_sku(db, sku)
     return WatchWithProduct(

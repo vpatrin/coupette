@@ -93,7 +93,9 @@ async def main() -> int:
         try:
             rp = load_robots(settings.ROBOTS_URL)
         except urllib.error.URLError as exc:
-            logger.opt(exception=exc).error("Cannot fetch robots.txt — aborting to ensure compliance")
+            logger.opt(exception=exc).error(
+                "Cannot fetch robots.txt — aborting to ensure compliance"
+            )
             return EXIT_FATAL
 
         # Filter URLs disallowed by robots.txt
