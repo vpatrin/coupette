@@ -122,7 +122,9 @@ def create_app() -> Application:
     # SAQ URL paste — detect product links in messages and offer a Watch prompt
     app.add_handler(
         MessageHandler(
-            filters.TEXT & ~filters.COMMAND & filters.Regex(r"saq\.com/(?:fr|en)/\d+"),
+            filters.TEXT
+            & ~filters.COMMAND
+            & filters.Regex(r"https?://(?:www\.)?saq\.com/(?:fr|en)/\d+"),
             url_paste_handler,
         )
     )

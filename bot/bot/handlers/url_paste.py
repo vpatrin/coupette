@@ -9,7 +9,7 @@ from bot.api_client import BackendAPIError, BackendClient, BackendUnavailableErr
 from bot.config import CALLBACK_WATCH_CONFIRM, SAQ_BASE_URL, USER_ID_PREFIX
 from bot.keyboards import build_watch_prompt_keyboard
 
-_SAQ_URL_RE = re.compile(r"saq\.com/(?:fr|en)/(\d+)")
+_SAQ_URL_RE = re.compile(r"https?://(?:www\.)?saq\.com/(?:fr|en)/(\d+)")
 
 
 def _extract_sku(text: str) -> str | None:

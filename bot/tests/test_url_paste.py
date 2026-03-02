@@ -20,9 +20,11 @@ from bot.handlers.url_paste import (
     [
         ("https://www.saq.com/fr/12345678", "12345678"),
         ("https://www.saq.com/en/12345678", "12345678"),
+        ("https://saq.com/fr/12345678", "12345678"),  # no www
         ("check this out https://www.saq.com/fr/99999 looks good", "99999"),
         ("no url here", None),
         ("https://www.example.com/fr/12345678", None),
+        ("https://notsaq.com/fr/12345678", None),  # subdomain spoofing
     ],
 )
 def test_extract_sku(text: str, expected: str | None) -> None:
@@ -116,6 +118,13 @@ async def test_watch_confirm_conflict(confirm_update, context, api):
     await watch_confirm_callback(confirm_update, context)
     text = confirm_update.callback_query.edit_message_text.call_args[0][0]
     assert "Already watching" in text
+
+
+async def test_watch_confirm_generic_api_error(confirm_update, context, api):
+    api.create_watch.side_effect = BackendAPIError(500, "server error")
+    await watch_confirm_callback(confirm_update, context)
+    text = confirm_update.callback_query.edit_message_text.call_args[0][0]
+    assert "Something went wrong" in text
 
 
 async def test_watch_confirm_backend_unavailable(confirm_update, context, api):
