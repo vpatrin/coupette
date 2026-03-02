@@ -95,6 +95,17 @@ class TestResolveGraphQLProducts:
         assert result == {}
 
     @pytest.mark.asyncio
+    async def test_missing_stock_status_resolves_to_none(self) -> None:
+        graphql_response = {"data": {"products": {"items": [{"id": 42, "sku": "15483332"}]}}}
+        client = AsyncMock(spec=httpx.AsyncClient)
+        client.post.return_value = _make_response(graphql_response)
+
+        result = await resolve_graphql_products(client, ["15483332"])
+
+        assert result["15483332"].stock_status is None
+        assert result["15483332"].magento_id == 42
+
+    @pytest.mark.asyncio
     async def test_empty_skus_returns_empty(self) -> None:
         client = AsyncMock(spec=httpx.AsyncClient)
 
@@ -489,6 +500,36 @@ class TestRunAvailabilityCheck:
 
         assert events == 1
         mock_emit.assert_called_once_with("15483332", available=True, saq_store_id="23132")
+
+    @pytest.mark.asyncio
+    async def test_unknown_stock_status_skips_online_diff(self) -> None:
+        """Missing stock_status → no online event, but store checks still run."""
+        client = AsyncMock(spec=httpx.AsyncClient)
+        gql = {"15483332": GraphQLProduct(magento_id=42, stock_status=None)}
+
+        with (
+            patch("src.availability.get_watched_skus", return_value=["15483332"]),
+            patch("src.availability.resolve_graphql_products", return_value=gql),
+            patch("src.availability.get_watched_store_coords", return_value=_STORE_A),
+            patch(
+                "src.availability.fetch_targeted_availability", return_value={"23009": 10}
+            ) as mock_fetch,
+            # Previously IN_STOCK — without the fix this would emit a false DESTOCK
+            patch("src.availability.get_product_availability", return_value=(True, {"23009": 0})),
+            patch("src.availability.upsert_product_availability") as mock_upsert,
+            patch("src.availability.emit_stock_event") as mock_emit,
+            patch("src.availability.asyncio.sleep"),
+        ):
+            events = await run_availability_check(client)
+
+        # Store restock fires (23009: 0→10), but NO online destock
+        assert events == 1
+        mock_emit.assert_called_once_with("15483332", available=True, saq_store_id="23009")
+        # online_available preserved as True (old value)
+        mock_upsert.assert_called_once_with(
+            "15483332", online_available=True, store_qty={"23009": 10}
+        )
+        mock_fetch.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_removed_store_preference_no_false_destock(self) -> None:

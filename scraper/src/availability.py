@@ -24,7 +24,7 @@ _MAX_PAGES = 50  # safety valve: 500 stores max (SAQ has ~400)
 @dataclass
 class GraphQLProduct:
     magento_id: int
-    stock_status: str  # "IN_STOCK" or "OUT_OF_STOCK"
+    stock_status: str | None  # "IN_STOCK", "OUT_OF_STOCK", or None (unknown)
 
 
 async def resolve_graphql_products(
@@ -52,9 +52,14 @@ async def resolve_graphql_products(
             data = response.json()
 
             for item in data.get("data", {}).get("products", {}).get("items", []):
+                stock_status = item.get("stock_status")
+                if stock_status is None:
+                    logger.warning(
+                        "Missing stock_status for SKU {} — treating as unknown", item["sku"]
+                    )
                 result[item["sku"]] = GraphQLProduct(
                     magento_id=int(item["id"]),
-                    stock_status=item.get("stock_status", "OUT_OF_STOCK"),
+                    stock_status=stock_status,
                 )
         except (httpx.HTTPError, KeyError, ValueError) as exc:
             logger.error("GraphQL batch failed (SKUs {}-{}): {}", i, i + len(batch), exc)
@@ -210,18 +215,21 @@ async def run_availability_check(client: httpx.AsyncClient) -> int:
         try:
             # What's currently in DB
             old_online, old_qty = await get_product_availability(sku)
-            new_online = gql.stock_status == "IN_STOCK"
             is_first_check = old_online is None
 
-            # Online availability diff
-            if not is_first_check and old_online != new_online:
-                await emit_stock_event(sku, available=new_online)
-                if new_online:
-                    online_restocks += 1
-                else:
-                    online_destocks += 1
-                label = "RESTOCK" if new_online else "DESTOCK"
-                logger.info("{} (online): {}", label, sku)
+            # Online availability diff — skip when stock_status is unknown
+            if gql.stock_status is not None:
+                new_online = gql.stock_status == "IN_STOCK"
+                if not is_first_check and old_online != new_online:
+                    await emit_stock_event(sku, available=new_online)
+                    if new_online:
+                        online_restocks += 1
+                    else:
+                        online_destocks += 1
+                    label = "RESTOCK" if new_online else "DESTOCK"
+                    logger.info("{} (online): {}", label, sku)
+            else:
+                new_online = old_online  # preserve last known state
 
             # Store availability — targeted fetch for preferred stores only.
             # Stores can carry stock when online is OUT_OF_STOCK (verified with SKU 880500).
