@@ -102,8 +102,9 @@ class TestResolveGraphQLProducts:
 
         result = await resolve_graphql_products(client, ["15483332"])
 
-        assert result["15483332"].stock_status is None
-        assert result["15483332"].magento_id == 42
+        product = result["15483332"]
+        assert product.stock_status is None
+        assert product.magento_id == 42
 
     @pytest.mark.asyncio
     async def test_empty_skus_returns_empty(self) -> None:
