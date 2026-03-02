@@ -184,46 +184,6 @@ class TestGetUpdatedDates:
         assert result == {}
 
 
-class TestGetAvailabilityMap:
-    @pytest.mark.asyncio
-    async def test_returns_sku_to_availability_mapping(self) -> None:
-        mock_session = AsyncMock()
-        mock_session.execute.return_value = MagicMock(
-            all=lambda: [("10327701", True), ("99999999", False), ("11111111", None)]
-        )
-
-        mock_ctx = MagicMock()
-        mock_ctx.__aenter__ = AsyncMock(return_value=mock_session)
-        mock_ctx.__aexit__ = AsyncMock(return_value=False)
-
-        mock_factory = MagicMock(return_value=mock_ctx)
-
-        with patch("src.db._SessionLocal", mock_factory):
-            from src.db import get_availability_map
-
-            result = await get_availability_map()
-
-        assert result == {"10327701": True, "99999999": False, "11111111": None}
-
-    @pytest.mark.asyncio
-    async def test_returns_empty_dict_for_empty_db(self) -> None:
-        mock_session = AsyncMock()
-        mock_session.execute.return_value = MagicMock(all=lambda: [])
-
-        mock_ctx = MagicMock()
-        mock_ctx.__aenter__ = AsyncMock(return_value=mock_session)
-        mock_ctx.__aexit__ = AsyncMock(return_value=False)
-
-        mock_factory = MagicMock(return_value=mock_ctx)
-
-        with patch("src.db._SessionLocal", mock_factory):
-            from src.db import get_availability_map
-
-            result = await get_availability_map()
-
-        assert result == {}
-
-
 class TestEmitStockEvent:
     @pytest.mark.asyncio
     async def test_executes_and_commits(self) -> None:

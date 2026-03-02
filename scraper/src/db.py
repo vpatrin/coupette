@@ -38,14 +38,6 @@ async def get_updated_dates() -> dict[str, date]:
         return {sku: updated_at.date() for sku, updated_at in result.all()}
 
 
-async def get_availability_map() -> dict[str, bool | None]:
-    """Fetch current availability for every product in the DB."""
-    async with _SessionLocal() as session:
-        stmt = select(Product.sku, Product.availability)
-        result = await session.execute(stmt)
-        return dict(result.all())
-
-
 async def get_delisted_skus() -> set[str]:
     """Get SKUs of products currently marked as delisted."""
     async with _SessionLocal() as session:
