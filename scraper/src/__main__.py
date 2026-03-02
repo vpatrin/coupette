@@ -17,8 +17,6 @@ from .constants import EXIT_FATAL, EXIT_OK, EXIT_PARTIAL
 from .db import (
     clear_delisted,
     delete_old_stock_events,
-    emit_stock_event,
-    get_availability_map,
     get_delisted_skus,
     get_updated_dates,
     mark_delisted,
@@ -120,8 +118,6 @@ class _ScrapeStats:
     saved: int = 0
     inserted: int = 0
     updated: int = 0
-    restocked: int = 0
-    destocked: int = 0
     not_found: int = 0
     errors: int = 0
 
@@ -130,7 +126,6 @@ async def _scrape_products(
     client: httpx.AsyncClient,
     entries: list[SitemapEntry],
     updated_dates: dict[str, date],
-    availability_map: dict[str, bool],
 ) -> _ScrapeStats:
     """Download, parse, and upsert each product entry. Returns run stats."""
     stats = _ScrapeStats()
@@ -151,17 +146,6 @@ async def _scrape_products(
                 stats.updated += 1
             else:
                 stats.inserted += 1
-
-            # Detect availability transitions
-            old_avail = availability_map.get(entry.sku)
-            if old_avail is False and product.availability:
-                await emit_stock_event(entry.sku, available=True)
-                stats.restocked += 1
-                logger.info("Restock detected for SKU {}", entry.sku)
-            elif old_avail is True and not product.availability:
-                await emit_stock_event(entry.sku, available=False)
-                stats.destocked += 1
-                logger.info("Destock detected for SKU {}", entry.sku)
 
             logger.success("Saved {} - {}", product.sku or "unknown", product.name or "no name")
 
@@ -231,7 +215,6 @@ async def main() -> int:
         # Loads {sku: last_updated_date} from DB, then O(1) dict lookup per entry
         try:
             updated_dates = await get_updated_dates()
-            availability_map = await get_availability_map()
         except SQLAlchemyError as exc:
             logger.opt(exception=exc).error("DB error loading product data — aborting")
             return EXIT_FATAL
@@ -248,7 +231,7 @@ async def main() -> int:
             skipped,
         )
 
-        stats = await _scrape_products(client, products_to_scrape, updated_dates, availability_map)
+        stats = await _scrape_products(client, products_to_scrape, updated_dates)
 
     sitemap_skus = {e.sku for e in entries}
     db_skus = set(updated_dates.keys())
@@ -269,8 +252,6 @@ async def main() -> int:
         "  Fetched: {}\n"
         "  Inserted: {}\n"
         "  Updated: {}\n"
-        "  Restocked: {}\n"
-        "  Destocked: {}\n"
         "  Not found: {}\n"
         "  Failed: {}\n"
         "  Skipped (up-to-date): {}\n"
@@ -283,8 +264,6 @@ async def main() -> int:
         stats.saved,
         stats.inserted,
         stats.updated,
-        stats.restocked,
-        stats.destocked,
         stats.not_found,
         stats.errors,
         skipped,
