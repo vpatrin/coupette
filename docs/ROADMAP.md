@@ -92,10 +92,10 @@ See [specs/STORE_AVAILABILITY.md](specs/STORE_AVAILABILITY.md) for API reference
 
 ### Phase 5c — Watch UX
 
-- [ ] Auto-detect pasted SAQ URLs — prompt "Watch this?" without `/watch` command
+- [x] Auto-detect pasted SAQ URLs — prompt "Watch this?" without `/watch` command (#273)
 - [x] Inline unwatch buttons on `/alerts` list (#240)
 - [x] Delist notifications — alert watchers when SAQ removes a product from the catalog (#243)
-- [ ] Deep links — `t.me/bot?start=watch_{sku}` for external watch triggers
+- [x] Deep links — `t.me/bot?start=watch_{sku}` for external watch triggers (#273)
 
 ### Phase 5d — Bilingual Support
 
