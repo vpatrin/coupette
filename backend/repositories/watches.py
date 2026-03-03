@@ -1,7 +1,8 @@
 from datetime import UTC, datetime
 
 from core.db.models import Product, StockEvent, Store, UserStorePreference, Watch
-from sqlalchemy import and_, delete as sa_delete, select, update
+from sqlalchemy import and_, select, update
+from sqlalchemy import delete as sa_delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.config import MAX_ACK_BATCH_SIZE
