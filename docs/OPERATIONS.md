@@ -125,7 +125,7 @@ Daily job that checks online and in-store availability for watched SKUs. Separat
 5. Upserts `product_availability` with the new snapshot
 6. Purges stock events older than 7 days
 
-Exits immediately if no watched SKUs exist. See [specs/DATA_PIPELINE.md](specs/DATA_PIPELINE.md) for API details and routing logic.
+Exits immediately if no watched SKUs exist. Current API details (Magento GraphQL + AJAX store locator) are documented inline above — see [specs/DATA_PIPELINE.md](specs/DATA_PIPELINE.md) for the Phase 6 replacement architecture.
 
 ### Scheduling and operations
 

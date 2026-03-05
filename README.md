@@ -12,7 +12,7 @@ AI-powered wine recommendation engine built on the SAQ (Quebec liquor board) pro
 - 🍷 Scrapes ~38k products from the SAQ public sitemap into PostgreSQL
 - 🔍 FastAPI catalog API with search, filtering, and restock alerts
 - 🤖 Telegram bot for browsing, watching, and notifications — wine-focused (vin, champagne/mousseux, porto/fortifié, saké)
-- 📍 In-store availability for Montreal stores (planned — ~64 consumer stores via Adobe Live Search)
+- 📍 In-store availability for Montreal stores (daily refresh via Adobe Live Search — planned)
 - 💬 Natural language wine recommendations via Claude RAG + pgvector (planned)
 
 ## Architecture
