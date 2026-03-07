@@ -20,8 +20,6 @@ def create_embeddings(texts: list[str], *, api_key: str) -> list[list[float]]:
     for i in range(0, len(texts), _BATCH_SIZE):
         batch = texts[i : i + _BATCH_SIZE]
         response = client.embeddings.create(model=_MODEL, input=batch)
-        # Response data is ordered by index, but sort to be safe
-        sorted_data = sorted(response.data, key=lambda d: d.index)
-        all_vectors.extend([d.embedding for d in sorted_data])
+        all_vectors.extend([d.embedding for d in response.data])
 
     return all_vectors

@@ -5,7 +5,7 @@ from loguru import logger
 from .config import settings
 from .constants import EXIT_FATAL, EXIT_OK
 from .db import bulk_update_embeddings, get_products_needing_embedding
-from .embed import build_embedding_text, compute_embedding_input_hash
+from .embed import build_embedding_text
 from .embedding_client import create_embeddings
 
 
@@ -58,7 +58,7 @@ async def embed_sync() -> int:
 
         texts.append(text)
         skus.append(p["sku"])
-        hashes.append(p["embedding_input_hash"] or compute_embedding_input_hash(p))
+        hashes.append(p["embedding_input_hash"])
 
     if not texts:
         logger.info("No products with non-empty embedding text — nothing to sync")
