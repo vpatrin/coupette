@@ -18,9 +18,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 
 from core.db.base import Base
 
-# Embedding model — change both together if swapping models
-EMBEDDING_MODEL = "intfloat/multilingual-e5-large"
-EMBEDDING_MODEL_DIMENSIONS = 1024
+EMBEDDING_MODEL_DIMENSIONS = 1536
 
 
 class Store(Base):
@@ -159,7 +157,7 @@ class Product(Base):
     embedding = Column(
         Vector(EMBEDDING_MODEL_DIMENSIONS),
         nullable=True,
-        comment="Wine semantic embedding (multilingual-e5-large, 1024d)",
+        comment="Wine semantic embedding (text-embedding-3-small, 1536d)",
     )
     embedding_input_hash = Column(
         String, nullable=True, comment="Hash of embedding-relevant fields for change detection"

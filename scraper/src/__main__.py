@@ -288,14 +288,18 @@ async def scrape_stores() -> int:
 
 
 if __name__ == "__main__":
-    # Entry point: python -m src [--scrape-stores | --availability-check | --enrich-wines]
+    # Entry point: python -m src [--scrape-stores | ... | --embed-sync]
     if "--scrape-stores" in sys.argv:
         sys.exit(asyncio.run(scrape_stores()))
-    elif "--availability-check" in sys.argv:
-        sys.exit(asyncio.run(availability_check()))
     elif "--enrich-wines" in sys.argv:
         from .enrich import enrich_wines
 
         sys.exit(asyncio.run(enrich_wines()))
+    elif "--embed-sync" in sys.argv:
+        from .embed_sync import embed_sync
+
+        sys.exit(asyncio.run(embed_sync()))
+    elif "--availability-check" in sys.argv:
+        sys.exit(asyncio.run(availability_check()))
     else:
         sys.exit(asyncio.run(main()))
