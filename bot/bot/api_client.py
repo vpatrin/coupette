@@ -61,8 +61,8 @@ class BackendClient:
         return await self._get_or_none("/products/random", params=params)
 
     async def get_facets(self) -> dict[str, Any]:
-        """GET /api/products/facets."""
-        return await self._get("/products/facets")
+        """GET /api/products/facets — fetch all categories for keyboard grouping."""
+        return await self._get("/products/facets", params={"scope": "all"})
 
     # ── Watches ─────────────────────────────────────────────────
 

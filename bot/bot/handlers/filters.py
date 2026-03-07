@@ -1,11 +1,11 @@
 from typing import Any
 
+from core.categories import expand_group
 from loguru import logger
 from telegram import Update
 from telegram.ext import ContextTypes
 
 from bot.api_client import BackendAPIError, BackendClient, BackendUnavailableError
-from bot.categories import expand_group
 from bot.config import (
     CALLBACK_CAT,
     CALLBACK_CLEAR,

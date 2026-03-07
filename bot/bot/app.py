@@ -1,3 +1,4 @@
+from core.categories import group_facets
 from loguru import logger
 from telegram import Update
 from telegram.ext import (
@@ -12,7 +13,6 @@ from telegram.ext import (
 )
 
 from bot.api_client import BackendAPIError, BackendClient, BackendUnavailableError
-from bot.categories import group_facets
 from bot.config import (
     CALLBACK_PREFIX,
     CALLBACK_STORE_DONE,

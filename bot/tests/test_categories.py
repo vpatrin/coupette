@@ -1,4 +1,4 @@
-from bot.categories import (
+from core.categories import (
     CATEGORY_FAMILIES,
     CATEGORY_GROUPS,
     expand_family,
@@ -123,6 +123,7 @@ class TestExpandFamily:
         assert "Vin rouge" in result
         assert "Champagne" in result
         assert "Porto" in result
+        assert "Saké" in result
 
     def test_empty_grouped_returns_empty(self) -> None:
         assert expand_family("vins", {}) == []
