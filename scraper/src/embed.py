@@ -104,6 +104,7 @@ _HASH_FIELDS = (
     "category",
     "designation",
     "classification",
+    "vintage",
     "description",
 )
 
