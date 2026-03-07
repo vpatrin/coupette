@@ -1,7 +1,7 @@
 services:
   postgres:
     profiles: ["dev"]
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg16
     container_name: saq-postgres
     environment:
       POSTGRES_USER: ${DB_USER:-saq_sommelier}

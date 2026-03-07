@@ -1,5 +1,6 @@
 from datetime import UTC, datetime
 
+from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     Boolean,
     Column,
@@ -16,6 +17,10 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import JSONB
 
 from core.db.base import Base
+
+# Embedding model — change both together if swapping models
+EMBEDDING_MODEL = "intfloat/multilingual-e5-large"
+EMBEDDING_MODEL_DIMENSIONS = 1024
 
 
 class Store(Base):
@@ -151,13 +156,18 @@ class Product(Base):
     )
 
     # Embedding support (writer: --embed-sync)
-    attribute_hash = Column(
+    embedding = Column(
+        Vector(EMBEDDING_MODEL_DIMENSIONS),
+        nullable=True,
+        comment="Wine semantic embedding (multilingual-e5-large, 1024d)",
+    )
+    embedding_input_hash = Column(
         String, nullable=True, comment="Hash of embedding-relevant fields for change detection"
     )
-    embedded_hash = Column(
+    last_embedded_hash = Column(
         String,
         nullable=True,
-        comment="Hash at time of last embedding — embed when != attribute_hash",
+        comment="embedding_input_hash at time of last --embed-sync run",
     )
 
     def __repr__(self) -> str:

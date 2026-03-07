@@ -134,7 +134,7 @@ See [specs/DATA_PIPELINE.md](specs/DATA_PIPELINE.md) for data pipeline design an
 
 **RAG + recommendations:**
 
-- [ ] pgvector + embeddings (#154)
+- [x] pgvector + embeddings (#154)
 - [ ] Claude API integration (#155)
 - [ ] `/recommend` — natural language recommendations via Telegram (#156)
 - [ ] Weekly digest — LLM-curated summary posted to group chat after scraper run (#120)
