@@ -10,14 +10,7 @@ from .embedding_client import create_embeddings
 
 
 async def embed_sync() -> int:
-    """Compute and store embeddings for products with stale or missing vectors.
-
-    Workflow:
-    1. Query products where embedding_input_hash != last_embedded_hash
-    2. Build embedding text from product fields
-    3. Call OpenAI API in batches
-    4. Store vectors + update last_embedded_hash
-    """
+    """Compute and store embeddings for products with stale or missing vectors."""
     if not settings.OPENAI_API_KEY:
         logger.error("OPENAI_API_KEY not set — cannot run --embed-sync")
         return EXIT_FATAL
@@ -58,7 +51,7 @@ async def embed_sync() -> int:
 
         texts.append(text)
         skus.append(p["sku"])
-        hashes.append(p["embedding_input_hash"])
+        hashes.append(p["_computed_hash"])
 
     if not texts:
         logger.info("No products with non-empty embedding text — nothing to sync")

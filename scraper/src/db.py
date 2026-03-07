@@ -16,6 +16,7 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.exc import SQLAlchemyError
 
 from .config import settings
+from .embed import compute_embedding_input_hash
 from .products import ProductData
 from .stores import StoreData
 
@@ -270,12 +271,10 @@ async def bulk_update_wine_attrs(
 
 
 async def get_products_needing_embedding() -> list[dict]:
-    """Fetch products where embedding is stale or missing.
+    """Fetch products whose embedding is stale or missing.
 
-    Uses IS DISTINCT FROM so NULL embedding_input_hash (not yet enriched)
-    is correctly excluded — NULL IS DISTINCT FROM NULL = FALSE.
-
-    Returns dicts with all fields needed to build embedding text + compute hash.
+    Loads all products, computes hash from embedding-relevant fields in Python,
+    and returns only rows where the hash differs from last_embedded_hash.
     """
     async with _SessionLocal() as session:
         stmt = select(
@@ -293,10 +292,18 @@ async def get_products_needing_embedding() -> list[dict]:
             Product.country,
             Product.vintage,
             Product.description,
-            Product.embedding_input_hash,
-        ).where(Product.embedding_input_hash.is_distinct_from(Product.last_embedded_hash))
+            Product.last_embedded_hash,
+        )
         result = await session.execute(stmt)
-        return [row._asdict() for row in result.all()]
+        rows = [row._asdict() for row in result.all()]
+
+    dirty = []
+    for row in rows:
+        h = compute_embedding_input_hash(row)
+        if h != row["last_embedded_hash"]:
+            row["_computed_hash"] = h
+            dirty.append(row)
+    return dirty
 
 
 async def bulk_update_embeddings(

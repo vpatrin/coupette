@@ -113,7 +113,7 @@ def compute_embedding_input_hash(attrs: dict[str, Any]) -> str:
     """Compute SHA256 of all embedding-relevant fields.
 
     Returns hex digest. Used for change detection: re-embed when
-    embedding_input_hash != last_embedded_hash.
+    computed hash != last_embedded_hash.
     """
     parts: list[str] = []
     for field in _HASH_FIELDS:
