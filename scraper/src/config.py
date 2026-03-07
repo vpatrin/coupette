@@ -38,6 +38,9 @@ class ScraperSettings(BaseSettings):
     ROBOTS_URL: str = "https://www.saq.com/robots.txt"
     SITEMAP_URL: str = "https://www.saq.com/media/sitemaps/fr/sitemap_product.xml"
 
+    # OpenAI API — used by --embed-sync for text-embedding-3-small
+    OPENAI_API_KEY: str = ""
+
     # Adobe Live Search — public credentials embedded in SAQ's frontend HTML.
     # Override via env vars if SAQ rotates them.
     ADOBE_API_KEY: str = "7a7d7422bd784f2481a047e03a73feaf"
