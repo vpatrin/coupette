@@ -1,12 +1,5 @@
 from typing import NamedTuple
 
-# ── Category grouping ──────────────────────────────────────────
-# Display concern only — groups 280+ raw SAQ categories into ~21 user-friendly groups.
-# Default keyboard shows 4 wine types (config.WINE_GROUPS); /spirits and /others use
-# CATEGORY_FAMILIES to display their subgroups. The backend API stays unchanged (filters
-# by exact `category` strings via IN clause). Raw categories are discovered dynamically
-# via /products/facets and matched by prefix.
-
 
 class CategoryGroup(NamedTuple):
     label: str
@@ -66,26 +59,20 @@ CATEGORY_GROUPS: dict[str, CategoryGroup] = {
     ),
     "cocktail": CategoryGroup("Cocktails", ("Cocktail", "Cooler")),
     "boisson": CategoryGroup("Boissons", ("Boisson",)),
-    "sake": CategoryGroup("Saké", ("Saké", "Baijiu")),
+    "sake": CategoryGroup("Saké", ("Saké",)),
     "hydromel": CategoryGroup("Hydromel", ("Hydromel",)),
     "autre": CategoryGroup("Autre", ()),  # catch-all — must be last
 }
 
-CATEGORY_ROW_SIZE = 3  # buttons per keyboard row
-
-# ── Category families ─────────────────────────────────────────
-# Two-level hierarchy: 3 families → subgroups. Every CATEGORY_GROUPS key appears in
-# exactly one family. The "autre" catch-all lives in "autres".
-
 CATEGORY_FAMILIES: dict[str, CategoryFamily] = {
-    "vins": CategoryFamily("🍷 Vins", ("rouge", "blanc", "rose", "bulles", "fortifie")),
+    "vins": CategoryFamily("Vins", ("rouge", "blanc", "rose", "bulles", "fortifie", "sake")),
     "spiritueux": CategoryFamily(
-        "🥃 Spiritueux",
+        "Spiritueux",
         ("whisky", "rhum", "gin", "vodka", "tequila", "cognac", "liqueur", "eauxdevie", "aperitif"),
     ),
     "autres": CategoryFamily(
-        "🍺 Autres",
-        ("biere", "cidre", "cocktail", "boisson", "sake", "hydromel", "autre"),
+        "Autres",
+        ("biere", "cidre", "cocktail", "boisson", "hydromel", "autre"),
     ),
 }
 
@@ -131,8 +118,6 @@ def expand_group(group_key: str, grouped: dict[str, list[str]] | None) -> list[s
 def expand_family(family_key: str, grouped: dict[str, list[str]] | None) -> list[str]:
     """Return ALL raw DB categories for every group in a family.
 
-    Used when a family is selected but no specific subgroup — the API should
-    filter to all categories within that family (e.g. all wine types).
     Delegates to expand_group() per child, inheriting the None fallback.
     """
     family = CATEGORY_FAMILIES.get(family_key)
