@@ -111,9 +111,6 @@ class TestParseGrapeBlend:
     def test_invalid_json(self) -> None:
         assert _parse_grape_blend("not json") is None
 
-    def test_list_input(self) -> None:
-        assert _parse_grape_blend(["MALB"]) is None
-
     def test_empty_dict(self) -> None:
         assert _parse_grape_blend("{}") is None
 

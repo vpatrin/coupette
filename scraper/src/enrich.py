@@ -84,13 +84,13 @@ def extract_wine_attrs(attrs: dict[str, str | list[str]]) -> dict[str, Any]:
     }
 
 
-def _parse_grape_blend(raw: str | list[str]) -> list[dict[str, str | int]] | None:
+def _parse_grape_blend(raw: str) -> list[dict[str, str | int]] | None:
     """Parse Adobe cepage_text into structured blend list.
 
     Input: '{"MALB":"96","SYRA":"4"}' or empty string
     Output: [{"code": "MALB", "pct": 96}, {"code": "SYRA", "pct": 4}] or None
     """
-    if not raw or isinstance(raw, list):
+    if not raw:
         return None
     try:
         # Adobe returns Python-style dicts with single quotes, not JSON
