@@ -136,10 +136,14 @@ def _parse_tool_input(tool_input: dict, original_query: str) -> IntentResult:
         return IntentResult(
             categories=tool_input.get("categories", []),
             min_price=(
-                Decimal(str(tool_input["min_price"])) if tool_input.get("min_price") else None
+                Decimal(str(tool_input["min_price"]))
+                if tool_input.get("min_price") is not None
+                else None
             ),
             max_price=(
-                Decimal(str(tool_input["max_price"])) if tool_input.get("max_price") else None
+                Decimal(str(tool_input["max_price"]))
+                if tool_input.get("max_price") is not None
+                else None
             ),
             country=tool_input.get("country"),
             available_only=tool_input.get("available_only", True),

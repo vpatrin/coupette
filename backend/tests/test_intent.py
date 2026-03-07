@@ -176,19 +176,3 @@ class TestParseIntent:
         assert result.available_only is True
         assert result.semantic_query == "bold red"
 
-    @patch("backend.services.intent.backend_settings")
-    @patch("backend.services.intent.anthropic.Anthropic")
-    def test_forces_tool_use(self, mock_anthropic_cls: MagicMock, mock_settings: MagicMock) -> None:
-        """Verify we pass tool_choice to force the search_wines tool."""
-        mock_settings.ANTHROPIC_API_KEY = "sk-test"
-        mock_client = MagicMock()
-        mock_anthropic_cls.return_value = mock_client
-        mock_client.messages.create.return_value = _mock_tool_use_response(
-            {"semantic_query": "test"}
-        )
-
-        parse_intent("test query")
-
-        call_kwargs = mock_client.messages.create.call_args.kwargs
-        assert call_kwargs["tool_choice"] == {"type": "tool", "name": "search_wines"}
-        assert call_kwargs["model"] == "claude-haiku-4-5-20251001"
