@@ -12,6 +12,7 @@ packages = [{include = "core", from = ".."}]
 sqlalchemy = "^2.0"
 alembic = "^1.13"
 psycopg2-binary = "^2.9"
+pgvector = ">=0.3"
 loguru = ">=0.7"
 pydantic-settings = "^2.13"
 
