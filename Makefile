@@ -28,6 +28,9 @@ availability-check:
 enrich-wines:
 	cd scraper && poetry run python -m src --enrich-wines
 
+embed-sync:
+	cd scraper && poetry run python -m src --embed-sync
+
 # Database migrations
 migrate:
 	cd core && poetry run alembic upgrade head
