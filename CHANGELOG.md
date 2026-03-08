@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Enriched `/recommend` cards — now show grape, region/country (deduplicated), taste tag, vintage, and availability status
+- `/recommend` defaults to wine categories when intent parser extracts no category filter
 
 ### Removed
 
