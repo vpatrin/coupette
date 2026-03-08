@@ -1,9 +1,13 @@
+from core.categories import expand_family
 from core.db.models import Product
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.config import DEFAULT_RECOMMENDATION_LIMIT
 from backend.schemas.recommendation import IntentResult
+
+# Default to wine categories when intent has no category filter
+_WINE_PREFIXES: list[str] = expand_family("vins", None)
 
 
 async def find_similar(
@@ -18,6 +22,9 @@ async def find_similar(
 
     if intent.categories:
         stmt = stmt.where(Product.category.in_(intent.categories))
+    else:
+        # No category from intent → default to wines (same as product list scope=wine)
+        stmt = stmt.where(or_(*(Product.category.startswith(p) for p in _WINE_PREFIXES)))
     if intent.country is not None:
         stmt = stmt.where(Product.country == intent.country)
     if intent.min_price is not None:

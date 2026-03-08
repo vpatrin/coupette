@@ -35,7 +35,7 @@ async def url_paste_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) 
 
     name = product.get("name") or "Unknown"
     price = product.get("price")
-    available = product.get("availability")
+    available = product.get("online_availability")
     price_str = f"{price}$" if price is not None else "N/A"
     status = "\u2705" if available else "\u274c"
     card = f"[{name}]({SAQ_BASE_URL}/{sku}) \u2014 {price_str} {status}"
