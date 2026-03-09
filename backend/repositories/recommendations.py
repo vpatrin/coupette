@@ -10,7 +10,7 @@ from backend.schemas.recommendation import IntentResult
 _WINE_PREFIXES: list[str] = expand_family("vins", None)
 
 # Over-fetch multiplier — fetch more candidates than needed, then rerank for diversity
-_DIVERSITY_POOL = 4
+_DIVERSITY_POOL = 5
 
 
 async def find_similar(
@@ -95,7 +95,10 @@ def _rerank(candidates: list[Product], limit: int) -> list[Product]:
 
 
 def _redundancy_penalty(candidate: Product, selected: list[Product]) -> float:
-    """Score 0-1 measuring how redundant this candidate is with already-selected wines."""
+    """Score measuring how redundant this candidate is with already-selected wines.
+
+    Base overlap is 0-1 per selected wine, boosted by how many are similar (can exceed 1.0).
+    """
     if not selected:
         return 0.0
 
@@ -142,5 +145,8 @@ def _redundancy_penalty(candidate: Product, selected: list[Product]) -> float:
 
         penalties.append(overlap / checks if checks > 0 else 0.0)
 
-    # Return max penalty (worst overlap with any already-selected wine)
-    return max(penalties)
+    # Accumulating penalty: each additional similar wine makes the next one less desirable
+    # max overlap provides the base, boosted by how many selected wines are similar
+    max_p = max(penalties)
+    similar_count = sum(1 for p in penalties if p > 0.3)
+    return max_p * (1.0 + 0.2 * similar_count)

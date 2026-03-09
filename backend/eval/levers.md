@@ -125,6 +125,9 @@ The `/eval-pipeline` skill automates the optimize → measure → decide loop:
 - **Tag-stratified scores**: catch improvements concentrated in 1 tag while others regress
 - **Distributed improvements**: if a score jump comes from 1 query while 3 others dropped, that's a red flag
 - **No surgical rules**: prompt changes should help 3+ unseen queries, not map 1:1 to a test query
+- **No prompt ↔ eval overlap**: prompt examples in `intent.py` must never mirror eval queries.
+  When adding examples, cross-check against `queries.json`. Overlapping examples inflate scores
+  by showing Haiku the answer key
 
 ## Lessons learned
 
