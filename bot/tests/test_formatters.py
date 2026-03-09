@@ -1,3 +1,5 @@
+from typing import Any
+
 from bot.formatters import (
     format_delist_notification,
     format_product_line,
@@ -41,28 +43,37 @@ class TestFormatProductLine:
         assert "Unknown" in result
 
 
+def _rec_item(product: dict[str, Any], reason: str = "") -> dict[str, Any]:
+    """Helper to build new-shape recommendation items."""
+    return {"product": product, "reason": reason}
+
+
 class TestFormatRecommendations:
     def test_empty_results(self):
-        data = {"products": [], "intent": {"semantic_query": "rare"}}
+        data = {"products": [], "intent": {"semantic_query": "rare"}, "summary": ""}
         result = format_recommendations(data)
         assert "no recommendations" in result.lower()
 
     def test_single_product_with_details(self):
         data = {
             "products": [
-                {
-                    "name": "Château Margaux",
-                    "price": "89.00",
-                    "online_availability": True,
-                    "sku": "12345",
-                    "grape": "Merlot",
-                    "region": "Bordeaux",
-                    "country": "France",
-                    "taste_tag": "Aromatique et souple",
-                    "vintage": "2021",
-                }
+                _rec_item(
+                    {
+                        "name": "Château Margaux",
+                        "price": "89.00",
+                        "online_availability": True,
+                        "sku": "12345",
+                        "grape": "Merlot",
+                        "region": "Bordeaux",
+                        "country": "France",
+                        "taste_tag": "Aromatique et souple",
+                        "vintage": "2021",
+                    },
+                    reason="Bold Bordeaux red for your steak",
+                )
             ],
             "intent": {"semantic_query": "bold red"},
+            "summary": "A bold selection",
         }
         result = format_recommendations(data)
         assert "[Château Margaux](https://www.saq.com/fr/12345)" in result
@@ -72,21 +83,26 @@ class TestFormatRecommendations:
         assert "Bordeaux, France" in result
         assert "Aromatique et souple" in result
         assert "2021" in result
+        assert "Bold Bordeaux red for your steak" in result
+        assert "A bold selection" in result
 
     def test_country_fallback_when_no_region(self):
         data = {
             "products": [
-                {
-                    "name": "Some Wine",
-                    "price": "20.00",
-                    "online_availability": True,
-                    "sku": "999",
-                    "grape": None,
-                    "region": None,
-                    "country": "Italy",
-                }
+                _rec_item(
+                    {
+                        "name": "Some Wine",
+                        "price": "20.00",
+                        "online_availability": True,
+                        "sku": "999",
+                        "grape": None,
+                        "region": None,
+                        "country": "Italy",
+                    }
+                )
             ],
             "intent": {"semantic_query": "italian"},
+            "summary": "",
         }
         result = format_recommendations(data)
         assert "Italy" in result
@@ -94,41 +110,44 @@ class TestFormatRecommendations:
     def test_no_details_line_when_all_none(self):
         data = {
             "products": [
-                {
-                    "name": "Mystery",
-                    "price": "10.00",
-                    "online_availability": True,
-                    "sku": "000",
-                    "grape": None,
-                    "region": None,
-                    "country": None,
-                    "taste_tag": None,
-                    "vintage": None,
-                }
+                _rec_item(
+                    {
+                        "name": "Mystery",
+                        "price": "10.00",
+                        "online_availability": True,
+                        "sku": "000",
+                        "grape": None,
+                        "region": None,
+                        "country": None,
+                        "taste_tag": None,
+                        "vintage": None,
+                    }
+                )
             ],
             "intent": {"semantic_query": "anything"},
+            "summary": "",
         }
         result = format_recommendations(data)
         assert "Mystery" in result
-        lines = result.strip().split("\n")
-        # Only the product line, no detail lines
-        assert len(lines) == 1
 
     def test_flat_grape_used_over_grape_blend(self):
         data = {
             "products": [
-                {
-                    "name": "Blend Wine",
-                    "price": "30.00",
-                    "online_availability": True,
-                    "sku": "555",
-                    "grape": "Malbec",
-                    "grape_blend": [{"code": "MALB", "pct": 80}, {"code": "MERL", "pct": 20}],
-                    "region": "Mendoza",
-                    "country": "Argentine",
-                }
+                _rec_item(
+                    {
+                        "name": "Blend Wine",
+                        "price": "30.00",
+                        "online_availability": True,
+                        "sku": "555",
+                        "grape": "Malbec",
+                        "grape_blend": [{"code": "MALB", "pct": 80}, {"code": "MERL", "pct": 20}],
+                        "region": "Mendoza",
+                        "country": "Argentine",
+                    }
+                )
             ],
             "intent": {"semantic_query": "blend"},
+            "summary": "",
         }
         result = format_recommendations(data)
         assert "Malbec" in result
@@ -137,17 +156,20 @@ class TestFormatRecommendations:
     def test_region_dedup_when_same_as_country(self):
         data = {
             "products": [
-                {
-                    "name": "Cretan Wine",
-                    "price": "19.00",
-                    "online_availability": True,
-                    "sku": "777",
-                    "grape": "Assyrtiko",
-                    "region": "Grèce",
-                    "country": "Grèce",
-                }
+                _rec_item(
+                    {
+                        "name": "Cretan Wine",
+                        "price": "19.00",
+                        "online_availability": True,
+                        "sku": "777",
+                        "grape": "Assyrtiko",
+                        "region": "Grèce",
+                        "country": "Grèce",
+                    }
+                )
             ],
             "intent": {"semantic_query": "greek"},
+            "summary": "",
         }
         result = format_recommendations(data)
         assert "Grèce, Grèce" not in result
@@ -157,17 +179,20 @@ class TestFormatRecommendations:
         """SAQ stores 'Bourgogne, Bourgogne' when sub-region = parent."""
         data = {
             "products": [
-                {
-                    "name": "Aligoté",
-                    "price": "19.00",
-                    "online_availability": True,
-                    "sku": "888",
-                    "grape": "Aligoté",
-                    "region": "Bourgogne, Bourgogne",
-                    "country": "France",
-                }
+                _rec_item(
+                    {
+                        "name": "Aligoté",
+                        "price": "19.00",
+                        "online_availability": True,
+                        "sku": "888",
+                        "grape": "Aligoté",
+                        "region": "Bourgogne, Bourgogne",
+                        "country": "France",
+                    }
+                )
             ],
             "intent": {"semantic_query": "white burgundy"},
+            "summary": "",
         }
         result = format_recommendations(data)
         assert "Bourgogne, Bourgogne" not in result

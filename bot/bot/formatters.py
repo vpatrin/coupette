@@ -25,13 +25,22 @@ def format_product_line(product: dict[str, Any], index: int) -> str:
 
 def format_recommendations(data: dict[str, Any]) -> str:
     """Format recommendation results for Telegram — rich cards for curated results."""
-    products = data.get("products", [])
+    items = data.get("products", [])
 
-    if not products:
+    if not items:
         return "No recommendations found for this query. Try rephrasing?"
 
     lines = []
-    for i, p in enumerate(products, 1):
+
+    summary = data.get("summary")
+    if summary:
+        lines.append(f"_{summary}_")
+
+    for i, item in enumerate(items, 1):
+        # New shape: {"product": {...}, "reason": "..."} — unwrap
+        p = item.get("product", item)
+        reason = item.get("reason", "")
+
         name = p.get("name") or "Unknown"
         sku = p.get("sku", "")
         price = p.get("price")
@@ -41,6 +50,9 @@ def format_recommendations(data: dict[str, Any]) -> str:
         url = f"{SAQ_BASE_URL}/{sku}"
 
         line = f"{i}. [{name}]({url}) \u2014 {price_str} {status}"
+
+        if reason:
+            line += f"\n    {reason}"
 
         # Line 2: grape · region, country (deduplicated)
         origin_parts: list[str] = []

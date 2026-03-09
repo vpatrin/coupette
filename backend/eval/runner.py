@@ -22,7 +22,7 @@ from .schemas import (
 async def _run_single(
     session_factory: async_sessionmaker[AsyncSession],
     test_query: TestQuery,
-) -> tuple[ParsedIntentSummary, list[ProductSummary]]:
+) -> tuple[ParsedIntentSummary, list[ProductSummary], str]:
     """Run the real recommendation pipeline for one query."""
     async with session_factory() as db:
         result = await recommend(db, test_query.query, available_only=False)
@@ -37,22 +37,23 @@ async def _run_single(
     )
     products = [
         ProductSummary(
-            sku=p.sku,
-            name=p.name,
-            category=p.category,
-            country=p.country,
-            price=p.price,
-            producer=p.producer,
-            grape=p.grape,
-            region=p.region,
-            taste_tag=p.taste_tag,
-            rating=p.rating,
-            review_count=p.review_count,
-            online_availability=p.online_availability,
+            sku=item.product.sku,
+            name=item.product.name,
+            category=item.product.category,
+            country=item.product.country,
+            price=item.product.price,
+            producer=item.product.producer,
+            grape=item.product.grape,
+            region=item.product.region,
+            taste_tag=item.product.taste_tag,
+            rating=item.product.rating,
+            review_count=item.product.review_count,
+            online_availability=item.product.online_availability,
+            reason=item.reason,
         )
-        for p in result.products
+        for item in result.products
     ]
-    return intent, products
+    return intent, products, result.summary
 
 
 def _make_error_score(
@@ -87,12 +88,14 @@ async def run_eval(
     judge_client = anthropic.AsyncAnthropic(api_key=anthropic_api_key)
 
     # Phase 1: Run pipeline sequentially (each hits Haiku + OpenAI + DB)
-    collected: list[tuple[TestQuery, ParsedIntentSummary, list[ProductSummary], str | None]] = []
+    collected: list[
+        tuple[TestQuery, ParsedIntentSummary, list[ProductSummary], str, str | None]
+    ] = []
 
     for i, test_query in enumerate(queries, 1):
         logger.info("[{}/{}] {}", i, len(queries), test_query.query)
         try:
-            intent, products = await _run_single(session_factory, test_query)
+            intent, products, summary = await _run_single(session_factory, test_query)
             logger.info(
                 "  -> {} products | intent: {} {} {}",
                 len(products),
@@ -100,10 +103,10 @@ async def run_eval(
                 f"${intent.max_price}" if intent.max_price else "",
                 intent.country or "",
             )
-            collected.append((test_query, intent, products, None))
+            collected.append((test_query, intent, products, summary, None))
         except Exception as exc:
             logger.opt(exception=exc).error("  Pipeline failed: {}", exc)
-            collected.append((test_query, ParsedIntentSummary(), [], str(exc)))
+            collected.append((test_query, ParsedIntentSummary(), [], "", str(exc)))
 
     # Phase 2: Judge in parallel (Sonnet calls are independent)
     logger.info("Judging {} results with {}...", len(collected), JUDGE_MODEL)
@@ -111,7 +114,9 @@ async def run_eval(
     error_scores: dict[int, QueryScore] = {}
     semaphore = asyncio.Semaphore(JUDGE_CONCURRENCY)
 
-    for test_query, intent, products, error in collected:
+    summaries: dict[int, str] = {}
+    for test_query, intent, products, summary, error in collected:
+        summaries[test_query.id] = summary
         if error:
             error_scores[test_query.id] = _make_error_score(test_query, dimensions, error)
         else:
@@ -135,9 +140,11 @@ async def run_eval(
     query_scores: list[QueryScore] = []
     for test_query, *_ in collected:
         if test_query.id in error_scores:
-            query_scores.append(error_scores[test_query.id])
+            qs = error_scores[test_query.id]
         else:
-            query_scores.append(next(judged_iter))
+            qs = next(judged_iter)
+        qs.summary = summaries.get(test_query.id, "")
+        query_scores.append(qs)
 
     # Phase 3: Compute averages
     averages: dict[str, float] = {}

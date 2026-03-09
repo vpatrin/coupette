@@ -47,6 +47,7 @@ class ProductSummary(BaseModel):
     rating: float | None
     review_count: int | None
     online_availability: bool | None
+    reason: str = ""
 
 
 class ParsedIntentSummary(BaseModel):
@@ -66,6 +67,7 @@ class QueryScore(BaseModel):
     scores: dict[str, DimensionScore]
     parsed_intent: ParsedIntentSummary
     products: list[ProductSummary]
+    summary: str = ""
     error: str | None = None
 
 

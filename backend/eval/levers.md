@@ -45,14 +45,27 @@ diversity (penalizes same producer, taste_tag, grape, region, country)
 **When to change:** When curation or coherence scores stagnate despite good relevance
 **Risk:** Low — only reorders existing candidates, doesn't change what gets fetched
 
-## 6. Result Count
+## 6. Retrieval Tuning
+
+**File:** `backend/repositories/recommendations.py`
+**What:** Fine-tune `_DIVERSITY_LAMBDA`, attribute weights in `_redundancy_penalty`, `_DIVERSITY_POOL`
+**Impact:** Controls the relevance-vs-diversity trade-off in re-ranking
+**When to change:** After curation changes are measured — if retrieval-quality dimensions (relevance,
+diversity) still lag while presentation scores improved
+**Risk:** Low — only reorders candidates, easy to A/B test via eval
+**Key knobs:**
+- `_DIVERSITY_LAMBDA` (0.5) — higher = more diversity, lower = more relevance
+- Producer weight (1.5), grape weight (1.0), taste_tag (1.0), country (0.5), region (0.5)
+- `_DIVERSITY_POOL` (4x) — over-fetch multiplier before re-ranking
+
+## 7. Result Count
 
 **File:** `backend/config.py`
 **What:** `DEFAULT_RECOMMENDATION_LIMIT` (currently 5)
 **Impact:** More results = more chances for coherence, but dilutes average curation quality
 **When to change:** When coherence scores are consistently low
 
-## 7. Rubric Tuning
+## 8. Rubric Tuning
 
 **File:** `backend/eval/data/rubric.json`
 **What:** The scoring criteria and weights the judge uses
