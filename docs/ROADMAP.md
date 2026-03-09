@@ -8,17 +8,31 @@ Product phases below. Engineering discipline targets (testing, security, observa
 
 ### Phase 0 — Scaffolding ✅
 
+Project structure, env config, Docker Compose baseline. (#1, #3–#5)
+
 ### Phase 1 — Scraping Exploration ✅
+
+Sitemap fetch, HTML sampling, BeautifulSoup extraction, findings doc. (#6–#9)
 
 ### Phase 2 — Data Layer ✅
 
+SQLAlchemy + Alembic in `core/`, Product model, DB writer. (#16–#18, #42)
+
 ### Phase 3 — Production Scraper ✅
+
+Incremental sitemap scraper with delist detection, error handling, systemd timer. (#13–#15, #19, #49–#52, #83–#86)
 
 ### Phase 4 — API for Bot ✅
 
-### Phase 5 — Telegram Bot ✅ (incl. 5a UX Polish, 5b Store Availability, 5c Watch UX)
+Search, filtering, facets, watches CRUD, structured exceptions. See [specs/TELEGRAM_BOT.md](specs/TELEGRAM_BOT.md). (#26, #33–#35, #41, #55, #98–#101)
+
+### Phase 5 — Telegram Bot ✅
+
+Bot scaffold, watch/alert system, store availability, UX polish, deep links. See [specs/DATA_PIPELINE.md](specs/DATA_PIPELINE.md). (#115–#121, #128, #138, #144, #149, #183, #212, #231–#233, #240, #243, #254, #273, #285, #345)
 
 ### Phase 6 — AI Layer (RAG + Claude) ✅
+
+Adobe Live Search client, pgvector embeddings, Claude Haiku recommendations. See [specs/DATA_PIPELINE.md](specs/DATA_PIPELINE.md), [specs/RECOMMENDATIONS.md](specs/RECOMMENDATIONS.md). (#154–#156, #287–#289, #327)
 
 ### Phase 7 — Auth & Security
 
@@ -71,7 +85,7 @@ Upgrade path from Haiku RAG to Claude with direct tool access. Either as MCP ser
 - [ ] Rating aggregator — enrich products with Vivino scores and critic ratings; fuzzy name matching
 - [ ] Price comparison vs France — compare SAQ prices to French retail (Wine-Searcher, Vinatis)
 - [ ] Chrome extension — floating "Watch" button on SAQ product pages, triggers deep link to bot (or `POST /api/watches` with JWT after auth)
-- [ ] Bilingual support — per-user language preference, static translation tables, bilingual bot/web responses
+- [ ] Bilingual support — per-user language preference, static translation tables, bilingual bot/web responses (#134, #151–#153)
 
 ---
 
