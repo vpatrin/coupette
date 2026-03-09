@@ -21,17 +21,20 @@ AI-powered wine recommendation engine built on the SAQ (Quebec liquor board) pro
 ```mermaid
 graph LR
     SAQ[SAQ.com]
+    Adobe[Adobe Live Search]
     Scraper[Scraper]
-    DB[(PostgreSQL)]
+    DB[(PostgreSQL + pgvector)]
     API[FastAPI]
     Claude[Claude API]
     Bot[Telegram Bot]
-    Web[React Dashboard]
+    Web[React Frontend]
 
     SAQ -- sitemap XML --> Scraper
+    Adobe -- store availability --> Scraper
     Scraper -- write --> DB
     DB -- read --> API
-    API --> Claude
+    API -- context --> Claude
+    Claude -- recommendations --> API
     Bot -- calls --> API
     Web -- calls --> API
 
