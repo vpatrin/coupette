@@ -87,7 +87,7 @@ _TOOLS: list[anthropic.types.ToolParam] = [
             "properties": {
                 "is_wine": {
                     "type": "boolean",
-                    "description": "False only for clearly non-wine queries (beer, spirits, food, etc.). Default true.",
+                    "description": "False for non-wine queries (beer, spirits, etc.)",
                 },
                 "categories": {
                     "type": "array",

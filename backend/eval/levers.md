@@ -178,6 +178,46 @@ repeating dead ends. Only record strategy-level patterns, never query-specific f
   (multi-shot intent). Graceful non-wine decline shipped in Cycle 4.
 - **Holdout gap was 0.29** (train 3.63 vs holdout 3.34) — no overfitting.
 
+### Cycle 4 (2026-03-09) — baseline ~3.80 → stable ~3.5-4.0
+
+Changes shipped:
+
+- **Expanded embeddings** (5000→6600 products): biggest single win. Filled coverage gaps
+  (Rieslings, Gewürztraminer, many reds had no embedding). No code change — just ran embed-sync.
+- **Graceful non-wine decline**: strengthened intent prompt Rule 7 with explicit beer/spirits
+  examples + MUST language. Haiku now sets `is_wine=false` for "do you have beer?" etc.
+  Pipeline returns bilingual decline message instead of returning sake.
+- **`available_only` filter**: `find_similar()` now filters on `Product.online_availability`
+  when `intent.available_only=True`. Removes unavailable products from results.
+- **Curation prompt**: "sommelier assistant for SAQ" → "sommelier assistant helping users
+  discover wines from the SAQ catalog" (legal compliance, no SAQ impersonation).
+- **Non-wine message**: bilingual FR/EN decline message.
+- **Q18 removed from queries.json**: beer query no longer evaluated (graceful decline path
+  isn't a recommendation — nothing to score). 19 queries remain (13 train / 6 holdout).
+
+Levers tried and reverted:
+
+- **Category weight 0.75→1.5**: regressed (-0.17). Pushed less relevant wines in to achieve
+  category diversity. Keep at 0.75.
+- **Grape weight 1.0→1.5**: regressed (-0.16). Same pattern — diversity penalty too aggressive.
+- **Semantic query enrichment** (multi-category broadening + moscato example): regressed (-0.25).
+  Prompt instability confirmed again — changing one Rule 5 example caused regressions in
+  unrelated queries (Q7, Q17). Prompt changes remain fragile.
+
+Structural insights:
+
+- **Embedding coverage was the real bottleneck**: not prompt tuning, not re-ranking weights.
+  Going from 5000→6600 embedded wines did more than all Cycle 1-3 prompt changes combined.
+- **Re-ranking weights are at local optimum**: all three weight adjustments regressed. λ=0.5
+  and current attribute weights are well-tuned.
+- **Remaining weak queries are structural**: Q9 (moscato compromise), Q20 (beginner), Q19
+  (multi-intent rosé+blanc) all need either embedding text enrichment or multi-intent
+  retrieval architecture. Single-query-single-embedding can't serve "give me one red AND
+  one white."
+- **Judge variance is ~0.3-0.5** at temp=1.0 with 2 runs. Pipeline variance across 3 runs
+  adds another layer. Stable range is ~3.5-4.0 for the current pipeline.
+- **Holdout gap was 0.34** (train ~4.0 vs holdout 3.66) — under 0.5 threshold, no overfitting.
+
 ## Future: Eval Tracing (v2)
 
 Currently the eval output includes a timestamp but no version info. For proper MLOps
