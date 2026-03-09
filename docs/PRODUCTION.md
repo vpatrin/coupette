@@ -1,22 +1,10 @@
 # Production
 
-Infrastructure-level state, deployment process, and outstanding work for the production VPS.
-Step-by-step setup instructions live in the infra repo (private).
+Deployment process and app-level production concerns for saq-sommelier.
+VPS-level infrastructure (firewall, SSH, TLS, networking) is documented in the [infra repo](https://github.com/vpatrin/infra/blob/main/docs/INFRASTRUCTURE.md).
 
----
-
-## Current state
-
-- **VPS**: Hetzner CX22, Debian 13 — `web-01`
-- **User**: `victor` (root SSH blocked)
-- **Auth**: SSH key only (password auth disabled)
-- **Firewall**: Hetzner network firewall + ufw — ports 22/80/443 only
-- **DNS**: `victorpatrin.dev` + wildcard `*` → VPS IP (Porkbun)
-- **Docker**: Docker CE + Compose plugin installed
-- **Swap**: 2G at `/swapfile`, swappiness=10
-- **Reverse proxy**: Caddy (SSL + routing via victorpatrin.dev subdomains)
-- **Services**: backend, bot, scraper (systemd timer), shared-postgres
 - **Deployed**: v1.2.0
+- **Services**: backend, bot, scraper (systemd timer), shared-postgres
 
 ---
 
@@ -52,32 +40,6 @@ Migrations are forward-only — never run `downgrade()` in production. Write a n
 
 ---
 
-## Security
+## Security, backups, and observability
 
-**Done:** SSH hardening (PermitRootLogin no, PasswordAuthentication no), double firewall (Hetzner + ufw, ports 22/80/443 only).
-
-**Infra repo:**
-- Fail2ban: SSH brute-force protection
-- Unattended-upgrades: automatic security patches
-
----
-
-## Backups
-
-**Not started.** Biggest production risk — no PostgreSQL backups currently.
-
-**Infra repo:**
-- `scripts/backup-db.sh`: daily `pg_dump` + 7-day local retention, systemd timer at 3am
-
----
-
-## Observability
-
-**Infra repo:**
-- Grafana: scraper health + API health dashboards — requires VPS upgrade to CX32 for RAM headroom
-
----
-
-## Staging
-
-Not needed yet. Revisit when multi-developer or when preview deploys are required.
+See [infra INFRASTRUCTURE.md](https://github.com/vpatrin/infra/blob/main/docs/INFRASTRUCTURE.md) — these are managed at the VPS level, not per-project.
