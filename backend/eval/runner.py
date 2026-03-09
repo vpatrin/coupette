@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from backend.services.recommendations import recommend
 
-from .judge import JUDGE_MODEL, judge_query
+from .judge import JUDGE_CONCURRENCY, JUDGE_MODEL, judge_query
 from .schemas import (
     DimensionScore,
     EvalReport,
@@ -109,6 +109,7 @@ async def run_eval(
     logger.info("Judging {} results with {}...", len(collected), JUDGE_MODEL)
     judge_tasks = []
     error_scores: dict[int, QueryScore] = {}
+    semaphore = asyncio.Semaphore(JUDGE_CONCURRENCY)
 
     for test_query, intent, products, error in collected:
         if error:
@@ -123,6 +124,7 @@ async def run_eval(
                     dimensions,
                     judge_runs=judge_runs,
                     judge_temperature=judge_temperature,
+                    semaphore=semaphore,
                 )
             )
 

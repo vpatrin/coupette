@@ -19,8 +19,6 @@ JUDGE_MODEL = "claude-sonnet-4-20250514"
 JUDGE_MAX_TOKENS = 1024
 JUDGE_CONCURRENCY = 5
 
-_semaphore = asyncio.Semaphore(JUDGE_CONCURRENCY)
-
 
 def _build_rubric_text(dimensions: list[RubricDimension]) -> str:
     lines: list[str] = []
@@ -156,7 +154,7 @@ def _average_scores(
         # Pick the justification from the run whose score is closest to the mean
         closest = min(dim_scores, key=lambda s: abs(s.score - mean))
         result[d.name] = DimensionScore(
-            score=round(mean),
+            score=round(mean, 1),
             justification=closest.justification,
         )
     return result
@@ -171,12 +169,14 @@ async def judge_query(
     *,
     judge_runs: int = 1,
     judge_temperature: float = 0.0,
+    semaphore: asyncio.Semaphore | None = None,
 ) -> QueryScore:
     """Score a single query's results using Claude Sonnet as judge."""
     system_prompt = _build_system_prompt(dimensions)
     user_message = _build_user_message(test_query, intent, products)
 
-    async with _semaphore:
+    sem = semaphore or asyncio.Semaphore(JUDGE_CONCURRENCY)
+    async with sem:
         try:
             runs: list[dict[str, DimensionScore]] = []
             for _ in range(judge_runs):

@@ -28,7 +28,7 @@ class RubricDimension(BaseModel):
 
 
 class DimensionScore(BaseModel):
-    score: int = Field(ge=1, le=5)
+    score: float = Field(ge=1, le=5)
     justification: str
 
 
