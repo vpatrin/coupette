@@ -88,7 +88,7 @@ See [specs/DATA_PIPELINE.md](specs/DATA_PIPELINE.md) for API reference and data 
 - [x] `/mystores` bot command — GPS-based store picker (#233)
 - [x] Per-product store availability checker — GraphQL resolve + AJAX fetch + diff alerts (#149)
 - [x] Targeted store fetch — lat/lng proximity sorting replaces full pagination (#254)
-- ~~Filter by store availability (#150)~~ — out of scope, SAQ.com does this natively
+- [x] Filter by store availability — `in_store` filter on recommendations API (#345)
 
 ### Phase 5c — Watch UX ✅
 
