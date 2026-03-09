@@ -95,7 +95,10 @@ def _rerank(candidates: list[Product], limit: int) -> list[Product]:
 
 
 def _redundancy_penalty(candidate: Product, selected: list[Product]) -> float:
-    """Score 0-1 measuring how redundant this candidate is with already-selected wines."""
+    """Score measuring how redundant this candidate is with already-selected wines.
+
+    Base overlap is 0-1 per selected wine, boosted by how many are similar (can exceed 1.0).
+    """
     if not selected:
         return 0.0
 
