@@ -10,30 +10,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Wine scope default — API endpoints now return wine-only results by default; use `scope=all` for full catalog (#285)
-- Embedding sync pipeline (`python -m scraper embed`) — generates semantic vectors via OpenAI text-embedding-3-small
-- Daily availability refresh via Adobe Live Search (`python -m scraper availability`) — replaces planned `--check-watches` (#289)
-- Wine attribute enrichment from Adobe (`python -m scraper enrich`) — backfills tasting profiles, taste tags, grape blends, and vintages for ~30k wine products
+- Daily availability refresh via Adobe Live Search — replaces planned `--check-watches` (#289)
 - Intent parser — Claude Haiku extracts structured filters (category, price, country) from natural language wine queries (#155)
 - `POST /api/recommendations` — natural language wine recommendations via intent parsing + embedding similarity search (#309, #310, #311)
 - `/recommend` bot command — ask for wine recommendations in natural language via Telegram (#156)
-- RAG eval framework (`make eval`) — LLM-as-judge scoring with configurable rubric, diff mode, and MW-quality benchmark queries (#327)
 - Per-product reasoning and summary in recommendations — Claude Haiku explains why each wine was selected (#328)
+
+### Changed
+
+- Improved recommendation diversity and relevance (grape-aware retrieval, accumulating reranker)
 - Non-wine graceful decline — asking for beer, spirits, etc. returns a bilingual "I'm a wine assistant" message instead of unrelated results
 - Availability filter — recommendations now exclude products not available online
-- Eval: multi-pipeline-run mode (`PIPELINE_RUNS=N`) reports mean ± std across N runs
+- Enriched `/recommend` cards — now show grape, region/country (deduplicated), taste tag, vintage, and availability status
+- `/recommend` defaults to wine categories when intent parser extracts no category filter
 
 ### Security
 
 - URL-encode database password to handle special characters in connection strings (#313)
 - Backend refuses to start in production without BOT_SECRET configured (#313)
-- Pin Poetry version across all Dockerfiles and CI for reproducible builds (#313)
-
-### Changed
-
-- Scraper CLI: replaced `--flag` dispatch with argparse subcommands (`python -m scraper scrape|stores|enrich|embed|availability`) (#302)
-- Weekly scraper pipeline now chains scrape → enrich → embed in a single systemd service
-- Enriched `/recommend` cards — now show grape, region/country (deduplicated), taste tag, vintage, and availability status
-- `/recommend` defaults to wine categories when intent parser extracts no category filter
 
 ### Removed
 
