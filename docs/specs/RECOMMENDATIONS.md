@@ -275,11 +275,54 @@ Prerequisite: data pipeline work from [DATA_PIPELINE.md](DATA_PIPELINE.md) — A
 
 ## Eval + MLOps (Phase 6e)
 
-Automated pipeline improvement via eval-driven iteration.
+Automated pipeline improvement via offline evaluation with LLM-as-judge scoring agains a rubric-based benchmark.
+
+### Architecture
+
+Standard RAG evaluation pipeline: fixed benchmark → production pipeline → LLM judge → scored report.
+
+```mermaid
+graph TB
+    subgraph "Benchmark (static)"
+        QJ[queries.json<br/>20 MW-quality queries]
+        RJ[rubric.json<br/>5 weighted dimensions]
+    end
+
+    subgraph "RAG Pipeline (under test)"
+        HAIKU[Claude Haiku<br/>intent parsing]
+        OAI[OpenAI<br/>query embedding]
+        PGV[(pgvector<br/>similarity search)]
+        HAIKU --> OAI --> PGV
+    end
+
+    subgraph "Judge"
+        SONNET[Claude Sonnet<br/>LLM-as-judge]
+    end
+
+    subgraph "Output"
+        REPORT[Scorecard<br/>per-query + averages + diff]
+        JSON[eval_timestamp.json<br/>full results archive]
+    end
+
+    QJ -->|"20 queries"| HAIKU
+    PGV -->|"5 wines per query"| SONNET
+    RJ -->|"scoring criteria"| SONNET
+    QJ -->|"expected signals + notes"| SONNET
+    SONNET -->|"1-5 scores × 5 dimensions"| REPORT
+    SONNET --> JSON
+    JSON -.->|"previous run"| REPORT
+
+    style QJ fill:#e8f5e9
+    style RJ fill:#e8f5e9
+    style SONNET fill:#fff3e0
+    style REPORT fill:#e3f2fd
+```
+
+Key pattern: a **stronger model** (Sonnet) evaluates a **weaker model's** (Haiku) output against a configurable rubric. This is offline evaluation — no real users, fixed test set, reproducible scores.
 
 ### Eval Framework
 
-LLM-as-judge: Claude Sonnet scores pipeline outputs against a configurable rubric. See `backend/eval/` for implementation.
+See `backend/eval/` for implementation.
 
 - **Rubric** (`backend/eval/data/rubric.json`) — scoring dimensions with weights, changeable without code
 - **Benchmark queries** (`backend/eval/data/queries.json`) — fixed test set, MW-quality queries
