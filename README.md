@@ -14,7 +14,7 @@ AI-powered wine recommendation engine built on the SAQ (Quebec liquor board) pro
 - 🤖 Telegram bot for watching, notifications, and AI recommendations
 - 📍 In-store availability for Montreal stores (daily refresh via Adobe Live Search)
 - 💬 Natural language wine recommendations via Claude RAG + pgvector
-- 🌐 Web frontend planned at wine.victorpatrin.dev
+- 🌐 Web frontend planned at wine.victorpatrin.dev (React + Vite)
 
 ## Architecture
 
