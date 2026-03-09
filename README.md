@@ -1,6 +1,6 @@
 # SAQ Sommelier
 
-AI-powered wine recommendation engine built on the SAQ (Quebec liquor board) product catalog.
+Wine discovery and recommendation platform for the SAQ (Quebec liquor board) catalog.
 
 [![CI](https://github.com/vpatrin/saq-sommelier/actions/workflows/ci.yml/badge.svg)](https://github.com/vpatrin/saq-sommelier/actions/workflows/ci.yml)
 [![Version](https://img.shields.io/github/v/tag/vpatrin/saq-sommelier?label=version)](CHANGELOG.md)
@@ -11,9 +11,9 @@ AI-powered wine recommendation engine built on the SAQ (Quebec liquor board) pro
 
 - 🍷 Scrapes ~38k products from the SAQ public sitemap into PostgreSQL
 - 🔍 FastAPI catalog API with search, filtering, and restock alerts
-- 🤖 Telegram bot for watching, notifications, and AI recommendations
-- 📍 In-store availability for Montreal stores (daily refresh via Adobe Live Search)
-- 💬 Natural language wine recommendations via Claude RAG + pgvector
+- 🤖 Telegram bot with availability alerts and AI recommendations
+- 📍 In-store availability for Montreal stores (daily refresh via SAQ's catalog API)
+- 💬 Natural language wine recommendations via Claude + pgvector semantic search
 - 🌐 Web frontend planned at wine.victorpatrin.dev (React + Vite)
 
 ## Architecture
