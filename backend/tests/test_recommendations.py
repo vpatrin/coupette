@@ -9,6 +9,7 @@ from backend.repositories.recommendations import (
     find_similar,
 )
 from backend.schemas.recommendation import IntentResult, RecommendationOut
+from backend.services.curation import ExplanationResult
 from backend.services.recommendations import recommend
 
 
@@ -50,6 +51,7 @@ def _fake_product(
 
 class TestRecommend:
     @pytest.mark.asyncio
+    @patch("backend.services.recommendations.explain_recommendations")
     @patch("backend.services.recommendations.find_similar")
     @patch("backend.services.recommendations.embed_query")
     @patch("backend.services.recommendations.parse_intent")
@@ -60,21 +62,28 @@ class TestRecommend:
         mock_parse: MagicMock,
         mock_embed: MagicMock,
         mock_find: AsyncMock,
+        mock_explain: MagicMock,
     ) -> None:
         mock_settings.OPENAI_API_KEY = "sk-test"
         mock_parse.return_value = IntentResult(categories=["Vin rouge"], semantic_query="fruité")
         mock_embed.return_value = [0.1] * EMBEDDING_MODEL_DIMENSIONS
         mock_find.return_value = [_fake_product()]
+        mock_explain.return_value = ExplanationResult(
+            reasons=["Great fruity red"], summary="A fruity selection"
+        )
 
         db = AsyncMock()
         result = await recommend(db, "un rouge fruité")
 
         assert isinstance(result, RecommendationOut)
         assert len(result.products) == 1
-        assert result.products[0].sku == "123456"
+        assert result.products[0].product.sku == "123456"
+        assert result.products[0].reason == "Great fruity red"
+        assert result.summary == "A fruity selection"
         assert result.intent.categories == ["Vin rouge"]
 
     @pytest.mark.asyncio
+    @patch("backend.services.recommendations.explain_recommendations")
     @patch("backend.services.recommendations.find_similar")
     @patch("backend.services.recommendations.embed_query")
     @patch("backend.services.recommendations.parse_intent")
@@ -85,16 +94,19 @@ class TestRecommend:
         mock_parse: MagicMock,
         mock_embed: MagicMock,
         mock_find: AsyncMock,
+        mock_explain: MagicMock,
     ) -> None:
         mock_settings.OPENAI_API_KEY = "sk-test"
         mock_parse.return_value = IntentResult(semantic_query="rare wine")
         mock_embed.return_value = [0.1] * EMBEDDING_MODEL_DIMENSIONS
         mock_find.return_value = []
+        mock_explain.return_value = ExplanationResult(reasons=[], summary="")
 
         db = AsyncMock()
         result = await recommend(db, "rare wine")
 
         assert result.products == []
+        assert result.summary == ""
         assert result.intent.semantic_query == "rare wine"
 
 

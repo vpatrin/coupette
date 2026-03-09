@@ -12,18 +12,22 @@ def api():
     mock.recommend.return_value = {
         "products": [
             {
-                "name": "Château Margaux",
-                "price": "89.00",
-                "sku": "12345",
-                "grape": "Merlot",
-                "region": "Bordeaux",
-                "country": "France",
+                "product": {
+                    "name": "Château Margaux",
+                    "price": "89.00",
+                    "sku": "12345",
+                    "grape": "Merlot",
+                    "region": "Bordeaux",
+                    "country": "France",
+                },
+                "reason": "Bold Bordeaux blend matching your request",
             }
         ],
         "intent": {
             "categories": ["Vin rouge"],
             "semantic_query": "bold red",
         },
+        "summary": "Here are some bold reds for you",
     }
     return mock
 
@@ -64,7 +68,11 @@ async def test_recommend_empty_query(update, context):
 
 
 async def test_recommend_no_results(update, context, api):
-    api.recommend.return_value = {"products": [], "intent": {"semantic_query": "rare"}}
+    api.recommend.return_value = {
+        "products": [],
+        "intent": {"semantic_query": "rare"},
+        "summary": "",
+    }
     await recommend_command(update, context)
 
     text = update.message.reply_text.call_args[0][0]

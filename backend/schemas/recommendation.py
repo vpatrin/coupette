@@ -22,6 +22,12 @@ class RecommendationIn(BaseModel):
     query: str = Field(min_length=1, max_length=MAX_SEARCH_LENGTH)
 
 
+class RecommendationProductOut(BaseModel):
+    product: ProductOut
+    reason: str
+
+
 class RecommendationOut(BaseModel):
-    products: list[ProductOut]
+    products: list[RecommendationProductOut]
     intent: IntentResult
+    summary: str
