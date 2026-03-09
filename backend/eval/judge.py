@@ -16,8 +16,10 @@ from .schemas import (
 )
 
 JUDGE_MODEL = "claude-sonnet-4-20250514"
+JUDGE_MAX_TOKENS = 1024
+JUDGE_CONCURRENCY = 5
 
-_semaphore = asyncio.Semaphore(5)
+_semaphore = asyncio.Semaphore(JUDGE_CONCURRENCY)
 
 
 def _build_rubric_text(dimensions: list[RubricDimension]) -> str:
@@ -139,7 +141,7 @@ async def judge_query(
         try:
             response = await client.messages.create(
                 model=JUDGE_MODEL,
-                max_tokens=512,
+                max_tokens=JUDGE_MAX_TOKENS,
                 system=system_prompt,
                 messages=[{"role": "user", "content": user_message}],
             )
