@@ -44,30 +44,36 @@ Always output category and country values in French (SAQ naming).
    "Argentine", "Grèce", "Autriche", etc.
    Only set country when the user specifies the wine's origin.
    Food origin doesn't imply wine origin
-   (e.g. "fromages québécois" → no country; "un vin espagnol" → "Espagne").
-   When a specific wine is referenced (e.g. "Tignanello"), set its country.
+   (e.g. "tacos al pastor" → no country; "un vin espagnol" → "Espagne").
+   When a specific wine is referenced (e.g. "Sassicaia"), set its country.
 4. **Price heuristics**:
    - "autour de 25$" → min ~20% below, max ~20% above
-   - "moins de 30$" / "under 30" → max_price only
+   - "moins de 30$" / "under 30" / "sans dépasser 50$" → max_price only
    - "plus de 50$" → min_price only
    - "money is not an issue" → set min_price to 40 (skip budget wines)
-   - Large group / volume implied (e.g. "30 personnes") → set max_price ~25 (crowd-friendly budget)
+   - Large group / volume implied (e.g. "BBQ 20 personnes") →
+     set max_price ~25 (crowd-friendly budget)
 5. **semantic_query** captures taste, occasion, style, food pairing — whatever can't be a filter.
    Make it descriptive and specific. Include what the user WANTS, not what they don't want.
-   - "un rouge fruité autour de 25$" → "fruité, souple, facile à boire"
-   - "bold tannic wine for steak" → "bold tannic full-bodied for grilled steak"
-   - "tanné du Cab Sauv" → semantic_query: "Syrah, Grenache, Tempranillo",
-     exclude_grapes: ["Cabernet Sauvignon", "Merlot"]
-   - "like Sancerre but cheaper" → "crisp minerally Sauvignon Blanc style, Loire-like freshness"
-   - "moscato trop sucré, compromis" → "demi-sec, off-dry, floral aromatic"
+   Always include concrete grape variety names that match the desired style — embeddings
+   contain grape names, so "Gewürztraminer, Riesling" retrieves better than "off-dry, floral".
+   - "un rouge fruité autour de 25$" → "fruité, souple, facile à boire, Gamay, Grenache"
+   - "bold tannic wine for steak" → "bold tannic full-bodied, Malbec, Syrah, Cabernet Franc"
+   - "tired of Pinot Grigio" → semantic_query: "Albariño, Vermentino,
+     Grüner Veltliner", exclude_grapes: ["Pinot Grigio", "Pinot Gris"]
+   - "like Barolo but lighter" → "elegant Nebbiolo, silky tannins, Langhe"
+   - "blancs doux mais pas liquoreux" → "demi-sec, off-dry,
+     Gewürztraminer, Riesling, Chenin Blanc, Vouvray"
+   - "cadeaux pour un amateur" → "terroir-driven, estate wine, elegant"
    - When food has a regional identity, mention regional pairing in semantic_query
      ("what grows together goes together"). Do NOT set country — let embedding handle it.
-     Example: "fromages québécois" → include "accord régional, vin local" in semantic_query
+     Example: "sushi tonight" → include "crisp, high-acid, Muscadet,
+     Chablis, Albariño" in semantic_query
 6. **exclude_grapes**: when the user expresses fatigue or dislike for specific
    grapes, ALWAYS populate this field. Look for cues like "tanné de",
    "tired of", "pas de", "no more", "autre chose que".
-   - "tanné du Cab Sauv et du Merlot" → exclude_grapes: ["Cabernet Sauvignon", "Merlot"]
-   - "qqch de différent, pas de Chardonnay" → exclude_grapes: ["Chardonnay"]
+   - "j'en ai marre du Chardonnay" → exclude_grapes: ["Chardonnay"]
+   - "no more Pinot Noir" → exclude_grapes: ["Pinot Noir"]
    Also list appealing alternatives in semantic_query
    (Syrah, Grenache, Tempranillo, Nebbiolo, Gamay, etc.).
 7. **Non-wine queries**: if the user asks for something SAQ doesn't sell as wine (beer, cider,
