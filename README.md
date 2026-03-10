@@ -74,7 +74,8 @@ See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for database setup options and fu
 - [Development](docs/DEVELOPMENT.md) — local setup, workflows, migrations
 - [Operations](docs/OPERATIONS.md) — production scheduling, scraper ops, failure recovery
 - [Production](docs/PRODUCTION.md) — VPS state, deployment, backups, security hardening
-- [Engineering](docs/ENGINEERING.md) — testing, security, observability, SRE, platform, ML/MLOps
+- [Security](docs/SECURITY.md) — auth model, threat model, CI scanning, known limitations
+- [Engineering](docs/ENGINEERING.md) — testing, observability, SRE, platform, ML/MLOps
 - [Roadmap](docs/ROADMAP.md) — product phases and timeline
 - [Changelog](CHANGELOG.md) — release history
 - [specs/DATA_PIPELINE.md](docs/specs/DATA_PIPELINE.md) — data pipeline spec (Adobe Live Search, HTML scrape)

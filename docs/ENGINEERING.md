@@ -23,14 +23,7 @@ Infrastructure-level production targets (VPS hardening, backups, Grafana) tracke
 
 ## Security
 
-**Done:** Dependabot (pip + GitHub Actions weekly), Hadolint (Dockerfile linting in CI), pip-audit (vulnerability scanning in CI), gitleaks (secret detection in CI), CORS configuration (env-driven allowed origins), input validation (Pydantic, max lengths), Telegram user allowlist (`ALLOWED_USER_IDS` env var, #178), per-user rate limiting (#178).
-
-**Next:**
-- `.env` audit: verify no secrets committed in git history (`git log -S 'password'`)
-- Docker secrets: move bot token + DB password from `.env` file to Docker secret files — eliminates plaintext credentials on disk
-- API key auth: `X-API-Key` header on bot→backend calls — needed once the React dashboard exposes the API publicly
-- `SECURITY.md`: responsible disclosure policy — one-page file, strong portfolio/interview signal
-- Hardening: URL-encode DB password in connection string, startup guard on empty `BOT_SECRET` in production, pin Poetry version in Dockerfiles (#313)
+See [SECURITY.md](SECURITY.md) — auth model, threat model, CI scanning, known limitations.
 
 ---
 
