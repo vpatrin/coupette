@@ -14,3 +14,11 @@ class ConflictError(Exception):
         self.resource = resource
         self.reason = reason
         super().__init__(f"{resource} conflict: {reason}")
+
+
+class InvalidCredentialsError(Exception):
+    """Raised when authentication fails (bad hash, expired token, etc.)."""
+
+
+class ForbiddenError(Exception):
+    """Raised when an authenticated user is not allowed to perform an action."""

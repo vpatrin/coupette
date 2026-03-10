@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from loguru import logger
 from sqlalchemy.exc import SQLAlchemyError
 
-from backend.exceptions import ConflictError, NotFoundError
+from backend.exceptions import ConflictError, ForbiddenError, InvalidCredentialsError, NotFoundError
 
 
 def register_exception_handlers(app: FastAPI) -> None:
@@ -23,6 +23,24 @@ def register_exception_handlers(app: FastAPI) -> None:
         logger.warning("{} {} — {}", request.method, request.url.path, exc)
         return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
+            content={"detail": str(exc)},
+        )
+
+    @app.exception_handler(InvalidCredentialsError)
+    async def invalid_credentials_handler(
+        request: Request, exc: InvalidCredentialsError
+    ) -> JSONResponse:
+        logger.warning("{} {} — {}", request.method, request.url.path, exc)
+        return JSONResponse(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            content={"detail": str(exc)},
+        )
+
+    @app.exception_handler(ForbiddenError)
+    async def forbidden_handler(request: Request, exc: ForbiddenError) -> JSONResponse:
+        logger.warning("{} {} — {}", request.method, request.url.path, exc)
+        return JSONResponse(
+            status_code=status.HTTP_403_FORBIDDEN,
             content={"detail": str(exc)},
         )
 
