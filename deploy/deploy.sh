@@ -21,6 +21,9 @@ echo "==> Pulling images..."
 echo "==> Pre-deploy database backup..."
 /home/victor/infra/backup/backup.sh saq_sommelier
 
+echo "==> Ensuring pgvector extension..."
+docker exec "$DB_HOST" psql -U postgres -d "$DB_NAME" -c "CREATE EXTENSION IF NOT EXISTS vector;"
+
 echo "==> Running migrations..."
 "${COMPOSE[@]}" run --rm migrate
 

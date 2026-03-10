@@ -30,7 +30,7 @@ database_url = settings.database_url.replace(
     "postgresql+asyncpg://",  # App runtime (async)
     "postgresql+psycopg2://",  # Alembic migrations (sync)
 )
-config.set_main_option("sqlalchemy.url", database_url)
+config.set_main_option("sqlalchemy.url", database_url.replace("%", "%%"))
 
 # Alembic compares Base.metadata (your models) vs actual database schema.
 # This enables: `alembic revision --autogenerate` to detect changes.
