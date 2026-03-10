@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-03-10
+
+### Fixed
+
+- Alembic migration fails when DB password contains special characters — configparser `%` escaping (#378)
+- Deploy script pgvector extension creation uses superuser to avoid permission error (#378)
+
 ## [1.3.0] - 2026-03-10
 
 ### Added
@@ -123,7 +130,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Docker Compose deployment with Caddy reverse proxy
 - CI pipeline with per-service linting, testing, and coverage thresholds
 
-[Unreleased]: https://github.com/vpatrin/saq-sommelier/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/vpatrin/saq-sommelier/compare/v1.3.1...HEAD
+[1.3.1]: https://github.com/vpatrin/saq-sommelier/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/vpatrin/saq-sommelier/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/vpatrin/saq-sommelier/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/vpatrin/saq-sommelier/compare/v1.0.0...v1.1.0
