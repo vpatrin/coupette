@@ -34,7 +34,7 @@ Bot scaffold, watch/alert system, store availability, UX polish, deep links. See
 
 Adobe Live Search client, pgvector embeddings, Claude Haiku recommendations. See [specs/DATA_PIPELINE.md](specs/DATA_PIPELINE.md), [specs/RECOMMENDATIONS.md](specs/RECOMMENDATIONS.md). (#154–#156, #287–#289, #327)
 
-### Phase 7 — Auth & Security
+### Phase 7 — Auth & Security ✅
 
 Prerequisite for web app and protecting expensive endpoints.
 
