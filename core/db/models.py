@@ -2,6 +2,7 @@ from datetime import UTC, datetime
 
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
+    BigInteger,
     Boolean,
     Column,
     DateTime,
@@ -18,6 +19,46 @@ from sqlalchemy.dialects.postgresql import JSONB
 
 from core.db.base import Base
 from core.embedding_client import EMBEDDING_DIMENSIONS
+
+
+class User(Base):
+    """Registered user — identity linked via Telegram OAuth."""
+
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    telegram_id = Column(
+        BigInteger,
+        unique=True,
+        nullable=False,
+        index=True,
+        comment="Telegram user ID (64-bit)",
+    )
+    username = Column(String, nullable=True, comment="Telegram @handle (may change)")
+    first_name = Column(String, nullable=False, comment="Telegram first name")
+    role = Column(
+        String(20),
+        nullable=False,
+        default="user",
+        comment="Authorization role: user or admin",
+    )
+    is_active = Column(
+        Boolean, nullable=False, default=True, comment="Active flag (replaces bot allowlist)"
+    )
+    created_at = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        nullable=False,
+        comment="When user first registered",
+    )
+    last_login_at = Column(
+        DateTime(timezone=True),
+        nullable=True,
+        comment="Last successful login (updated on each auth)",
+    )
+
+    def __repr__(self) -> str:
+        return f"<User(id={self.id!r}, telegram_id={self.telegram_id!r}, role={self.role!r})>"
 
 
 class Store(Base):
