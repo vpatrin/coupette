@@ -15,7 +15,6 @@ from backend.schemas.auth import TelegramLoginIn, TokenOut
 # Telegram login data expires after 1 day
 _TELEGRAM_AUTH_MAX_AGE_SECONDS = 86400
 
-_JWT_ALGORITHM = "HS256"
 _JWT_EXPIRY_DAYS = 7
 
 
@@ -46,7 +45,7 @@ def _create_jwt(user_id: int, telegram_id: int, role: str) -> str:
         "exp": now + timedelta(days=_JWT_EXPIRY_DAYS),
         "iat": now,
     }
-    return jwt.encode(payload, backend_settings.JWT_SECRET_KEY, algorithm=_JWT_ALGORITHM)
+    return jwt.encode(payload, backend_settings.JWT_SECRET_KEY, algorithm="HS256")
 
 
 async def authenticate_telegram(db: AsyncSession, data: TelegramLoginIn) -> TokenOut:
