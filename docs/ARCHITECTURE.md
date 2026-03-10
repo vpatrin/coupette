@@ -12,8 +12,8 @@ Designed as a **modular monolith** for a solo developer serving ~20 users. Servi
                           ┌─────────────────────┐
                           │      CLIENTS         │
                           │                      │
-                          │  Telegram Bot (main)  │
-                          │  React Dashboard (?)  │
+                          │  Telegram Bot          │
+                          │  React Dashboard (P8)  │
                           └──────────┬───────────┘
                                      │
                                 HTTPS (Caddy)
