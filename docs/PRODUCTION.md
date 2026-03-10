@@ -13,8 +13,7 @@ VPS-level infrastructure (firewall, SSH, TLS, networking) is documented in the [
 Tag on main first (see [CHANGELOG.md](../CHANGELOG.md)), then deploy the tag on the VPS.
 
 ```bash
-git fetch --tags && git checkout vX.Y.Z
-./deploy/deploy.sh               # env check → build → migrate → restart → health check
+./deploy/deploy.sh vX.Y.Z        # pull → backup → migrate → restart → health check
 ```
 
 If `deploy/` unit files changed (or first deploy):
@@ -34,7 +33,7 @@ systemctl status saq-scraper.timer   # timer active, next run scheduled
 systemctl status saq-availability.timer   # timer active, next run scheduled
 ```
 
-Rollback: `git checkout vX.Y.Z && make build && docker compose up -d backend bot`
+Rollback: `./deploy/deploy.sh vPREVIOUS` (pulls the previous tag's images from GHCR)
 
 Migrations are forward-only — never run `downgrade()` in production. Write a new migration to fix mistakes. See [OPERATIONS.md](OPERATIONS.md#forward-only-in-production).
 

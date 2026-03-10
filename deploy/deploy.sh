@@ -3,12 +3,8 @@ set -euo pipefail # Standard bash strict mode
 
 cd "$(dirname "$0")/.." # Works regardless of where you run the script from
 
-# Resolve IMAGE_TAG from current git tag (e.g. v1.3.0)
-export IMAGE_TAG="${IMAGE_TAG:-$(git describe --tags --exact-match 2>/dev/null || true)}"
-if [[ -z "$IMAGE_TAG" ]]; then
-  echo "ERROR: not on a tagged commit. Set IMAGE_TAG or checkout a tag."
-  exit 1
-fi
+# Usage: ./deploy/deploy.sh v1.3.0
+export IMAGE_TAG="${1:?Usage: ./deploy/deploy.sh <tag>}"
 echo "==> Deploying $IMAGE_TAG"
 
 COMPOSE=(docker compose -f docker-compose.yml -f docker-compose.prod.yml)
