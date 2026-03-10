@@ -101,20 +101,18 @@ Upgrade path from Haiku RAG to Claude with direct tool access. Either as MCP ser
 
 **CI hardening:**
 
-- [ ] Container security scan — Trivy on built images (catches OS-level CVEs that pip-audit misses)
-- [ ] Alembic migration smoke test — `upgrade head && check` against test DB (part of integration tests)
+- [ ] Container security scan — Trivy on built images, catches OS-level CVEs that pip-audit misses (#360)
+- [ ] Alembic migration smoke test — `upgrade head && check` against test DB (#316)
 
 **CD pipeline:**
 
-- [ ] ghcr.io image registry — CI builds and pushes images on merge to main, tagged by git SHA
-- [ ] Deploy workflow — tag push triggers: build → push → SSH → pre-deploy backup → migrate → restart → health check
-- [ ] Health check gate + auto-rollback — deploy fails gracefully if /health doesn't respond
+- [ ] Build + Trivy + push + deploy on tag push (#362)
+- [ ] Deploy key — dedicated SSH key for CI → VPS access (#361)
 - [ ] docker-compose.prod.yml — resource limits, restart policies, no dev volumes
-- [ ] Deploy key — dedicated SSH key for CI → VPS access (not personal key)
 
 **Observability:**
 
-- [ ] Request correlation — X-Request-ID middleware across bot → backend → DB
+- [ ] Request correlation — X-Request-ID middleware across bot → backend → DB (#315)
 
 **Secrets management:**
 
