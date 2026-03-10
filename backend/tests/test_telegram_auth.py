@@ -9,6 +9,7 @@ from fastapi import status
 from fastapi.testclient import TestClient
 
 from backend.app import app
+from backend.config import ROLE_USER
 from backend.db import get_db
 
 BOT_TOKEN = "123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
@@ -42,7 +43,7 @@ def _make_telegram_payload(
     }
 
 
-def _mock_user(telegram_id: int = 12345, role: str = "user", is_active: bool = True):
+def _mock_user(telegram_id: int = 12345, role: str = ROLE_USER, is_active: bool = True):
     user = MagicMock()
     user.id = 1
     user.telegram_id = telegram_id
