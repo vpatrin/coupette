@@ -18,7 +18,6 @@ class BotSettings(BaseSettings):
     BOT_SECRET: str = ""
     LOG_LEVEL: str = "INFO"
     NOTIFICATION_POLL_INTERVAL: int  # seconds — set in .env (60 dev, 21600 prod)
-    ALLOWED_USER_IDS: str = ""  # comma-separated Telegram user IDs, empty = allow all
 
 
 settings = BotSettings()
@@ -26,10 +25,6 @@ settings = BotSettings()
 SAQ_BASE_URL = "https://www.saq.com/fr"
 USER_ID_PREFIX = "tg"  # user_id format: "tg:{telegram_id}"
 
-# ── Access control ──────────────────────────────────────────
-ALLOWED_USERS: frozenset[int] = frozenset(
-    int(x) for x in settings.ALLOWED_USER_IDS.split(",") if x.strip()
-)
 RATE_LIMIT_CALLS = 3  # Calls per limit window
 RATE_LIMIT_WINDOW = 1.0  # in seconds
 
