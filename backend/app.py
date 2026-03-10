@@ -41,11 +41,11 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         raise RuntimeError("ADMIN_TELEGRAM_ID must be set. Run: make create-admin")
     async for db in get_db():
         admin = await users_repo.find_active_admin(db, backend_settings.ADMIN_TELEGRAM_ID)
-    if not admin:
-        raise RuntimeError(
-            f"No active admin with telegram_id={backend_settings.ADMIN_TELEGRAM_ID}. "
-            "Run: make create-admin"
-        )
+        if not admin:
+            raise RuntimeError(
+                f"No active admin with telegram_id={backend_settings.ADMIN_TELEGRAM_ID}. "
+                "Run: make create-admin"
+            )
     logger.info("Admin user verified")
 
     yield  # When uvicorn shuts down, it runs the code after yield
