@@ -3,6 +3,7 @@ import hmac
 import time
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 
@@ -21,7 +22,6 @@ def _make_telegram_payload(
 ) -> dict:
     """Build a valid Telegram Login Widget payload with correct HMAC."""
     auth_date = auth_date or int(time.time())
-    # Build check string (sorted key=value, no hash)
     pairs = {
         "auth_date": auth_date,
         "first_name": first_name,
@@ -50,14 +50,16 @@ def _mock_user(telegram_id: int = 12345, role: str = "user", is_active: bool = T
     return user
 
 
-def _setup_client():
+@pytest.fixture()
+def client():
     session = AsyncMock()
     app.dependency_overrides[get_db] = lambda: session
-    return TestClient(app)
+    yield TestClient(app)
+    app.dependency_overrides.clear()
 
 
 class TestTelegramLogin:
-    def test_valid_login_returns_token(self):
+    def test_valid_login_returns_token(self, client: TestClient):
         payload = _make_telegram_payload()
         with (
             patch("backend.services.auth.backend_settings") as mock_settings,
@@ -65,8 +67,8 @@ class TestTelegramLogin:
         ):
             mock_settings.TELEGRAM_BOT_TOKEN = BOT_TOKEN
             mock_settings.JWT_SECRET_KEY = JWT_SECRET
+            mock_repo.find_by_telegram_id = AsyncMock(return_value=None)
             mock_repo.upsert = AsyncMock(return_value=_mock_user())
-            client = _setup_client()
             resp = client.post("/api/auth/telegram", json=payload)
 
         assert resp.status_code == status.HTTP_200_OK
@@ -74,28 +76,26 @@ class TestTelegramLogin:
         assert "access_token" in data
         assert data["token_type"] == "bearer"
 
-    def test_invalid_hash_returns_401(self):
+    def test_invalid_hash_returns_401(self, client: TestClient):
         payload = _make_telegram_payload()
         payload["hash"] = "invalid_hash_value"
         with patch("backend.services.auth.backend_settings") as mock_settings:
             mock_settings.TELEGRAM_BOT_TOKEN = BOT_TOKEN
-            client = _setup_client()
             resp = client.post("/api/auth/telegram", json=payload)
 
         assert resp.status_code == status.HTTP_401_UNAUTHORIZED
 
-    def test_expired_auth_returns_401(self):
+    def test_expired_auth_returns_401(self, client: TestClient):
         stale_time = int(time.time()) - 90_000  # > 86400s
         payload = _make_telegram_payload(auth_date=stale_time)
         with patch("backend.services.auth.backend_settings") as mock_settings:
             mock_settings.TELEGRAM_BOT_TOKEN = BOT_TOKEN
-            client = _setup_client()
             resp = client.post("/api/auth/telegram", json=payload)
 
         assert resp.status_code == status.HTTP_401_UNAUTHORIZED
         assert "expired" in resp.json()["detail"].lower()
 
-    def test_deactivated_user_returns_403(self):
+    def test_deactivated_user_returns_403(self, client: TestClient):
         payload = _make_telegram_payload()
         with (
             patch("backend.services.auth.backend_settings") as mock_settings,
@@ -103,14 +103,12 @@ class TestTelegramLogin:
         ):
             mock_settings.TELEGRAM_BOT_TOKEN = BOT_TOKEN
             mock_settings.JWT_SECRET_KEY = JWT_SECRET
-            mock_repo.upsert = AsyncMock(return_value=_mock_user(is_active=False))
-            client = _setup_client()
+            mock_repo.find_by_telegram_id = AsyncMock(return_value=_mock_user(is_active=False))
             resp = client.post("/api/auth/telegram", json=payload)
 
         assert resp.status_code == status.HTTP_403_FORBIDDEN
 
-    def test_missing_first_name_returns_422(self):
-        client = _setup_client()
+    def test_missing_first_name_returns_422(self, client: TestClient):
         resp = client.post("/api/auth/telegram", json={"id": 1, "auth_date": 0, "hash": "x"})
 
         assert resp.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
