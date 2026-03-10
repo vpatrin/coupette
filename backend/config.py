@@ -40,6 +40,13 @@ class BackendSettings(BaseSettings):
     # Generate with: python -c "import secrets; print(secrets.token_hex(32))"
     BOT_SECRET: str = ""
 
+    # JWT signing key — required in production.
+    # Generate with: python -c "import secrets; print(secrets.token_urlsafe(32))"
+    JWT_SECRET_KEY: str = ""
+
+    # Telegram bot token — used to verify Telegram Login Widget HMAC.
+    TELEGRAM_BOT_TOKEN: str = ""
+
     # CORS — explicit allowlist, no wildcards.
     # Override in production .env: CORS_ORIGINS=["https://wine.victorpatrin.dev"]
     CORS_ORIGINS: list[str] = ["http://localhost:5173"]

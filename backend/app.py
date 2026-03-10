@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
+from backend.api.auth import router as auth_router
 from backend.api.health import router as health_router
 from backend.api.products import router as products_router
 from backend.api.recommendations import router as recommendations_router
@@ -21,8 +22,13 @@ setup_logging(SERVICE_NAME, level=settings.LOG_LEVEL)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    if settings.ENVIRONMENT == "production" and not backend_settings.BOT_SECRET:
-        raise RuntimeError("BOT_SECRET must be set in production")
+    if settings.ENVIRONMENT == "production":
+        if not backend_settings.BOT_SECRET:
+            raise RuntimeError("BOT_SECRET must be set in production")
+        if not backend_settings.JWT_SECRET_KEY:
+            raise RuntimeError("JWT_SECRET_KEY must be set in production")
+        if not backend_settings.TELEGRAM_BOT_TOKEN:
+            raise RuntimeError("TELEGRAM_BOT_TOKEN must be set in production")
     await verify_db_connection()
     logger.info("Database connection verified")
     yield  # When uvicorn shuts down, it runs the code after yield
@@ -41,6 +47,7 @@ app.add_middleware(
 
 register_exception_handlers(app)
 app.include_router(health_router)
+app.include_router(auth_router, prefix="/api")
 app.include_router(products_router, prefix="/api")
 app.include_router(stores_router, prefix="/api")
 app.include_router(users_router, prefix="/api")

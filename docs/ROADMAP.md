@@ -38,8 +38,8 @@ Adobe Live Search client, pgvector embeddings, Claude Haiku recommendations. See
 
 Prerequisite for web app and protecting expensive endpoints.
 
-- [ ] Users table + Alembic migration — `role` column for admin gate (#353)
-- [ ] Telegram OAuth login endpoint (#354)
+- [x] Users table + Alembic migration — `role` column for admin gate (#353)
+- [x] Telegram OAuth login endpoint (#354)
 - [ ] JWT token middleware (#355)
 - [ ] Guard all routes behind JWT except `/health` (#356)
 - [ ] Invite code access gate — admin-only `/api/admin/invites` endpoint, `invite_codes` table (#357)
@@ -101,14 +101,14 @@ Upgrade path from Haiku RAG to Claude with direct tool access. Either as MCP ser
 
 **CI hardening:**
 
-- [ ] Container security scan — Trivy on built images, catches OS-level CVEs that pip-audit misses (#360)
+- [x] Container security scan — Trivy on built images, catches OS-level CVEs that pip-audit misses (#360)
 - [ ] Alembic migration smoke test — `upgrade head && check` against test DB (#316)
 
 **CD pipeline:**
 
-- [ ] Build + Trivy + push + deploy on tag push (#362)
-- [ ] Deploy key — dedicated SSH key for CI → VPS access (#361)
-- [ ] docker-compose.prod.yml — resource limits, restart policies, no dev volumes
+- [x] Build + Trivy + push to GHCR on tag push (#362)
+- [x] docker-compose.prod.yml — GHCR images, restart policies, no dev volumes (#364)
+- [x] Manual deploy via `./deploy/deploy.sh vX.Y.Z`
 
 **Observability:**
 
@@ -116,7 +116,7 @@ Upgrade path from Haiku RAG to Claude with direct tool access. Either as MCP ser
 
 **Secrets management:**
 
-- [ ] Docker secrets — move credentials out of plaintext .env in production and CI
+- [ ] sops + age secrets — split `.env` into committed config + encrypted secrets, delete `.env.example`
 
 **Learning backlog (future):**
 
@@ -124,6 +124,7 @@ Upgrade path from Haiku RAG to Claude with direct tool access. Either as MCP ser
 - [ ] Kubernetes — container orchestration (when multi-node scaling is needed)
 - [ ] ArgoCD / Flux — GitOps-style continuous delivery
 - [ ] Terraform — infrastructure as code for VPS provisioning
+- [ ] HashiCorp Vault — centralized secret management with RBAC and auto-rotation
 
 ### ~~RAG Eval + MLOps~~ — frozen
 
