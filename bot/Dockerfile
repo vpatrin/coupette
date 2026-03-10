@@ -27,7 +27,7 @@ WORKDIR /app
 # Copy only the virtualenv — no pip/setuptools/poetry leak
 COPY --from=builder /opt/venv /opt/venv
 # Strip pip from venv and base image (not needed at runtime, avoids Trivy CVEs)
-RUN pip uninstall pip -y && rm -rf /usr/local/lib/python3.12/site-packages/pip*
+RUN pip uninstall pip -y && rm -rf /usr/local/lib/python*/site-packages/pip*
 
 # Copy bot code
 COPY bot/bot/ bot/bot/
