@@ -4,6 +4,10 @@ on:
   push:
     tags: ["v*"]
 
+concurrency:
+  group: cd-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   IMAGE_PREFIX: ghcr.io/vpatrin/saq-sommelier
   TRIVY_SEVERITY: LOW,MEDIUM,HIGH,CRITICAL

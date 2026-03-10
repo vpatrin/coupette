@@ -29,7 +29,7 @@ echo "==> Restarting services..."
 "${COMPOSE[@]}" up -d backend bot
 
 echo "==> Health check..."
-for i in 1 2 3 4 5; do
+for i in 1 2 3 4 5 6; do
   curl -sf localhost:8001/health > /dev/null && break
   sleep 2
 done
