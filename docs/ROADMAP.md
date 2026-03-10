@@ -38,8 +38,8 @@ Adobe Live Search client, pgvector embeddings, Claude Haiku recommendations. See
 
 Prerequisite for web app and protecting expensive endpoints.
 
-- [ ] Users table + Alembic migration — `role` column for admin gate (#353)
-- [ ] Telegram OAuth login endpoint (#354)
+- [x] Users table + Alembic migration — `role` column for admin gate (#353)
+- [x] Telegram OAuth login endpoint (#354)
 - [ ] JWT token middleware (#355)
 - [ ] Guard all routes behind JWT except `/health` (#356)
 - [ ] Invite code access gate — admin-only `/api/admin/invites` endpoint, `invite_codes` table (#357)
