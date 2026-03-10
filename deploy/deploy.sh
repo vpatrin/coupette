@@ -25,9 +25,10 @@ echo "==> Running migrations..."
 "${COMPOSE[@]}" run --rm migrate
 
 echo "==> Bootstrapping admin user..."
-docker exec "$DB_HOST" psql -U "$DB_USER" -d "$DB_NAME" -c \
+docker exec "$DB_HOST" psql -U "$DB_USER" -d "$DB_NAME" \
+  -v tid="$ADMIN_TELEGRAM_ID" -c \
   "INSERT INTO users (telegram_id, first_name, role, is_active, created_at)
-   VALUES ($ADMIN_TELEGRAM_ID, 'Admin', 'admin', true, now())
+   VALUES (:'tid', 'Admin', 'admin', true, now())
    ON CONFLICT (telegram_id) DO UPDATE SET role = 'admin', is_active = true;"
 
 echo "==> Restarting services..."
