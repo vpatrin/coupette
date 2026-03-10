@@ -1,11 +1,11 @@
-from time import monotonic
-from unittest.mock import AsyncMock, patch
+from time import monotonic, time
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from telegram import Update, User
 from telegram.ext import ApplicationHandlerStop
 
-from bot.middleware import RateLimiter, _limiter, allowlist_gate, rate_limit_gate
+from bot.middleware import RateLimiter, _limiter, access_gate, rate_limit_gate
 
 
 def _update(user_id: int = 42) -> Update:
@@ -24,53 +24,103 @@ def _update_no_user() -> Update:
     return update
 
 
+def _context(*, authorized: bool | None = None, checked_at: float = 0) -> MagicMock:
+    """Build a context with user_data and a mock api client."""
+    ctx = MagicMock()
+    ctx.user_data = {}
+    if authorized is not None:
+        ctx.user_data["authorized"] = authorized
+        ctx.user_data["auth_checked_at"] = checked_at
+    ctx.application.bot_data = {"api": AsyncMock()}
+    return ctx
+
+
 @pytest.fixture(autouse=True)
 def _clear_rate_limiter():
     """Reset rate limiter state between tests."""
     _limiter._calls.clear()
 
 
-# ── Allowlist gate ──────────────────────────────────────────
+# ── Access gate ────────────────────────────────────────────
 
 
-@patch("bot.middleware.ALLOWED_USERS", frozenset({42, 99}))
-async def test_allowed_user_passes():
+async def test_authorized_user_passes():
     update = _update(user_id=42)
-    context = AsyncMock()
+    ctx = _context()
+    ctx.application.bot_data["api"].check_user = AsyncMock(return_value=True)
 
-    await allowlist_gate(update, context)
+    await access_gate(update, ctx)
 
     update.message.reply_text.assert_not_called()
+    assert ctx.user_data["authorized"] is True
 
 
-@patch("bot.middleware.ALLOWED_USERS", frozenset({42, 99}))
-async def test_rejected_user_gets_message():
+async def test_unregistered_user_rejected():
     update = _update(user_id=999)
-    context = AsyncMock()
+    ctx = _context()
+    ctx.application.bot_data["api"].check_user = AsyncMock(return_value=False)
 
     with pytest.raises(ApplicationHandlerStop):
-        await allowlist_gate(update, context)
+        await access_gate(update, ctx)
 
     update.message.reply_text.assert_called_once()
     text = update.message.reply_text.call_args[0][0]
-    assert "private" in text.lower()
+    assert "invite" in text.lower()
 
 
-@patch("bot.middleware.ALLOWED_USERS", frozenset())
-async def test_empty_allowlist_allows_everyone():
-    update = _update(user_id=999)
-    context = AsyncMock()
+async def test_cached_auth_skips_api_call():
+    update = _update(user_id=42)
+    ctx = _context(authorized=True, checked_at=time())
+    api = ctx.application.bot_data["api"]
 
-    await allowlist_gate(update, context)
+    await access_gate(update, ctx)
+
+    api.check_user.assert_not_called()
+
+
+async def test_expired_cache_rechecks():
+    update = _update(user_id=42)
+    ctx = _context(authorized=True, checked_at=time() - 7200)  # 2h ago
+    ctx.application.bot_data["api"].check_user = AsyncMock(return_value=True)
+
+    await access_gate(update, ctx)
+
+    ctx.application.bot_data["api"].check_user.assert_called_once_with(42)
+
+
+async def test_backend_down_fails_open():
+    from bot.api_client import BackendUnavailableError
+
+    update = _update(user_id=42)
+    ctx = _context()
+    ctx.application.bot_data["api"].check_user = AsyncMock(
+        side_effect=BackendUnavailableError("timeout")
+    )
+
+    await access_gate(update, ctx)
 
     update.message.reply_text.assert_not_called()
 
 
-async def test_allowlist_no_user_passes_through():
-    update = _update_no_user()
-    context = AsyncMock()
+async def test_backend_500_fails_open():
+    from bot.api_client import BackendAPIError
 
-    await allowlist_gate(update, context)
+    update = _update(user_id=42)
+    ctx = _context()
+    ctx.application.bot_data["api"].check_user = AsyncMock(
+        side_effect=BackendAPIError(500, "Internal Server Error")
+    )
+
+    await access_gate(update, ctx)
+
+    update.message.reply_text.assert_not_called()
+
+
+async def test_no_user_passes_through():
+    update = _update_no_user()
+    ctx = _context()
+
+    await access_gate(update, ctx)
 
 
 # ── Rate limit gate ─────────────────────────────────────────

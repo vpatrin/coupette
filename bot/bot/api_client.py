@@ -102,6 +102,17 @@ class BackendClient:
         """DELETE /api/users/{user_id}/stores/{saq_store_id}."""
         await self._delete(f"/users/{user_id}/stores/{saq_store_id}")
 
+    # ── Auth ──────────────────────────────────────────────────────
+
+    async def check_user(self, telegram_id: int) -> bool:
+        """True if registered and active. Raises on 5xx so caller can fail open."""
+        resp = await self._request(
+            "GET", "/auth/telegram/check", params={"telegram_id": telegram_id}
+        )
+        if resp.status_code >= 500:
+            self._raise_api_error(resp)
+        return resp.is_success
+
     # ── Notifications ────────────────────────────────────────────
 
     async def get_pending_notifications(self) -> list[dict[str, Any]]:
