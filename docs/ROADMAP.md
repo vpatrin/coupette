@@ -51,7 +51,7 @@ Prerequisite for web app and protecting expensive endpoints.
 Web app ships before chat — auth, watches, and stores are already API-complete.
 
 - [x] Scaffold + auth — Vite + React + Tailwind, Telegram OAuth login (invite code → Login Widget → JWT) (#382, #383, #384)
-- [ ] Watch dashboard — watch list, availability status, add/remove
+- [x] Watch dashboard — watch list, availability status, remove (#385)
 - [ ] Store picker — map or list view, add/remove preferred stores (replaces bot `/mystores`)
 - [ ] "Enable Telegram alerts" onboarding — QR code / deep link to link web user to bot
 
