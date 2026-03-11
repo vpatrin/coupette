@@ -13,6 +13,7 @@ env:
   POETRY_VIRTUALENVS_IN_PROJECT: "true"
   PYTHON_VERSION: "3.12"
   POETRY_VERSION: "2.3.2"
+  NODE_VERSION: "22"
   TRIVY_SEVERITY: "LOW,MEDIUM,HIGH,CRITICAL"
 
 jobs:
@@ -26,6 +27,7 @@ jobs:
       scraper: ${{ steps.filter.outputs.scraper }}
       core: ${{ steps.filter.outputs.core }}
       bot: ${{ steps.filter.outputs.bot }}
+      frontend: ${{ steps.filter.outputs.frontend }}
       workflows: ${{ steps.filter.outputs.workflows }}
     steps:
       - uses: actions/checkout@v6
@@ -41,6 +43,8 @@ jobs:
               - 'core/**'
             bot:
               - 'bot/**'
+            frontend:
+              - 'frontend/**'
             workflows:
               - '.github/workflows/**'
 
@@ -125,6 +129,21 @@ jobs:
         with:
           dockerfile: bot/Dockerfile
           ignore: DL3008,DL4006
+
+  lint-frontend:
+    needs: [changes]
+    if: needs.changes.outputs.frontend == 'true' || needs.changes.outputs.workflows == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: yarn
+          cache-dependency-path: frontend/yarn.lock
+      - run: cd frontend && yarn --frozen-lockfile
+      - run: make lint-frontend
 
   # ── Test ──────────────────────────────────────────────────────
 
@@ -228,6 +247,21 @@ jobs:
           poetry-version: ${{ env.POETRY_VERSION }}
       - run: make audit-bot
 
+  audit-frontend:
+    needs: [changes]
+    if: needs.changes.outputs.frontend == 'true' || needs.changes.outputs.workflows == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: yarn
+          cache-dependency-path: frontend/yarn.lock
+      - run: cd frontend && yarn --frozen-lockfile
+      - run: make audit-frontend
+
   gitleaks:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -277,10 +311,36 @@ jobs:
           service: bot
           trivy-severity: ${{ env.TRIVY_SEVERITY }}
 
+  # ── Frontend build ──────────────────────────────────────────
+
+  build-frontend:
+    needs: [changes]
+    if: needs.changes.outputs.frontend == 'true' || needs.changes.outputs.workflows == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: yarn
+          cache-dependency-path: frontend/yarn.lock
+      - run: cd frontend && yarn --frozen-lockfile
+      - run: make build-frontend
+      - name: Bundle size check
+        run: |
+          MAX_KB=512
+          SIZE_KB=$(du -sk frontend/dist/assets | cut -f1)
+          echo "Bundle size: ${SIZE_KB}KB (limit: ${MAX_KB}KB)"
+          if [ "$SIZE_KB" -gt "$MAX_KB" ]; then
+            echo "::error::Bundle size ${SIZE_KB}KB exceeds ${MAX_KB}KB limit"
+            exit 1
+          fi
+
   # ── Summary gates ─────────────────────────────────────────────
 
   build:
-    needs: [build-backend, build-scraper, build-bot]
+    needs: [build-backend, build-scraper, build-bot, build-frontend]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     if: always()
@@ -289,14 +349,15 @@ jobs:
           for result in \
             "${{ needs.build-backend.result }}" \
             "${{ needs.build-scraper.result }}" \
-            "${{ needs.build-bot.result }}"; do
+            "${{ needs.build-bot.result }}" \
+            "${{ needs.build-frontend.result }}"; do
             if [ "$result" != "success" ] && [ "$result" != "skipped" ]; then
               exit 1
             fi
           done
 
   lint:
-    needs: [lint-backend, lint-scraper, lint-core, lint-bot, lint-dockerfiles]
+    needs: [lint-backend, lint-scraper, lint-core, lint-bot, lint-dockerfiles, lint-frontend]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     if: always()
@@ -307,7 +368,8 @@ jobs:
             "${{ needs.lint-scraper.result }}" \
             "${{ needs.lint-core.result }}" \
             "${{ needs.lint-bot.result }}" \
-            "${{ needs.lint-dockerfiles.result }}"; do
+            "${{ needs.lint-dockerfiles.result }}" \
+            "${{ needs.lint-frontend.result }}"; do
             if [ "$result" != "success" ] && [ "$result" != "skipped" ]; then
               exit 1
             fi
@@ -330,7 +392,7 @@ jobs:
           done
 
   security:
-    needs: [audit-core, audit-backend, audit-scraper, audit-bot, gitleaks]
+    needs: [audit-core, audit-backend, audit-scraper, audit-bot, audit-frontend, gitleaks]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     if: always()
@@ -341,6 +403,7 @@ jobs:
             "${{ needs.audit-backend.result }}" \
             "${{ needs.audit-scraper.result }}" \
             "${{ needs.audit-bot.result }}" \
+            "${{ needs.audit-frontend.result }}" \
             "${{ needs.gitleaks.result }}"; do
             if [ "$result" != "success" ] && [ "$result" != "skipped" ]; then
               exit 1

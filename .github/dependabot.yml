@@ -32,6 +32,14 @@ updates:
       minor-and-patch:
         update-types: [minor, patch]
 
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+
   - package-ecosystem: github-actions
     directory: /
     schedule:
