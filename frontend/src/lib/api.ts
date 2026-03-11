@@ -1,3 +1,6 @@
+import { useCallback } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
+
 const BASE_URL = '/api'
 
 export class ApiError extends Error {
@@ -36,5 +39,20 @@ export async function api<T>(
     throw new ApiError(response.status, body.detail ?? response.statusText)
   }
 
+  // 204 No Content has no body — return undefined instead of parsing
+  if (response.status === 204) return undefined as T
+
   return response.json() as Promise<T>
+}
+
+// Returns an api() wrapper that auto-attaches the JWT from AuthContext.
+// Use this in any authenticated component instead of passing token manually.
+export function useApiClient() {
+  const { token } = useAuth()
+
+  return useCallback(
+    <T>(path: string, options: RequestInit = {}) =>
+      api<T>(path, { ...options, token }),
+    [token]
+  )
 }

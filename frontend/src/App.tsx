@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import LoginPage from '@/pages/LoginPage'
 import DashboardPage from '@/pages/DashboardPage'
+import WatchesPage from '@/pages/WatchesPage'
 
 function App() {
   return (
@@ -12,6 +13,14 @@ function App() {
         element={
           <ProtectedRoute>
             <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/watches"
+        element={
+          <ProtectedRoute>
+            <WatchesPage />
           </ProtectedRoute>
         }
       />
