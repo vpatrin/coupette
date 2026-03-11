@@ -38,10 +38,9 @@ graph LR
     Bot -- calls --> API
     Web -- calls --> API
 
-    style Web stroke-dasharray: 5 5
 ```
 
-*Dashed = planned. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for full details.*
+*See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for full details.*
 
 ## Quick start
 

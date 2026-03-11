@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { useNavigate, Navigate } from 'react-router'
+import { useNavigate, useParams, Navigate } from 'react-router'
 import { useAuth } from '@/contexts/AuthContext'
 import {
   TelegramLoginButton,
@@ -17,7 +17,7 @@ interface TokenResponse {
 function LoginPage() {
   const { token, login } = useAuth()
   const navigate = useNavigate()
-  const [inviteCode, setInviteCode] = useState('')
+  const { code } = useParams<{ code: string }>()
   const [error, setError] = useState<string | null>(null)
 
   const handleAuth = useCallback(
@@ -26,7 +26,7 @@ function LoginPage() {
       try {
         const body = {
           ...telegramData,
-          ...(inviteCode ? { invite_code: inviteCode } : {}),
+          ...(code ? { invite_code: code } : {}),
         }
         const { access_token } = await api<TokenResponse>('/auth/telegram', {
           method: 'POST',
@@ -42,33 +42,47 @@ function LoginPage() {
         }
       }
     },
-    [inviteCode, login, navigate]
+    [code, login, navigate]
   )
 
   if (token) return <Navigate to="/dashboard" replace />
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center gap-6">
-      <h1 className="text-4xl font-mono font-bold">Coupette</h1>
-      <p className="text-muted-foreground">
-        Wine discovery & recommendations
-      </p>
+    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center gap-8 p-8">
+      <div className="flex flex-col items-center gap-2">
+        <h1 className="text-5xl font-mono font-bold">Coupette 🥂</h1>
+        <p className="text-muted-foreground">
+          Wine discovery for the curious.
+        </p>
+      </div>
 
-      <div className="flex flex-col items-center gap-4 w-72">
-        <input
-          type="text"
-          placeholder="Invite code (new users only)"
-          value={inviteCode}
-          onChange={(e) => setInviteCode(e.target.value)}
-          className="w-full px-4 py-2 bg-muted text-foreground border border-border font-mono text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-        />
+      {code && (
+        <p className="text-sm text-primary font-mono border border-primary px-4 py-2">
+          You've been invited
+        </p>
+      )}
 
+      <div className="flex flex-col items-center gap-4">
         <TelegramLoginButton botUsername={BOT_USERNAME} onAuth={handleAuth} />
 
         {error && (
-          <p className="text-destructive text-sm font-mono">{error}</p>
+          <p className="text-destructive text-sm font-mono max-w-xs text-center">
+            {error}
+          </p>
         )}
       </div>
+
+      <footer className="text-xs text-muted-foreground flex flex-col items-center gap-1 mt-4">
+        <p>Made with ❤️</p>
+        <a
+          href="https://github.com/vpatrin/saq-sommelier"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-primary underline underline-offset-2"
+        >
+          Source on GitHub
+        </a>
+      </footer>
     </div>
   )
 }
