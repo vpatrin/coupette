@@ -1,9 +1,9 @@
-# SAQ Sommelier
+# Coupette
 
-Wine discovery and recommendation platform for the SAQ (Quebec liquor board) catalog.
+Wine discovery and recommendation platform. Data sourced from the SAQ (Quebec liquor board) catalog.
 
-[![CI](https://github.com/vpatrin/saq-sommelier/actions/workflows/ci.yml/badge.svg)](https://github.com/vpatrin/saq-sommelier/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/github/v/tag/vpatrin/saq-sommelier?label=version)](CHANGELOG.md)
+[![CI](https://github.com/vpatrin/coupette/actions/workflows/ci.yml/badge.svg)](https://github.com/vpatrin/coupette/actions/workflows/ci.yml)
+[![Version](https://img.shields.io/github/v/tag/vpatrin/coupette?label=version)](CHANGELOG.md)
 ![Python 3.12](https://img.shields.io/badge/python-3.12-blue)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://docs.astral.sh/ruff/)
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-SAQ Sommelier is a wine recommendation tool built on data from the SAQ (Societe des alcools du Quebec) catalog. It scrapes ~38k products, stores them in PostgreSQL, and serves them through a FastAPI API. A Telegram bot provides natural language recommendations powered by Claude.
+Coupette is a wine discovery and recommendation tool built on data from the SAQ (Societe des alcools du Quebec) catalog. It scrapes ~38k products, stores them in PostgreSQL, and serves them through a FastAPI API. A Telegram bot and web app provide natural language recommendations powered by Claude.
 
 Designed as a **modular monolith** for a solo developer serving ~20 users. Services are independently deployable containers that communicate through PostgreSQL — not by importing each other's code.
 
@@ -65,7 +65,7 @@ Designed as a **modular monolith** for a solo developer serving ~20 users. Servi
 ## Project structure
 
 ```
-saq-sommelier/
+coupette/
 ├── backend/          FastAPI API (reads from DB)
 │   ├── api/          HTTP endpoints (products, watches, health)
 │   ├── repositories/ Database queries (SQLAlchemy)

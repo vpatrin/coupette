@@ -1,7 +1,7 @@
 [project]
-name = "saq-bot"
+name = "coupette-bot"
 version = "1.0.0"
-description = "Telegram bot for SAQ Sommelier — wine discovery and alerts"
+description = "Telegram bot for Coupette — wine discovery and alerts"
 requires-python = ">=3.12,<4.0"
 dynamic = ["dependencies"]
 
@@ -13,7 +13,7 @@ python-telegram-bot = {version = "^22.6", extras = ["job-queue"]}
 httpx = ">=0.28"
 pydantic-settings = "^2.13"
 loguru = ">=0.7"
-saq-core = {path = "../core", develop = true}
+coupette-core = {path = "../core", develop = true}
 
 [tool.poetry.group.dev.dependencies]
 pip-audit = ">=2.7"

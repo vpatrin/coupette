@@ -41,12 +41,12 @@ The scraper runs weekly via a **systemd timer** on the VPS. Systemd handles sche
 
 #### Unit files
 
-Source files: [`deploy/saq-scraper.service`](../deploy/saq-scraper.service) and [`deploy/saq-scraper.timer`](../deploy/saq-scraper.timer).
+Source files: [`deploy/coupette-scraper.service`](../deploy/coupette-scraper.service) and [`deploy/coupette-scraper.timer`](../deploy/coupette-scraper.timer).
 
-The service file assumes `WorkingDirectory=/opt/saq-sommelier`. If your repo lives elsewhere, either symlink it:
+The service file assumes `WorkingDirectory=/opt/coupette`. If your repo lives elsewhere, either symlink it:
 
 ```bash
-sudo ln -s /path/to/your/saq-sommelier /opt/saq-sommelier
+sudo ln -s /path/to/your/coupette /opt/coupette
 ```
 
 Or edit `WorkingDirectory` in the installed service file after copying.
@@ -54,9 +54,9 @@ Or edit `WorkingDirectory` in the installed service file after copying.
 #### Installation
 
 ```bash
-sudo cp deploy/saq-scraper.{service,timer} /etc/systemd/system/
+sudo cp deploy/coupette-scraper.{service,timer} /etc/systemd/system/
 sudo systemctl daemon-reload
-sudo systemctl enable --now saq-scraper.timer
+sudo systemctl enable --now coupette-scraper.timer
 ```
 
 `Persistent=true` in the timer means if the VPS was off during the scheduled time, it runs on next boot. Only the timer is enabled — it triggers the oneshot service on schedule.
@@ -64,16 +64,16 @@ sudo systemctl enable --now saq-scraper.timer
 #### Checking status
 
 ```bash
-systemctl status saq-scraper.timer     # next/last run times
+systemctl status coupette-scraper.timer     # next/last run times
 systemctl list-timers                  # all active timers
-journalctl -u saq-scraper.service      # all scraper logs
-journalctl -u saq-scraper.service -n 50 --no-pager   # last 50 lines
+journalctl -u coupette-scraper.service      # all scraper logs
+journalctl -u coupette-scraper.service -n 50 --no-pager   # last 50 lines
 ```
 
 #### Manual trigger
 
 ```bash
-sudo systemctl start saq-scraper.service
+sudo systemctl start coupette-scraper.service
 ```
 
 ### Failure recovery
@@ -130,20 +130,20 @@ Runtime: ~1 min. Scope: all categories (wine, spirits, beer, cider).
 
 Runs daily at 2am via systemd timer, one hour before the DB backup (3am).
 
-Source files: [`deploy/saq-availability.service`](../deploy/saq-availability.service) and [`deploy/saq-availability.timer`](../deploy/saq-availability.timer).
+Source files: [`deploy/coupette-availability.service`](../deploy/coupette-availability.service) and [`deploy/coupette-availability.timer`](../deploy/coupette-availability.timer).
 
 ```bash
 # Install
-sudo cp deploy/saq-availability.{service,timer} /etc/systemd/system/
+sudo cp deploy/coupette-availability.{service,timer} /etc/systemd/system/
 sudo systemctl daemon-reload
-sudo systemctl enable --now saq-availability.timer
+sudo systemctl enable --now coupette-availability.timer
 
 # Status and logs
-systemctl status saq-availability.timer
-journalctl -u saq-availability.service -n 50 --no-pager
+systemctl status coupette-availability.timer
+journalctl -u coupette-availability.service -n 50 --no-pager
 
 # Manual trigger
-sudo systemctl start saq-availability.service
+sudo systemctl start coupette-availability.service
 ```
 
 ### Running locally

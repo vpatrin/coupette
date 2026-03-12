@@ -1,5 +1,5 @@
 [Unit]
-Description=Run SAQ scraper weekly
+Description=Run Coupette scraper weekly
 
 [Timer]
 OnCalendar=Mon *-*-* 03:00:00

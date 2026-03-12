@@ -25,12 +25,12 @@ runs:
         file: ${{ inputs.service }}/Dockerfile
         push: false
         load: true
-        tags: saq-${{ inputs.service }}:ci
+        tags: coupette-${{ inputs.service }}:ci
         cache-from: type=gha,scope=${{ inputs.service }}
         cache-to: type=gha,scope=${{ inputs.service }}
     - uses: aquasecurity/trivy-action@0.35.0
       with:
-        image-ref: saq-${{ inputs.service }}:ci
+        image-ref: coupette-${{ inputs.service }}:ci
         severity: ${{ inputs.trivy-severity }}
         exit-code: 1
         ignore-unfixed: true
@@ -38,5 +38,5 @@ runs:
     - if: inputs.push == 'true'
       shell: bash
       run: |
-        docker tag saq-${{ inputs.service }}:ci ${{ inputs.tags }}
+        docker tag coupette-${{ inputs.service }}:ci ${{ inputs.tags }}
         docker push ${{ inputs.tags }}

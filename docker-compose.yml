@@ -1,12 +1,13 @@
 # Base configuration — hardened by default (prod-safe).
 # Dev: auto-loads docker-compose.override.yml (volume mounts, hot reload).
 # Prod: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+name: coupette
 services:
   backend:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    container_name: saq-backend
+    container_name: coupette-backend
     env_file: .env
     environment:
       # Override localhost → Compose service name for container-to-container networking.
@@ -113,7 +114,7 @@ services:
   postgres:
     profiles: ["dev"]
     image: pgvector/pgvector:pg16
-    container_name: saq-postgres
+    container_name: coupette-postgres
     environment:
       POSTGRES_USER: ${DB_USER:-saq_sommelier}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-saq_sommelier}

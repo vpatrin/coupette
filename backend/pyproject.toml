@@ -1,7 +1,7 @@
 [project]
-name = "saq-sommelier"
+name = "coupette-backend"
 version = "1.0.0"
-description = "AI-powered wine recommendation platform — SAQ catalog scraper, Claude RAG, Telegram bot & web app"
+description = "AI-powered wine recommendation platform — catalog scraper, Claude RAG, Telegram bot & web app"
 requires-python = ">=3.12,<4.0"
 dynamic = ["dependencies"]
 
@@ -17,7 +17,7 @@ asyncpg = "^0.31"
 greenlet = "^3.3.2"
 anthropic = ">=0.52"
 loguru = ">=0.7"
-saq-core = {path = "../core", develop = true, extras = ["embeddings"]}
+coupette-core = {path = "../core", develop = true, extras = ["embeddings"]}
 pyjwt = "^2.11.0"
 
 [tool.poetry.group.dev.dependencies]
