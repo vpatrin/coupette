@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react'
 import { useSearchParams } from 'react-router'
 import { useAuth } from '@/contexts/AuthContext'
 import { useApiClient, ApiError } from '@/lib/api'
@@ -6,11 +6,11 @@ import type {
   PaginatedOut,
   FacetsOut,
   CategoryGroupOut,
-  ProductOut,
   WatchWithProduct,
   UserStorePreferenceOut,
 } from '@/lib/types'
 import { Button } from '@/components/ui/button'
+import { formatOrigin } from '@/lib/utils'
 
 const DEBOUNCE_MS = 300
 const PER_PAGE = 20
@@ -35,17 +35,6 @@ function activeGroupKey(category: string, groups: CategoryGroupOut[]): string | 
   // Raw category name — find which group owns it
   const parent = groups.find((g) => g.categories.includes(category))
   return parent?.key ?? null
-}
-
-/** Deduplicate "Bourgogne, Bourgogne" → "Bourgogne", then combine with country. */
-function formatOrigin(product: ProductOut): string {
-  const region = product.region
-    ? [...new Set(product.region.split(', '))].join(', ')
-    : null
-  if (region && product.country && region !== product.country) {
-    return `${region}, ${product.country}`
-  }
-  return region || product.country || ''
 }
 
 function SearchPage() {
@@ -92,7 +81,10 @@ function SearchPage() {
   const [watchingInProgress, setWatchingInProgress] = useState<string | null>(null)
 
   // Saved store IDs — for "In my stores" filter
-  const [savedStoreIds, setSavedStoreIds] = useState<Set<string>>(new Set())
+  const [savedStoreIdsRaw, setSavedStoreIds] = useState<string[]>([])
+  // Stable reference: only changes when the actual IDs change, not on every render
+  const storeIdsKey = savedStoreIdsRaw.join(',')
+  const savedStoreIds = useMemo(() => savedStoreIdsRaw, [storeIdsKey])
 
   // Stable ref for grouped categories — avoids circular dependency in facets effect
   // (effect reads groups to resolve category param, then sets facets which contains groups)
@@ -100,21 +92,29 @@ function SearchPage() {
 
   const userId = `tg:${user?.telegram_id}`
 
+  // Shared: append category, availability, and store filters to params
+  const appendFilterParams = useCallback(
+    (params: URLSearchParams) => {
+      for (const cat of resolveCategories(category, groupsRef.current)) {
+        params.append('category', cat)
+      }
+      if (onlineOnly) params.set('available', 'true')
+      if (inStoresOnly && savedStoreIds.length > 0) {
+        for (const id of savedStoreIds) {
+          params.append('in_stores', id)
+        }
+      }
+    },
+    [category, onlineOnly, inStoresOnly, savedStoreIds]
+  )
+
   // Fetch facets — re-fetches when category or availability filters change
   // so country counts reflect the active filter set
   useEffect(() => {
     let cancelled = false
     async function fetchFacets() {
       const params = new URLSearchParams()
-      for (const cat of resolveCategories(category, groupsRef.current)) {
-        params.append('category', cat)
-      }
-      if (onlineOnly) params.set('available', 'true')
-      if (inStoresOnly && savedStoreIds.size > 0) {
-        for (const id of savedStoreIds) {
-          params.append('in_stores', id)
-        }
-      }
+      appendFilterParams(params)
       const qs = params.toString()
       try {
         const data = await apiClient<FacetsOut>(`/products/facets${qs ? `?${qs}` : ''}`)
@@ -128,7 +128,7 @@ function SearchPage() {
     }
     fetchFacets()
     return () => { cancelled = true }
-  }, [apiClient, category, onlineOnly, inStoresOnly, savedStoreIds])
+  }, [apiClient, appendFilterParams])
 
   // Fetch existing watches and saved stores on mount
   useEffect(() => {
@@ -151,7 +151,7 @@ function SearchPage() {
       try {
         const prefs = await apiClient<UserStorePreferenceOut[]>('/stores/preferences')
         if (!cancelled) {
-          setSavedStoreIds(new Set(prefs.map((p) => p.saq_store_id)))
+          setSavedStoreIds(prefs.map((p) => p.saq_store_id).sort())
         }
       } catch {
         // Non-critical — "In my stores" filter won't work without prefs
@@ -176,18 +176,10 @@ function SearchPage() {
       params.set('per_page', String(PER_PAGE))
       if (query) params.set('q', query)
       if (country) params.set('country', country)
-      for (const cat of resolveCategories(category, groupsRef.current)) {
-        params.append('category', cat)
-      }
+      appendFilterParams(params)
       if (sort) params.set('sort', sort)
-      if (onlineOnly) params.set('available', 'true')
       if (minPrice) params.set('min_price', minPrice)
       if (maxPrice) params.set('max_price', maxPrice)
-      if (inStoresOnly && savedStoreIds.size > 0) {
-        for (const id of savedStoreIds) {
-          params.append('in_stores', id)
-        }
-      }
 
       try {
         const data = await apiClient<PaginatedOut>(`/products?${params}`)
@@ -203,7 +195,7 @@ function SearchPage() {
 
     fetchProducts()
     return () => { cancelled = true }
-  }, [apiClient, query, country, category, sort, onlineOnly, inStoresOnly, minPrice, maxPrice, savedStoreIds, page, retryCount])
+  }, [apiClient, query, country, appendFilterParams, sort, minPrice, maxPrice, page, retryCount])
 
   // Debounced search input
   const handleInputChange = useCallback(
@@ -508,16 +500,16 @@ function SearchPage() {
                 <button
                   type="button"
                   onClick={() => toggleFilter('in_stores')}
-                  disabled={savedStoreIds.size === 0}
+                  disabled={savedStoreIds.length === 0}
                   className={`border px-2 py-1.5 text-xs font-mono text-left transition-colors ${
-                    savedStoreIds.size === 0
+                    savedStoreIds.length === 0
                       ? 'border-border text-muted-foreground/50 cursor-not-allowed'
                       : inStoresOnly
                         ? 'border-primary bg-primary/10 text-primary'
                         : 'border-border text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  {savedStoreIds.size > 0
+                  {savedStoreIds.length > 0
                     ? 'In my stores'
                     : 'In my stores (none saved)'}
                 </button>

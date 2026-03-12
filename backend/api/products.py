@@ -23,7 +23,7 @@ router = APIRouter(prefix="/products", tags=["products"])
 async def get_products(
     page: int = Query(default=1, ge=1),
     per_page: int = Query(default=DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
-    sort: Literal["recent", "price_asc", "price_desc"] | None = Query(default=None),
+    sort: Literal["recent", "price_asc", "price_desc", "alpha"] | None = Query(default=None),
     q: str | None = Query(default=None, min_length=1, max_length=MAX_SEARCH_LENGTH),
     category: list[Annotated[str, Query(max_length=MAX_FILTER_LENGTH)]] | None = Query(
         default=None

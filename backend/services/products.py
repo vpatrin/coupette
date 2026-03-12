@@ -116,8 +116,8 @@ async def get_facets(
     wine_scope: bool = False,
 ) -> FacetsOut:
     """Fetch distinct filter values and price range for active products."""
-    # ? asyncio.gather would be faster here, but AsyncSession is not safe for
-    # ? concurrent coroutines on the same connection. Would need separate sessions.
+    # ? asyncio.gather would be faster here, but requires separate sessions —
+    # ? a single AsyncSession can't run concurrent queries on the same connection.
     categories = await get_distinct_values(db, Product.category, wine_scope=wine_scope)
     country_rows = await get_distinct_values_by_count(
         db,

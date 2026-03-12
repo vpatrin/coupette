@@ -3,17 +3,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useApiClient, ApiError } from '@/lib/api'
 import type { ProductOut, WatchWithProduct, UserStorePreferenceOut } from '@/lib/types'
 import { Button } from '@/components/ui/button'
-
-/** Deduplicate "Bourgogne, Bourgogne" → "Bourgogne", then combine with country. */
-function formatOrigin(product: ProductOut): string {
-  const region = product.region
-    ? [...new Set(product.region.split(', '))].join(', ')
-    : null
-  if (region && product.country && region !== product.country) {
-    return `${region}, ${product.country}`
-  }
-  return region || product.country || ''
-}
+import { formatOrigin } from '@/lib/utils'
 
 function AvailabilityStatus({
   product,

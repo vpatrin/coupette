@@ -15,6 +15,7 @@ _SORT_ORDERS = {
     "recent": Product.updated_at.desc(),
     "price_asc": Product.price.asc(),
     "price_desc": Product.price.desc(),
+    "alpha": Product.name.asc(),
 }
 
 
