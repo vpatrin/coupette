@@ -17,6 +17,7 @@ from backend.repositories.products import (
     find_by_sku,
     find_random,
     get_distinct_values,
+    get_price_range,
 )
 from backend.schemas.product import ProductOut
 from core.db.models import Product
@@ -515,6 +516,72 @@ async def test_facets_query_excludes_delisted():
     stmt = session.execute.call_args[0][0]
     sql = _compile(stmt)
     assert "delisted_at IS NULL" in sql
+
+
+@pytest.mark.asyncio
+async def test_distinct_values_respects_availability_filters():
+    """get_distinct_values propagates category, available, and in_stores to SQL."""
+    session = AsyncMock()
+    result = MagicMock()
+    scalars_mock = MagicMock()
+    scalars_mock.all.return_value = []
+    result.scalars.return_value = scalars_mock
+    session.execute = AsyncMock(return_value=result)
+
+    await get_distinct_values(
+        session,
+        Product.region,
+        category=["Vin rouge"],
+        available=True,
+        in_stores=["S001", "S002"],
+    )
+
+    sql = _compile(session.execute.call_args[0][0])
+    assert "IN ('Vin rouge')" in sql
+    assert "availability = true" in sql
+    assert "store_availability" in sql
+    assert "delisted_at IS NULL" in sql
+
+
+@pytest.mark.asyncio
+async def test_price_range_respects_availability_filters():
+    """get_price_range propagates category, available, and in_stores to SQL."""
+    session = AsyncMock()
+    result = MagicMock()
+    result.one.return_value = (None, None)
+    session.execute = AsyncMock(return_value=result)
+
+    await get_price_range(
+        session,
+        category=["Vin blanc"],
+        available=True,
+        in_stores=["S003"],
+    )
+
+    sql = _compile(session.execute.call_args[0][0])
+    assert "IN ('Vin blanc')" in sql
+    assert "availability = true" in sql
+    assert "store_availability" in sql
+    assert "delisted_at IS NULL" in sql
+
+
+@pytest.mark.asyncio
+async def test_distinct_values_no_filters_only_delisted():
+    """get_distinct_values with no filters still excludes delisted products."""
+    session = AsyncMock()
+    result = MagicMock()
+    scalars_mock = MagicMock()
+    scalars_mock.all.return_value = ["Bordeaux"]
+    result.scalars.return_value = scalars_mock
+    session.execute = AsyncMock(return_value=result)
+
+    values = await get_distinct_values(session, Product.region)
+
+    sql = _compile(session.execute.call_args[0][0])
+    assert "delisted_at IS NULL" in sql
+    assert "availability" not in sql
+    assert "store_availability" not in sql
+    assert values == ["Bordeaux"]
 
 
 # ── Sorting ───────────────────────────────────────────────────
