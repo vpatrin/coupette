@@ -51,7 +51,7 @@ class BackendSettings(BaseSettings):
     TELEGRAM_BOT_TOKEN: str = ""
 
     # CORS — explicit allowlist, no wildcards.
-    # Override in production .env: CORS_ORIGINS=["https://wine.victorpatrin.dev"]
+    # Override in production .env: CORS_ORIGINS=["https://coupette.club"]
     CORS_ORIGINS: list[str] = ["http://localhost:5173"]
 
     # Telegram ID of the admin user — verified at startup.

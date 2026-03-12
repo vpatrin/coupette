@@ -10,15 +10,22 @@ from backend.repositories.products import (
     find_page,
     find_random,
     get_distinct_values,
+    get_distinct_values_by_count,
     get_price_range,
 )
 from backend.schemas.product import (
+    CategoryFamilyOut,
+    CategoryGroupOut,
+    CountryFacet,
     FacetsOut,
     PaginatedOut,
     PriceRange,
     ProductOut,
 )
+from core.categories import CATEGORY_FAMILIES, CATEGORY_GROUPS, group_facets
 from core.db.models import Product
+
+_GROUP_ORDER = {k: i for i, k in enumerate(CATEGORY_GROUPS)}
 
 
 async def get_product(db: AsyncSession, sku: str) -> ProductOut:
@@ -42,6 +49,7 @@ async def list_products(
     min_price: Decimal | None = None,
     max_price: Decimal | None = None,
     available: bool | None = None,
+    in_stores: list[str] | None = None,
     wine_scope: bool = False,
 ) -> PaginatedOut:
     """Fetch a paginated list of products, optionally filtered and sorted."""
@@ -53,6 +61,7 @@ async def list_products(
         min_price=min_price,
         max_price=max_price,
         available=available,
+        in_stores=in_stores,
         wine_scope=wine_scope,
     )
     total = await count(db, **filters)
@@ -78,6 +87,7 @@ async def get_random_product(
     min_price: Decimal | None = None,
     max_price: Decimal | None = None,
     available: bool | None = None,
+    in_stores: list[str] | None = None,
     wine_scope: bool = False,
 ) -> ProductOut:
     """Fetch a single random product matching filters. Raises NotFoundError if none."""
@@ -89,6 +99,7 @@ async def get_random_product(
         min_price=min_price,
         max_price=max_price,
         available=available,
+        in_stores=in_stores,
         wine_scope=wine_scope,
     )
     if product is None:
@@ -96,16 +107,56 @@ async def get_random_product(
     return ProductOut.model_validate(product)
 
 
-async def get_facets(db: AsyncSession, *, wine_scope: bool = False) -> FacetsOut:
+async def get_facets(
+    db: AsyncSession,
+    *,
+    category: list[str] | None = None,
+    available: bool | None = None,
+    in_stores: list[str] | None = None,
+    wine_scope: bool = False,
+) -> FacetsOut:
     """Fetch distinct filter values and price range for active products."""
+    # ? asyncio.gather would be faster here, but AsyncSession is not safe for
+    # ? concurrent coroutines on the same connection. Would need separate sessions.
     categories = await get_distinct_values(db, Product.category, wine_scope=wine_scope)
-    countries = await get_distinct_values(db, Product.country, wine_scope=wine_scope)
+    country_rows = await get_distinct_values_by_count(
+        db,
+        Product.country,
+        category=category,
+        available=available,
+        in_stores=in_stores,
+        wine_scope=wine_scope,
+    )
+    countries = [CountryFacet(name=name, count=cnt) for name, cnt in country_rows]
     regions = await get_distinct_values(db, Product.region, wine_scope=wine_scope)
     grapes = await get_distinct_values(db, Product.grape, wine_scope=wine_scope)
     price_result = await get_price_range(db, wine_scope=wine_scope)
 
+    # Build grouped categories — preserves CATEGORY_GROUPS definition order
+    grouped = group_facets(categories)
+    grouped_categories = [
+        CategoryGroupOut(key=key, label=CATEGORY_GROUPS[key].label, categories=raw_cats)
+        for key, raw_cats in sorted(
+            grouped.items(),
+            key=lambda item: _GROUP_ORDER.get(item[0], len(_GROUP_ORDER)),
+        )
+    ]
+
+    # Build category families — only include families that have at least one populated group
+    category_families = [
+        CategoryFamilyOut(
+            key=fam_key,
+            label=fam.label,
+            children=[gk for gk in fam.children if gk in grouped],
+        )
+        for fam_key, fam in CATEGORY_FAMILIES.items()
+        if any(gk in grouped for gk in fam.children)
+    ]
+
     return FacetsOut(
         categories=categories,
+        grouped_categories=grouped_categories,
+        category_families=category_families,
         countries=countries,
         regions=regions,
         grapes=grapes,
