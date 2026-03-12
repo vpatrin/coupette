@@ -8,6 +8,7 @@ from backend.config import (
     DEFAULT_PAGE_SIZE,
     MAX_FILTER_LENGTH,
     MAX_PAGE_SIZE,
+    MAX_SAQ_STORE_ID_LENGTH,
     MAX_SEARCH_LENGTH,
     MAX_SKU_LENGTH,
 )
@@ -22,7 +23,7 @@ router = APIRouter(prefix="/products", tags=["products"])
 async def get_products(
     page: int = Query(default=1, ge=1),
     per_page: int = Query(default=DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
-    sort: Literal["recent", "price_asc", "price_desc"] | None = Query(default=None),
+    sort: Literal["recent", "price_asc", "price_desc", "alpha"] | None = Query(default=None),
     q: str | None = Query(default=None, min_length=1, max_length=MAX_SEARCH_LENGTH),
     category: list[Annotated[str, Query(max_length=MAX_FILTER_LENGTH)]] | None = Query(
         default=None
@@ -32,6 +33,9 @@ async def get_products(
     min_price: Decimal | None = Query(default=None, ge=0),
     max_price: Decimal | None = Query(default=None, ge=0),
     available: bool | None = Query(default=None),
+    in_stores: list[Annotated[str, Query(max_length=MAX_SAQ_STORE_ID_LENGTH)]] | None = Query(
+        default=None
+    ),
     scope: Literal["wine", "all"] = Query(default="wine"),
     db: AsyncSession = Depends(get_db),
 ) -> PaginatedOut:
@@ -48,17 +52,31 @@ async def get_products(
         min_price=min_price,
         max_price=max_price,
         available=available,
+        in_stores=in_stores,
         wine_scope=scope == "wine",
     )
 
 
 @router.get("/facets", response_model=FacetsOut)
 async def get_product_facets(
+    category: list[Annotated[str, Query(max_length=MAX_FILTER_LENGTH)]] | None = Query(
+        default=None
+    ),
+    available: bool | None = Query(default=None),
+    in_stores: list[Annotated[str, Query(max_length=MAX_SAQ_STORE_ID_LENGTH)]] | None = Query(
+        default=None
+    ),
     scope: Literal["wine", "all"] = Query(default="wine"),
     db: AsyncSession = Depends(get_db),
 ) -> FacetsOut:
     """Return distinct filter values and price range for the catalog."""
-    return await get_facets(db, wine_scope=scope == "wine")
+    return await get_facets(
+        db,
+        category=category,
+        available=available,
+        in_stores=in_stores,
+        wine_scope=scope == "wine",
+    )
 
 
 @router.get("/random", response_model=ProductOut)
@@ -71,6 +89,9 @@ async def get_random(
     min_price: Decimal | None = Query(default=None, ge=0),
     max_price: Decimal | None = Query(default=None, ge=0),
     available: bool | None = Query(default=None),
+    in_stores: list[Annotated[str, Query(max_length=MAX_SAQ_STORE_ID_LENGTH)]] | None = Query(
+        default=None
+    ),
     scope: Literal["wine", "all"] = Query(default="wine"),
     db: AsyncSession = Depends(get_db),
 ) -> ProductOut:
@@ -83,6 +104,7 @@ async def get_random(
         min_price=min_price,
         max_price=max_price,
         available=available,
+        in_stores=in_stores,
         wine_scope=scope == "wine",
     )
 

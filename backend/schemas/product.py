@@ -47,9 +47,28 @@ class PriceRange(BaseModel):
     max: Decimal
 
 
+class CategoryGroupOut(BaseModel):
+    key: str
+    label: str
+    categories: list[str]
+
+
+class CategoryFamilyOut(BaseModel):
+    key: str
+    label: str
+    children: list[str]  # group keys
+
+
+class CountryFacet(BaseModel):
+    name: str
+    count: int
+
+
 class FacetsOut(BaseModel):
     categories: list[str]
-    countries: list[str]
+    grouped_categories: list[CategoryGroupOut]
+    category_families: list[CategoryFamilyOut]
+    countries: list[CountryFacet]
     regions: list[str]
     grapes: list[str]
     price_range: PriceRange | None

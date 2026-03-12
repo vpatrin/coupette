@@ -1,7 +1,9 @@
 from decimal import Decimal
 
-from sqlalchemy import Column, Select, func, or_, select
+from sqlalchemy import Column, Select, cast, func, or_, select
+from sqlalchemy.dialects.postgresql import ARRAY, array
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.types import Text
 
 from core.categories import expand_family
 from core.db.models import Product
@@ -13,6 +15,7 @@ _SORT_ORDERS = {
     "recent": Product.updated_at.desc(),
     "price_asc": Product.price.asc(),
     "price_desc": Product.price.desc(),
+    "alpha": Product.name.asc(),
 }
 
 
@@ -26,6 +29,7 @@ def _apply_filters(
     min_price: Decimal | None = None,
     max_price: Decimal | None = None,
     available: bool | None = None,
+    in_stores: list[str] | None = None,
     wine_scope: bool = False,
 ) -> Select:
     """Append WHERE clauses for each non-None filter."""
@@ -33,6 +37,10 @@ def _apply_filters(
     stmt = stmt.where(Product.delisted_at.is_(None))
     if available is not None:
         stmt = stmt.where(Product.online_availability == available)
+    if in_stores is not None:
+        # JSONB ?| text[] — "does the array contain any of these values?"
+        # Uses the existing GIN index on store_availability
+        stmt = stmt.where(Product.store_availability.op("?|")(cast(array(in_stores), ARRAY(Text))))
     if q is not None:
         stmt = stmt.where(Product.name.ilike(f"%{q}%"))
     if category is not None:
@@ -60,6 +68,7 @@ async def count(
     min_price: Decimal | None = None,
     max_price: Decimal | None = None,
     available: bool | None = None,
+    in_stores: list[str] | None = None,
     wine_scope: bool = False,
 ) -> int:
     """Return the total number of products matching the given filters."""
@@ -73,6 +82,7 @@ async def count(
         min_price=min_price,
         max_price=max_price,
         available=available,
+        in_stores=in_stores,
         wine_scope=wine_scope,
     )
     result = await db.execute(stmt)
@@ -99,6 +109,7 @@ async def find_page(
     min_price: Decimal | None = None,
     max_price: Decimal | None = None,
     available: bool | None = None,
+    in_stores: list[str] | None = None,
     wine_scope: bool = False,
 ) -> list[Product]:
     """Return a page of products with optional filters and sorting."""
@@ -113,6 +124,7 @@ async def find_page(
         min_price=min_price,
         max_price=max_price,
         available=available,
+        in_stores=in_stores,
         wine_scope=wine_scope,
     )
     result = await db.execute(stmt)
@@ -131,6 +143,26 @@ async def get_distinct_values(
     return list(result.scalars().all())
 
 
+async def get_distinct_values_by_count(
+    db: AsyncSession,
+    column: Column,
+    *,
+    category: list[str] | None = None,
+    available: bool | None = None,
+    in_stores: list[str] | None = None,
+    wine_scope: bool = False,
+) -> list[tuple[str, int]]:
+    """Return distinct non-null values with counts, sorted by count descending."""
+    cnt = func.count().label("cnt")
+    stmt = select(column, cnt).where(column.isnot(None))
+    stmt = _apply_filters(
+        stmt, category=category, available=available, in_stores=in_stores, wine_scope=wine_scope
+    )
+    stmt = stmt.group_by(column).order_by(cnt.desc(), column)
+    result = await db.execute(stmt)
+    return [(row[0], row[1]) for row in result.all()]
+
+
 async def find_random(
     db: AsyncSession,
     *,
@@ -140,6 +172,7 @@ async def find_random(
     min_price: Decimal | None = None,
     max_price: Decimal | None = None,
     available: bool | None = None,
+    in_stores: list[str] | None = None,
     wine_scope: bool = False,
 ) -> Product | None:
     """Return a single random product matching the given filters, or None."""
@@ -152,6 +185,7 @@ async def find_random(
         min_price=min_price,
         max_price=max_price,
         available=available,
+        in_stores=in_stores,
         wine_scope=wine_scope,
     )
     result = await db.execute(stmt)
