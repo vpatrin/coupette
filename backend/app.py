@@ -7,6 +7,7 @@ from loguru import logger
 
 from backend.api.admin import router as admin_router
 from backend.api.auth import router as auth_router
+from backend.api.chat import router as chat_router
 from backend.api.health import router as health_router
 from backend.api.products import router as products_router
 from backend.api.recommendations import router as recommendations_router
@@ -58,7 +59,7 @@ app = FastAPI(title="Coupette", version="1.0.0", debug=settings.DEBUG, lifespan=
 app.add_middleware(
     CORSMiddleware,
     allow_origins=backend_settings.CORS_ORIGINS,
-    allow_methods=["GET", "POST", "DELETE"],
+    allow_methods=["GET", "POST", "PATCH", "DELETE"],
     allow_headers=["Content-Type", "Authorization"],
 )
 
@@ -69,4 +70,5 @@ app.include_router(products_router, prefix="/api", dependencies=_auth)
 app.include_router(stores_router, prefix="/api", dependencies=_auth)
 app.include_router(watches_router, prefix="/api", dependencies=_auth)
 app.include_router(recommendations_router, prefix="/api", dependencies=_auth)
+app.include_router(chat_router, prefix="/api", dependencies=_auth)
 app.include_router(admin_router, prefix="/api", dependencies=[Depends(verify_admin)])

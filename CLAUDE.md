@@ -96,6 +96,7 @@ before touching a single file.
 - Never delete or modify user-written comments — they are intentional
 - BetterComments convention: `#!` (alert), `#?` (query), `#*` (highlight), `#TODO` — preserve these prefixes
 - Question hardcoded values — when writing a literal (version, timeout, URL, threshold), ask: is this repeated? Will it change? Should it be a named constant, input, or config var? Don't always extract (YAGNI applies), but always consider it and flag the trade-off
+- When introducing a new constant, config value, or constraint (max length, timeout, limit, feature flag), always present it to Victor for validation before writing code. Explain the chosen value and why — don't silently pick defaults
 - Pydantic schema naming: use `*Out` for responses, `*In` for request bodies (e.g. `StoreOut`, `WatchIn`). Avoid `*Response` / `*Create` — standardize on `*Out`/`*In` across all schemas
 
 ## Git Workflow
