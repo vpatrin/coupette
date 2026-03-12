@@ -268,6 +268,31 @@ files = [
 ]
 
 [[package]]
+name = "coupette-core"
+version = "1.0.0"
+description = "Core infrastructure for Coupette (models, config, logging)"
+optional = false
+python-versions = ">=3.12,<4.0"
+groups = ["main"]
+files = []
+develop = true
+
+[package.dependencies]
+alembic = "^1.13"
+loguru = ">=0.7"
+pgvector = ">=0.3"
+psycopg2-binary = "^2.9"
+pydantic-settings = "^2.13"
+sqlalchemy = "^2.0"
+
+[package.extras]
+embeddings = ["openai (>=1.0)"]
+
+[package.source]
+type = "directory"
+url = "../core"
+
+[[package]]
 name = "coverage"
 version = "7.13.4"
 description = "Code coverage measurement for Python"
@@ -1562,31 +1587,6 @@ files = [
 ]
 
 [[package]]
-name = "saq-core"
-version = "1.0.0"
-description = "Core infrastructure for SAQ Sommelier (models, config, logging)"
-optional = false
-python-versions = ">=3.12,<4.0"
-groups = ["main"]
-files = []
-develop = true
-
-[package.dependencies]
-alembic = "^1.13"
-loguru = ">=0.7"
-pgvector = ">=0.3"
-psycopg2-binary = "^2.9"
-pydantic-settings = "^2.13"
-sqlalchemy = "^2.0"
-
-[package.extras]
-embeddings = ["openai (>=1.0)"]
-
-[package.source]
-type = "directory"
-url = "../core"
-
-[[package]]
 name = "sortedcontainers"
 version = "2.4.0"
 description = "Sorted Containers -- Sorted List, Sorted Dict, Sorted Set"
@@ -1861,4 +1861,4 @@ dev = ["black (>=19.3b0) ; python_version >= \"3.6\"", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4.0"
-content-hash = "e6e224bb6cf23ff35a68c1caa07a4688dc0522375374f3b7e701b1bcfb69b950"
+content-hash = "d35d27247b55fe5847282c712300c6f6466d19bb611e29a7ee56c19dfc684389"

@@ -1,4 +1,4 @@
-# SAQ Sommelier - Project Context
+# Coupette - Project Context
 
 > **Note:** `CLAUDE.md` and `.claude/commands/` are committed to showcase how AI is used in this project. `.claude/settings.local.json` and other local state remain gitignored.
 
@@ -249,7 +249,7 @@ Current:
 ## Project Structure
 
 ```
-saq-sommelier/
+coupette/
 ├── docker-compose.yml           # Orchestrates all services
 ├── Makefile
 ├── CHANGELOG.md

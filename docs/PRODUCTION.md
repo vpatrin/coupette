@@ -1,6 +1,6 @@
 # Production
 
-Deployment process and app-level production concerns for saq-sommelier.
+Deployment process and app-level production concerns for Coupette.
 VPS-level infrastructure (firewall, SSH, TLS, networking) is documented in the [infra repo](https://github.com/vpatrin/infra/blob/main/docs/INFRASTRUCTURE.md).
 
 - **Deployed**: v1.2.0
@@ -19,9 +19,9 @@ Tag on main first (see [CHANGELOG.md](../CHANGELOG.md)), then deploy the tag on 
 If `deploy/` unit files changed (or first deploy):
 
 ```bash
-sudo cp deploy/saq-scraper.{service,timer} deploy/saq-availability.{service,timer} /etc/systemd/system/
+sudo cp deploy/coupette-scraper.{service,timer} deploy/coupette-availability.{service,timer} /etc/systemd/system/
 sudo systemctl daemon-reload
-sudo systemctl enable --now saq-scraper.timer saq-availability.timer
+sudo systemctl enable --now coupette-scraper.timer coupette-availability.timer
 ```
 
 Verify:
@@ -29,8 +29,8 @@ Verify:
 ```bash
 curl -s localhost:8001/health     # backend responds
 # message the bot on Telegram    # bot responds
-systemctl status saq-scraper.timer   # timer active, next run scheduled
-systemctl status saq-availability.timer   # timer active, next run scheduled
+systemctl status coupette-scraper.timer   # timer active, next run scheduled
+systemctl status coupette-availability.timer   # timer active, next run scheduled
 ```
 
 Rollback: `./deploy/deploy.sh vPREVIOUS` (pulls the previous tag's images from GHCR)

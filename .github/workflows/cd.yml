@@ -9,7 +9,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  IMAGE_PREFIX: ghcr.io/vpatrin/saq-sommelier
+  IMAGE_PREFIX: ghcr.io/vpatrin/coupette
   TRIVY_SEVERITY: LOW,MEDIUM,HIGH,CRITICAL
 
 jobs:

@@ -53,7 +53,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Database engine disposed")
 
 
-app = FastAPI(title="SAQ Sommelier", version="1.0.0", debug=settings.DEBUG, lifespan=lifespan)
+app = FastAPI(title="Coupette", version="1.0.0", debug=settings.DEBUG, lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

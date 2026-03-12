@@ -5,8 +5,8 @@ from bot.handlers.watch import _do_watch
 from bot.keyboards import MAIN_MENU
 
 HELP_TEXT = (
-    "🍷 *Alerte Vin*\n"
-    "Never miss a good bottle at the SAQ again.\n\n"
+    "🍷 *Coupette*\n"
+    "Never miss a good bottle again.\n\n"
     "🤖 *Recommend*\n"
     "/recommend `<query>` — Ask the sommelier\n\n"
     "🔔 *Watch*\n"
@@ -15,10 +15,10 @@ HELP_TEXT = (
     "/alerts — Your watchlist\n"
     "Paste a SAQ link — instant watch prompt\n\n"
     "🏪 *Stores*\n"
-    "/mystores — Pick your SAQ spots\n\n"
+    "/mystores — Pick your stores\n\n"
     "/help — This thing right here\n\n"
     "— Made with ❤️ by @secp256k2\n\n"
-    "Like the wine? — [drop a ⭐](https://github.com/vpatrin/saq-sommelier)"
+    "Like the wine? — [drop a ⭐](https://github.com/vpatrin/coupette)"
 )
 
 

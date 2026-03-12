@@ -75,7 +75,7 @@ function LoginPage() {
       <footer className="text-xs text-muted-foreground flex flex-col items-center gap-1 mt-4">
         <p>Made with ❤️</p>
         <a
-          href="https://github.com/vpatrin/saq-sommelier"
+          href="https://github.com/vpatrin/coupette"
           target="_blank"
           rel="noopener noreferrer"
           className="text-primary underline underline-offset-2"

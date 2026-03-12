@@ -11,7 +11,7 @@ setup_logging(settings.SERVICE_NAME, level=settings.LOG_LEVEL)
 
 
 def _build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="scraper", description="SAQ Sommelier data pipeline")
+    parser = argparse.ArgumentParser(prog="scraper", description="Coupette data pipeline")
     sub = parser.add_subparsers(dest="command")
 
     sub.add_parser("scrape", help="Scrape products from SAQ sitemap (default)")

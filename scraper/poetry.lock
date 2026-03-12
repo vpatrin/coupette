@@ -333,6 +333,32 @@ files = [
 markers = {main = "sys_platform == \"win32\" or platform_system == \"Windows\"", dev = "sys_platform == \"win32\""}
 
 [[package]]
+name = "coupette-core"
+version = "1.0.0"
+description = "Core infrastructure for Coupette (models, config, logging)"
+optional = false
+python-versions = ">=3.12,<4.0"
+groups = ["main"]
+files = []
+develop = true
+
+[package.dependencies]
+alembic = "^1.13"
+loguru = ">=0.7"
+openai = {version = ">=1.0", optional = true}
+pgvector = ">=0.3"
+psycopg2-binary = "^2.9"
+pydantic-settings = "^2.13"
+sqlalchemy = "^2.0"
+
+[package.extras]
+embeddings = ["openai (>=1.0)"]
+
+[package.source]
+type = "directory"
+url = "../core"
+
+[[package]]
 name = "coverage"
 version = "7.13.4"
 description = "Code coverage measurement for Python"
@@ -1906,32 +1932,6 @@ files = [
 ]
 
 [[package]]
-name = "saq-core"
-version = "1.0.0"
-description = "Core infrastructure for SAQ Sommelier (models, config, logging)"
-optional = false
-python-versions = ">=3.12,<4.0"
-groups = ["main"]
-files = []
-develop = true
-
-[package.dependencies]
-alembic = "^1.13"
-loguru = ">=0.7"
-openai = {version = ">=1.0", optional = true}
-pgvector = ">=0.3"
-psycopg2-binary = "^2.9"
-pydantic-settings = "^2.13"
-sqlalchemy = "^2.0"
-
-[package.extras]
-embeddings = ["openai (>=1.0)"]
-
-[package.source]
-type = "directory"
-url = "../core"
-
-[[package]]
 name = "sniffio"
 version = "1.3.1"
 description = "Sniff out which async library your code is running under"
@@ -2225,4 +2225,4 @@ dev = ["black (>=19.3b0) ; python_version >= \"3.6\"", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4.0"
-content-hash = "a01a9e84151b3e4f583ad0bc05e5c3563d2e86073d0615e9c2af184ae467ab32"
+content-hash = "05a165ce040b9c7bb84abe479e4c3f8cba718a53a7d67fdcb20de7165a41a8a4"

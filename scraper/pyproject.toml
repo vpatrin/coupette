@@ -1,5 +1,5 @@
 [project]
-name = "saq-scraper"
+name = "coupette-scraper"
 version = "1.0.0"
 description = "SAQ product catalog scraper — sitemap-based, ethical"
 requires-python = ">=3.12,<4.0"
@@ -17,7 +17,7 @@ asyncpg = "^0.31"
 # greenlet: Required by SQLAlchemy for async operations (manages coroutine context switching)
 greenlet = "^3.3.2"
 loguru = ">=0.7"
-saq-core = {path = "../core", develop = true, extras = ["embeddings"]}
+coupette-core = {path = "../core", develop = true, extras = ["embeddings"]}
 
 [tool.poetry.group.dev.dependencies]
 pip-audit = ">=2.7"

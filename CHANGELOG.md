@@ -166,9 +166,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Docker Compose deployment with Caddy reverse proxy
 - CI pipeline with per-service linting, testing, and coverage thresholds
 
-[Unreleased]: https://github.com/vpatrin/saq-sommelier/compare/v1.3.1...HEAD
-[1.3.1]: https://github.com/vpatrin/saq-sommelier/compare/v1.3.0...v1.3.1
-[1.3.0]: https://github.com/vpatrin/saq-sommelier/compare/v1.2.0...v1.3.0
-[1.2.0]: https://github.com/vpatrin/saq-sommelier/compare/v1.1.0...v1.2.0
-[1.1.0]: https://github.com/vpatrin/saq-sommelier/compare/v1.0.0...v1.1.0
-[1.0.0]: https://github.com/vpatrin/saq-sommelier/releases/tag/v1.0.0
+[Unreleased]: https://github.com/vpatrin/coupette/compare/v1.3.1...HEAD
+[1.3.1]: https://github.com/vpatrin/coupette/compare/v1.3.0...v1.3.1
+[1.3.0]: https://github.com/vpatrin/coupette/compare/v1.2.0...v1.3.0
+[1.2.0]: https://github.com/vpatrin/coupette/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/vpatrin/coupette/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/vpatrin/coupette/releases/tag/v1.0.0
