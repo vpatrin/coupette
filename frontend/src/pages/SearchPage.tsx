@@ -326,6 +326,7 @@ function SearchPage() {
   )
 
   const displayProducts = results?.products ?? []
+  const hasStores = storeNames.size > 0
 
   return (
     <div className="p-8">
@@ -606,7 +607,6 @@ function SearchPage() {
                     const isOnline = product.online_availability === true
                     const storeAvail = product.store_availability ?? []
                     const matchingIds = storeAvail.filter((id) => storeNames.has(id))
-                    const hasStores = storeNames.size > 0
                     const hasAvailability = isOnline
                       || (hasStores && matchingIds.length > 0)
                       || (!hasStores && storeAvail.length > 0)
