@@ -60,8 +60,8 @@ Web app ships before chat — auth, watches, and stores are already API-complete
 
 Wraps existing Haiku RAG pipeline for web consumption. No new AI architecture.
 
-- [ ] Single-turn `/chat` endpoint — thin wrapper around recommendations service
-- [ ] Chat session model + multi-turn — `chat_sessions` table, conversation history as pipeline context, sliding window
+- [x] Chat session + endpoints — session CRUD, single-turn message flow wrapping recommendations service (#425, #429)
+- [ ] Multi-turn context — conversation history as pipeline context, sliding window
 - [ ] SSE streaming — `text/event-stream` for progressive response display
 
 ### Phase 9b — Chat Interface
