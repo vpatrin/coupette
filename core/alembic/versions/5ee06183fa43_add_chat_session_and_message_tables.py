@@ -53,7 +53,7 @@ def upgrade() -> None:
     op.create_index(
         "ix_chat_sessions_user_updated",
         "chat_sessions",
-        ["user_id", sa.literal_column("updated_at DESC")],
+        ["user_id", "updated_at"],
         unique=False,
     )
     op.create_table(

@@ -425,7 +425,7 @@ class ChatSession(Base):
         comment="Last message timestamp",
     )
 
-    __table_args__ = (Index("ix_chat_sessions_user_updated", "user_id", updated_at.desc()),)
+    __table_args__ = (Index("ix_chat_sessions_user_updated", "user_id", "updated_at"),)
 
     def __repr__(self) -> str:
         return f"<ChatSession(id={self.id!r}, user_id={self.user_id!r})>"
