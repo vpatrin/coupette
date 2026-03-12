@@ -60,6 +60,8 @@ function SearchPage() {
   const sort = searchParams.get('sort') ?? 'recent'
   const onlineOnly = searchParams.get('online') === '1'
   const inStoresOnly = searchParams.get('in_stores') === '1'
+  const minPrice = searchParams.get('min_price') ?? ''
+  const maxPrice = searchParams.get('max_price') ?? ''
   const page = Number(searchParams.get('page') ?? '1')
 
   // Local input for debounced search
@@ -178,6 +180,8 @@ function SearchPage() {
       }
       if (sort && sort !== 'alpha') params.set('sort', sort)
       if (onlineOnly) params.set('available', 'true')
+      if (minPrice) params.set('min_price', minPrice)
+      if (maxPrice) params.set('max_price', maxPrice)
       if (inStoresOnly && savedStoreIds.size > 0) {
         for (const id of savedStoreIds) {
           params.append('in_stores', id)
@@ -198,7 +202,7 @@ function SearchPage() {
 
     fetchProducts()
     return () => { cancelled = true }
-  }, [apiClient, query, country, category, sort, onlineOnly, inStoresOnly, savedStoreIds, page])
+  }, [apiClient, query, country, category, sort, onlineOnly, inStoresOnly, minPrice, maxPrice, savedStoreIds, page])
 
   // Debounced search input
   const handleInputChange = useCallback(
@@ -516,6 +520,38 @@ function SearchPage() {
                     ? 'In my stores'
                     : 'In my stores (none saved)'}
                 </button>
+              </div>
+            </div>
+
+            <div>
+              <p className="text-xs font-mono text-muted-foreground mb-2">Price</p>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  placeholder={facets?.price_range?.min ?? '0'}
+                  defaultValue={minPrice}
+                  onBlur={(e) => setFilter('min_price', e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+                  }}
+                  aria-label="Minimum price"
+                  className="w-full bg-background border border-border px-2 py-1.5 text-xs font-mono placeholder:text-muted-foreground focus:outline-none focus:border-ring"
+                />
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  placeholder={facets?.price_range?.max ?? '∞'}
+                  defaultValue={maxPrice}
+                  onBlur={(e) => setFilter('max_price', e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+                  }}
+                  aria-label="Maximum price"
+                  className="w-full bg-background border border-border px-2 py-1.5 text-xs font-mono placeholder:text-muted-foreground focus:outline-none focus:border-ring"
+                />
               </div>
             </div>
           </aside>
