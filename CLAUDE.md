@@ -470,3 +470,5 @@ Microcopy:
 ## Roadmap
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for project phases and task breakdown.
+
+Phases are **product features only** — each phase delivers a user-facing capability. UX improvements, infra work, refactors, and cleanup live in cross-cutting projects (separate sections in the roadmap), not in phases.
