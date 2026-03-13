@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Chat API — session-based chat endpoints wrapping the recommendation pipeline (`/api/chat/sessions/*`) (#425)
 
+### Changed
+
+- Chat recommendations now use multi-turn context — previous wines are excluded and curation references prior conversation (#428)
+
 ### Fixed
 
 - Recommendation pipeline now fully async — intent parsing, embeddings, and curation no longer block the event loop

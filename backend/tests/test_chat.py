@@ -1,3 +1,4 @@
+import json
 from datetime import UTC, datetime
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
@@ -12,6 +13,7 @@ from backend.db import get_db
 from backend.exceptions import ForbiddenError, NotFoundError
 from backend.schemas.chat import ChatMessageOut, ChatSessionDetailOut
 from backend.schemas.recommendation import IntentResult, RecommendationOut
+from backend.services.chat import _extract_multi_turn_context
 from backend.tests.conftest import _mock_authenticated_user
 
 NOW = datetime(2026, 3, 12, 12, 0, 0, tzinfo=UTC)
@@ -248,3 +250,106 @@ async def test_delete_session_not_found():
             resp = await client.delete("/api/chat/sessions/999")
 
     assert resp.status_code == status.HTTP_404_NOT_FOUND
+
+
+# --- Multi-turn context helpers ---
+
+
+def _fake_msg(role: str, content: str) -> SimpleNamespace:
+    return SimpleNamespace(role=role, content=content)
+
+
+def _recommendation_json(skus: list[str], summary: str = "Summary") -> str:
+    products = [
+        {
+            "product": {
+                "sku": sku,
+                "name": f"Wine {sku}",
+                "category": "Vin rouge",
+                "country": "France",
+                "size": "750 ml",
+                "price": 25.00,
+                "online_availability": True,
+                "rating": None,
+                "review_count": None,
+                "region": None,
+                "appellation": None,
+                "designation": None,
+                "classification": None,
+                "grape": None,
+                "grape_blend": None,
+                "alcohol": None,
+                "sugar": None,
+                "producer": None,
+                "url": f"https://saq.com/{sku}",
+                "store_availability": [],
+                "vintage": None,
+                "taste_tag": None,
+                "created_at": "2026-01-01T00:00:00Z",
+                "updated_at": "2026-01-01T00:00:00Z",
+            },
+            "reason": "Good wine",
+        }
+        for sku in skus
+    ]
+    rec = {"products": products, "intent": {"semantic_query": "test"}, "summary": summary}
+    return json.dumps(rec)
+
+
+class TestExtractMultiTurnContext:
+    def test_extracts_skus_from_assistant_messages(self) -> None:
+        messages = [
+            _fake_msg("user", "bold red"),
+            _fake_msg("assistant", _recommendation_json(["111", "222"])),
+            _fake_msg("user", "something else"),
+            _fake_msg("assistant", _recommendation_json(["333"])),
+        ]
+        skus, _ = _extract_multi_turn_context(messages)
+        assert skus == ["111", "222", "333"]
+
+    def test_ignores_user_messages(self) -> None:
+        messages = [_fake_msg("user", "hello")]
+        skus, _ = _extract_multi_turn_context(messages)
+        assert skus == []
+
+    def test_ignores_malformed_assistant(self) -> None:
+        messages = [_fake_msg("assistant", "not valid json")]
+        skus, _ = _extract_multi_turn_context(messages)
+        assert skus == []
+
+    def test_empty_messages(self) -> None:
+        skus, history = _extract_multi_turn_context([])
+        assert skus == []
+        assert history == ""
+
+    def test_history_condensed_output(self) -> None:
+        messages = [
+            _fake_msg("user", "bold red for steak"),
+            _fake_msg("assistant", _recommendation_json(["111"], summary="Great reds.")),
+        ]
+        _, history = _extract_multi_turn_context(messages)
+        assert "User: bold red for steak" in history
+        assert "Assistant: Great reds." in history
+
+    def test_history_malformed_assistant_falls_back(self) -> None:
+        messages = [
+            _fake_msg("user", "hello"),
+            _fake_msg("assistant", "plain text response"),
+        ]
+        _, history = _extract_multi_turn_context(messages)
+        assert "Assistant: plain text response" in history
+
+    @patch("backend.services.chat.CONTEXT_WINDOW_TURNS", 1)
+    def test_history_respects_window_limit(self) -> None:
+        messages = [
+            _fake_msg("user", "first query"),
+            _fake_msg("assistant", _recommendation_json(["111"], summary="First.")),
+            _fake_msg("user", "second query"),
+            _fake_msg("assistant", _recommendation_json(["222"], summary="Second.")),
+        ]
+        skus, history = _extract_multi_turn_context(messages)
+        # SKUs come from ALL messages
+        assert skus == ["111", "222"]
+        # History only from last 1 turn (2 messages)
+        assert "first query" not in history
+        assert "second query" in history

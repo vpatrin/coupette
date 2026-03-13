@@ -63,6 +63,8 @@ async def recommend(
     query: str,
     *,
     user_id: str | None = None,
+    exclude_skus: list[str] | None = None,
+    conversation_history: str | None = None,
     available_online: bool = True,
     in_store: str | None = None,
 ) -> RecommendationOut:
@@ -86,12 +88,19 @@ async def recommend(
 
         t0 = time.monotonic()
         products = await find_similar(
-            db, intent, vector, available_online=available_online, in_store=in_store
+            db,
+            intent,
+            vector,
+            exclude_skus=exclude_skus,
+            available_online=available_online,
+            in_store=in_store,
         )
         latency["search"] = _time_ms(t0)
 
         t0 = time.monotonic()
-        explanation = await explain_recommendations(query, intent, products)
+        explanation = await explain_recommendations(
+            query, products, conversation_history=conversation_history
+        )
         latency["curation"] = _time_ms(t0)
 
         skus = [p.sku for p in products]

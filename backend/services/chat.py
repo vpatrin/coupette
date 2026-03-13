@@ -2,6 +2,7 @@ from loguru import logger
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from backend.config import CONTEXT_WINDOW_TURNS
 from backend.exceptions import ForbiddenError, NotFoundError
 from backend.repositories import chat as chat_repo
 from backend.schemas.chat import (
@@ -46,6 +47,44 @@ def _build_message_out(msg: ChatMessage) -> ChatMessageOut:
     )
 
 
+def _extract_multi_turn_context(
+    messages: list[ChatMessage],
+) -> tuple[list[str], str]:
+    """Extract SKUs and conversation history from prior messages in a single pass.
+
+    Returns (exclude_skus, conversation_history).
+    """
+    # SKUs from ALL messages (never re-recommend), history windowed to last N turns (token budget)
+    skus: list[str] = []
+    # Parse all assistant messages once, keep parsed results for history windowing
+    parsed: dict[int, RecommendationOut | None] = {}
+    for i, msg in enumerate(messages):
+        if msg.role != "assistant":
+            continue
+        try:
+            rec = RecommendationOut.model_validate_json(msg.content)
+            skus.extend(p.product.sku for p in rec.products)
+            parsed[i] = rec
+        except (ValueError, ValidationError):
+            parsed[i] = None
+
+    # Build history from last N turns (no re-parsing needed)
+    recent = messages[-(CONTEXT_WINDOW_TURNS * 2) :]
+    offset = len(messages) - len(recent)
+    lines: list[str] = []
+    for j, msg in enumerate(recent):
+        if msg.role == "user":
+            lines.append(f"User: {msg.content}")
+        elif msg.role == "assistant":
+            rec = parsed.get(offset + j)
+            if rec is not None:
+                lines.append(f"Assistant: {rec.summary}")
+            else:
+                lines.append(f"Assistant: {msg.content[:200]}")
+
+    return skus, "\n".join(lines)
+
+
 async def create_session(
     db: AsyncSession,
     user_id: int,
@@ -66,11 +105,21 @@ async def send_message(
     """Send a message in an existing session: save user msg, call recommend, save response."""
     await _get_owned_session(db, user_id, session_id)
 
+    # Fetch prior messages for multi-turn context
+    prior_messages = await chat_repo.find_messages(db, session_id)
+    exclude_skus, conversation_history = _extract_multi_turn_context(prior_messages)
+
     # Save user message
     await chat_repo.create_message(db, session_id, "user", message)
 
-    # Call recommendation pipeline
-    result = await recommend(db, message, user_id=f"web:{user_id}")
+    # Call recommendation pipeline with multi-turn context
+    result = await recommend(
+        db,
+        message,
+        user_id=f"web:{user_id}",
+        exclude_skus=exclude_skus or None,
+        conversation_history=conversation_history or None,
+    )
 
     # Save assistant response as JSON
     assistant_msg = await chat_repo.create_message(
