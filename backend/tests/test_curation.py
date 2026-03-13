@@ -63,6 +63,24 @@ class TestBuildUserMessage:
         assert "Test Wine" in msg
         assert "Second Wine" in msg
 
+    def test_with_conversation_history(self) -> None:
+        intent = IntentResult(semantic_query="cheaper")
+        products = [_fake_product()]
+        history = "User: bold red\nAssistant: Great picks for steak."
+        msg = _build_user_message(
+            "something cheaper", intent, products, conversation_history=history
+        )
+        assert msg.startswith("Previous conversation:\n")
+        assert "User: bold red" in msg
+        assert "Query: something cheaper" in msg
+
+    def test_without_history_no_prefix(self) -> None:
+        intent = IntentResult(semantic_query="red")
+        products = [_fake_product()]
+        msg = _build_user_message("red wine", intent, products, conversation_history=None)
+        assert "Previous conversation" not in msg
+        assert msg.startswith("Query: red wine")
+
 
 class TestParseToolInput:
     def test_valid_input(self) -> None:

@@ -18,6 +18,7 @@ async def find_similar(
     intent: IntentResult,
     query_embedding: list[float],
     *,
+    exclude_skus: list[str] | None = None,
     available_online: bool = True,
     in_store: str | None = None,
     limit: int = DEFAULT_RECOMMENDATION_LIMIT,
@@ -42,6 +43,8 @@ async def find_similar(
         for grape in intent.exclude_grapes:
             # Exclude wines whose grape or grape_blend contains the unwanted variety
             stmt = stmt.where(~Product.grape.ilike(f"%{grape}%") | Product.grape.is_(None))
+    if exclude_skus:
+        stmt = stmt.where(Product.sku.notin_(exclude_skus))
     if available_online:
         stmt = stmt.where(Product.online_availability.is_(True))
     if in_store is not None:

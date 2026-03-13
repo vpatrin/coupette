@@ -138,6 +138,41 @@ class TestRecommend:
         mock_write_log.assert_not_called()
 
     @pytest.mark.asyncio
+    @patch("backend.services.recommendations._write_log", new_callable=AsyncMock)
+    @patch("backend.services.recommendations.explain_recommendations", new_callable=AsyncMock)
+    @patch("backend.services.recommendations.find_similar", new_callable=AsyncMock)
+    @patch("backend.services.recommendations.async_embed_query", new_callable=AsyncMock)
+    @patch("backend.services.recommendations.parse_intent", new_callable=AsyncMock)
+    async def test_passes_multi_turn_context(
+        self,
+        mock_parse: AsyncMock,
+        mock_embed: AsyncMock,
+        mock_find: AsyncMock,
+        mock_explain: AsyncMock,
+        mock_write_log: AsyncMock,
+    ) -> None:
+        mock_parse.return_value = IntentResult(semantic_query="cheaper red")
+        mock_embed.return_value = [0.1] * EMBEDDING_DIMENSIONS
+        mock_find.return_value = [_fake_product(sku="999")]
+        mock_explain.return_value = ExplanationResult(reasons=["Budget pick"], summary="Cheaper")
+        mock_write_log.return_value = 1
+
+        db = AsyncMock()
+        await recommend(
+            db,
+            "something cheaper",
+            exclude_skus=["123456"],
+            conversation_history="User: bold red\nAssistant: Great picks.",
+        )
+
+        mock_find.assert_called_once()
+        assert mock_find.call_args.kwargs["exclude_skus"] == ["123456"]
+        mock_explain.assert_called_once()
+        assert mock_explain.call_args.kwargs["conversation_history"] == (
+            "User: bold red\nAssistant: Great picks."
+        )
+
+    @pytest.mark.asyncio
     @patch("backend.services.recommendations.parse_intent", new_callable=AsyncMock)
     async def test_pipeline_failure_does_not_log(
         self,

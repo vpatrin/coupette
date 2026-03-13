@@ -1,3 +1,5 @@
+import dataclasses
+
 import anthropic
 from loguru import logger
 
@@ -60,23 +62,33 @@ def _format_wine(idx: int, product: Product) -> str:
     return " | ".join(parts)
 
 
-def _build_user_message(query: str, intent: IntentResult, products: list[Product]) -> str:
+def _build_user_message(
+    query: str,
+    intent: IntentResult,
+    products: list[Product],
+    *,
+    conversation_history: str | None = None,
+) -> str:
     wines = "\n".join(_format_wine(i, p) for i, p in enumerate(products))
-    return f"Query: {query}\n\nRecommended wines:\n{wines}"
+    parts: list[str] = []
+    if conversation_history:
+        parts.append(f"Previous conversation:\n{conversation_history}\n")
+    parts.append(f"Query: {query}\n\nRecommended wines:\n{wines}")
+    return "\n".join(parts)
 
 
+@dataclasses.dataclass(slots=True)
 class ExplanationResult:
-    __slots__ = ("reasons", "summary")
-
-    def __init__(self, reasons: list[str], summary: str) -> None:
-        self.reasons = reasons
-        self.summary = summary
+    reasons: list[str]
+    summary: str
 
 
 async def explain_recommendations(
     query: str,
     intent: IntentResult,
     products: list[Product],
+    *,
+    conversation_history: str | None = None,
 ) -> ExplanationResult:
     """Generate per-product reasons and a summary for a recommendation set."""
     n = len(products)
@@ -88,7 +100,9 @@ async def explain_recommendations(
         return _fallback(n)
 
     client = get_anthropic_client()
-    user_msg = _build_user_message(query, intent, products)
+    user_msg = _build_user_message(
+        query, intent, products, conversation_history=conversation_history
+    )
 
     try:
         response = await client.messages.create(

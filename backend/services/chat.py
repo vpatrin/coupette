@@ -2,6 +2,7 @@ from loguru import logger
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from backend.config import CONTEXT_WINDOW_TURNS
 from backend.exceptions import ForbiddenError, NotFoundError
 from backend.repositories import chat as chat_repo
 from backend.schemas.chat import (
@@ -46,6 +47,37 @@ def _build_message_out(msg: ChatMessage) -> ChatMessageOut:
     )
 
 
+def _extract_skus(messages: list[ChatMessage]) -> list[str]:
+    """Collect all previously recommended SKUs to avoid re-recommending."""
+    skus: list[str] = []
+    for msg in messages:
+        if msg.role != "assistant":
+            continue
+        try:
+            rec = RecommendationOut.model_validate_json(msg.content)
+            skus.extend(p.product.sku for p in rec.products)
+        except (ValueError, ValidationError):
+            pass
+    return skus
+
+
+def _build_conversation_history(messages: list[ChatMessage]) -> str:
+    """Build a condensed history string from the last N turns for curation context."""
+    # Take the last CONTEXT_WINDOW_TURNS pairs (user + assistant)
+    recent = messages[-(CONTEXT_WINDOW_TURNS * 2) :]
+    lines: list[str] = []
+    for msg in recent:
+        if msg.role == "user":
+            lines.append(f"User: {msg.content}")
+        elif msg.role == "assistant":
+            try:
+                rec = RecommendationOut.model_validate_json(msg.content)
+                lines.append(f"Assistant: {rec.summary}")
+            except (ValueError, ValidationError):
+                lines.append(f"Assistant: {msg.content[:200]}")
+    return "\n".join(lines)
+
+
 async def create_session(
     db: AsyncSession,
     user_id: int,
@@ -66,11 +98,22 @@ async def send_message(
     """Send a message in an existing session: save user msg, call recommend, save response."""
     await _get_owned_session(db, user_id, session_id)
 
+    # Fetch prior messages for multi-turn context
+    prior_messages = await chat_repo.find_messages(db, session_id)
+    exclude_skus = _extract_skus(prior_messages)
+    conversation_history = _build_conversation_history(prior_messages)
+
     # Save user message
     await chat_repo.create_message(db, session_id, "user", message)
 
-    # Call recommendation pipeline
-    result = await recommend(db, message, user_id=f"web:{user_id}")
+    # Call recommendation pipeline with multi-turn context
+    result = await recommend(
+        db,
+        message,
+        user_id=f"web:{user_id}",
+        exclude_skus=exclude_skus or None,
+        conversation_history=conversation_history or None,
+    )
 
     # Save assistant response as JSON
     assistant_msg = await chat_repo.create_message(
