@@ -59,17 +59,14 @@ class TestRecommend:
     @patch("backend.services.recommendations.find_similar", new_callable=AsyncMock)
     @patch("backend.services.recommendations.async_embed_query", new_callable=AsyncMock)
     @patch("backend.services.recommendations.parse_intent", new_callable=AsyncMock)
-    @patch("backend.services.recommendations.backend_settings")
     async def test_full_pipeline(
         self,
-        mock_settings: MagicMock,
         mock_parse: AsyncMock,
         mock_embed: AsyncMock,
         mock_find: AsyncMock,
         mock_explain: AsyncMock,
         mock_write_log: AsyncMock,
     ) -> None:
-        mock_settings.OPENAI_API_KEY = "sk-test"
         mock_parse.return_value = IntentResult(categories=["Vin rouge"], semantic_query="fruité")
         mock_embed.return_value = [0.1] * EMBEDDING_DIMENSIONS
         mock_find.return_value = [_fake_product()]
@@ -102,17 +99,14 @@ class TestRecommend:
     @patch("backend.services.recommendations.find_similar", new_callable=AsyncMock)
     @patch("backend.services.recommendations.async_embed_query", new_callable=AsyncMock)
     @patch("backend.services.recommendations.parse_intent", new_callable=AsyncMock)
-    @patch("backend.services.recommendations.backend_settings")
     async def test_empty_results(
         self,
-        mock_settings: MagicMock,
         mock_parse: AsyncMock,
         mock_embed: AsyncMock,
         mock_find: AsyncMock,
         mock_explain: AsyncMock,
         mock_write_log: AsyncMock,
     ) -> None:
-        mock_settings.OPENAI_API_KEY = "sk-test"
         mock_parse.return_value = IntentResult(semantic_query="rare wine")
         mock_embed.return_value = [0.1] * EMBEDDING_DIMENSIONS
         mock_find.return_value = []
