@@ -13,7 +13,7 @@ from backend.db import get_db
 from backend.exceptions import ForbiddenError, NotFoundError
 from backend.schemas.chat import ChatMessageOut, ChatSessionDetailOut
 from backend.schemas.recommendation import IntentResult, RecommendationOut
-from backend.services.chat import _build_conversation_history, _extract_skus
+from backend.services.chat import _extract_multi_turn_context
 from backend.tests.conftest import _mock_authenticated_user
 
 NOW = datetime(2026, 3, 12, 12, 0, 0, tzinfo=UTC)
@@ -296,59 +296,60 @@ def _recommendation_json(skus: list[str], summary: str = "Summary") -> str:
     return json.dumps(rec)
 
 
-class TestExtractSkus:
-    def test_extracts_from_assistant_messages(self) -> None:
+class TestExtractMultiTurnContext:
+    def test_extracts_skus_from_assistant_messages(self) -> None:
         messages = [
             _fake_msg("user", "bold red"),
             _fake_msg("assistant", _recommendation_json(["111", "222"])),
             _fake_msg("user", "something else"),
             _fake_msg("assistant", _recommendation_json(["333"])),
         ]
-        skus = _extract_skus(messages)
+        skus, _ = _extract_multi_turn_context(messages)
         assert skus == ["111", "222", "333"]
 
     def test_ignores_user_messages(self) -> None:
         messages = [_fake_msg("user", "hello")]
-        assert _extract_skus(messages) == []
+        skus, _ = _extract_multi_turn_context(messages)
+        assert skus == []
 
     def test_ignores_malformed_assistant(self) -> None:
         messages = [_fake_msg("assistant", "not valid json")]
-        assert _extract_skus(messages) == []
+        skus, _ = _extract_multi_turn_context(messages)
+        assert skus == []
 
     def test_empty_messages(self) -> None:
-        assert _extract_skus([]) == []
+        skus, history = _extract_multi_turn_context([])
+        assert skus == []
+        assert history == ""
 
-
-class TestBuildConversationHistory:
-    def test_condensed_output(self) -> None:
+    def test_history_condensed_output(self) -> None:
         messages = [
             _fake_msg("user", "bold red for steak"),
             _fake_msg("assistant", _recommendation_json(["111"], summary="Great reds.")),
         ]
-        history = _build_conversation_history(messages)
+        _, history = _extract_multi_turn_context(messages)
         assert "User: bold red for steak" in history
         assert "Assistant: Great reds." in history
 
-    def test_malformed_assistant_falls_back(self) -> None:
+    def test_history_malformed_assistant_falls_back(self) -> None:
         messages = [
             _fake_msg("user", "hello"),
             _fake_msg("assistant", "plain text response"),
         ]
-        history = _build_conversation_history(messages)
+        _, history = _extract_multi_turn_context(messages)
         assert "Assistant: plain text response" in history
 
     @patch("backend.services.chat.CONTEXT_WINDOW_TURNS", 1)
-    def test_respects_window_limit(self) -> None:
+    def test_history_respects_window_limit(self) -> None:
         messages = [
             _fake_msg("user", "first query"),
             _fake_msg("assistant", _recommendation_json(["111"], summary="First.")),
             _fake_msg("user", "second query"),
             _fake_msg("assistant", _recommendation_json(["222"], summary="Second.")),
         ]
-        history = _build_conversation_history(messages)
-        # Window = 1 turn = last 2 messages
+        skus, history = _extract_multi_turn_context(messages)
+        # SKUs come from ALL messages
+        assert skus == ["111", "222"]
+        # History only from last 1 turn (2 messages)
         assert "first query" not in history
         assert "second query" in history
-
-    def test_empty_messages(self) -> None:
-        assert _build_conversation_history([]) == ""

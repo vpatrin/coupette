@@ -47,35 +47,41 @@ def _build_message_out(msg: ChatMessage) -> ChatMessageOut:
     )
 
 
-def _extract_skus(messages: list[ChatMessage]) -> list[str]:
-    """Collect all previously recommended SKUs to avoid re-recommending."""
+def _extract_multi_turn_context(
+    messages: list[ChatMessage],
+) -> tuple[list[str], str]:
+    """Extract SKUs and conversation history from prior messages in a single pass.
+
+    Returns (exclude_skus, conversation_history).
+    """
     skus: list[str] = []
-    for msg in messages:
+    # Parse all assistant messages once, keep parsed results for history windowing
+    parsed: dict[int, RecommendationOut | None] = {}
+    for i, msg in enumerate(messages):
         if msg.role != "assistant":
             continue
         try:
             rec = RecommendationOut.model_validate_json(msg.content)
             skus.extend(p.product.sku for p in rec.products)
+            parsed[i] = rec
         except (ValueError, ValidationError):
-            pass
-    return skus
+            parsed[i] = None
 
-
-def _build_conversation_history(messages: list[ChatMessage]) -> str:
-    """Build a condensed history string from the last N turns for curation context."""
-    # Take the last CONTEXT_WINDOW_TURNS pairs (user + assistant)
+    # Build history from last N turns (no re-parsing needed)
     recent = messages[-(CONTEXT_WINDOW_TURNS * 2) :]
+    offset = len(messages) - len(recent)
     lines: list[str] = []
-    for msg in recent:
+    for j, msg in enumerate(recent):
         if msg.role == "user":
             lines.append(f"User: {msg.content}")
         elif msg.role == "assistant":
-            try:
-                rec = RecommendationOut.model_validate_json(msg.content)
+            rec = parsed.get(offset + j)
+            if rec is not None:
                 lines.append(f"Assistant: {rec.summary}")
-            except (ValueError, ValidationError):
+            else:
                 lines.append(f"Assistant: {msg.content[:200]}")
-    return "\n".join(lines)
+
+    return skus, "\n".join(lines)
 
 
 async def create_session(
@@ -100,8 +106,7 @@ async def send_message(
 
     # Fetch prior messages for multi-turn context
     prior_messages = await chat_repo.find_messages(db, session_id)
-    exclude_skus = _extract_skus(prior_messages)
-    conversation_history = _build_conversation_history(prior_messages)
+    exclude_skus, conversation_history = _extract_multi_turn_context(prior_messages)
 
     # Save user message
     await chat_repo.create_message(db, session_id, "user", message)
