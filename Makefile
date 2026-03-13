@@ -85,7 +85,7 @@ eval:
 
 migrate:
 	cd core && poetry run alembic upgrade head
-	python scripts/create_admin.py
+	cd core && poetry run python ../scripts/create_admin.py
 
 # Generate migration against a clean, ephemeral Postgres (no dev DB drift).
 # Spins up a temporary container, runs all existing migrations, autogenerates,
