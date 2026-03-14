@@ -67,7 +67,10 @@ Wraps existing Haiku RAG pipeline for web consumption. No new AI architecture.
 ### Phase 9b — Chat Interface
 
 - [ ] Chat UI — message input, response display, conversation history (#426)
-- [ ] SSE rendering — progressive token display in chat UI (depends on Phase 9 SSE endpoint)
+- [ ] Session history sidebar — list sessions, resume, delete
+- [ ] Wine card component — structured recommendation display inline in chat
+
+SSE (#427) and SSE rendering are deferred — current response times (2-3s) are fine with a loading state, and streaming structured JSON (RecommendationOut) is awkward. Revisit when/if freeform conversational responses ship (Phase 10).
 
 ### Phase 10 — Intent Router
 
