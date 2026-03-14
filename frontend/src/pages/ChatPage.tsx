@@ -1,14 +1,14 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useParams, useNavigate, useOutletContext } from 'react-router'
 import { useApiClient } from '@/lib/api'
-import { formatOrigin } from '@/lib/utils'
 import type { ChatOutletContext } from '@/components/AppShell'
+import WineCard from '@/components/WineCard'
 import type {
   ChatSessionOut,
   ChatMessageOut,
   ChatSessionDetailOut,
   RecommendationOut,
-  ProductOut,
+  UserStorePreferenceOut,
 } from '@/lib/types'
 
 const MAX_MESSAGE_LENGTH = 2000
@@ -17,33 +17,17 @@ function isRecommendation(content: string | RecommendationOut): content is Recom
   return typeof content === 'object' && 'products' in content
 }
 
-function WineCard({ product, reason }: { product: ProductOut; reason: string }) {
-  const origin = formatOrigin(product)
-  return (
-    <div className="border border-border p-3">
-      {product.url ? (
-        <a
-          href={product.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-mono font-bold text-sm line-clamp-2 hover:text-primary"
-        >
-          {product.name}
-        </a>
-      ) : (
-        <p className="font-mono font-bold text-sm line-clamp-2">{product.name}</p>
-      )}
-      <p className="text-xs text-muted-foreground mt-0.5">
-        {[origin, product.category, product.price ? `${product.price} $` : null]
-          .filter(Boolean)
-          .join(' · ')}
-      </p>
-      <p className="text-sm mt-2">{reason}</p>
-    </div>
-  )
-}
-
-function AssistantMessage({ content }: { content: string | RecommendationOut }) {
+function AssistantMessage({
+  content,
+  storeNames,
+  expandedStores,
+  onToggleStores,
+}: {
+  content: string | RecommendationOut
+  storeNames: Map<string, string>
+  expandedStores: Set<string>
+  onToggleStores: (sku: string) => void
+}) {
   if (!isRecommendation(content)) {
     return <p className="text-sm whitespace-pre-wrap">{content}</p>
   }
@@ -52,7 +36,15 @@ function AssistantMessage({ content }: { content: string | RecommendationOut }) 
     <div className="flex flex-col gap-3">
       <p className="text-sm">{content.summary}</p>
       {content.products.map(({ product, reason }) => (
-        <WineCard key={product.sku} product={product} reason={reason} />
+        <div key={product.sku} className="border border-border p-4">
+          <WineCard
+            product={product}
+            reason={reason}
+            storeNames={storeNames}
+            storesExpanded={expandedStores.has(product.sku)}
+            onToggleStores={() => onToggleStores(product.sku)}
+          />
+        </div>
       ))}
     </div>
   )
@@ -73,9 +65,32 @@ function ChatPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [lastFailedInput, setLastFailedInput] = useState<string | null>(null)
+  const [storeNames, setStoreNames] = useState<Map<string, string>>(new Map())
+  const [expandedStores, setExpandedStores] = useState<Set<string>>(new Set())
+  const toggleStoreExpand = useCallback((sku: string) => {
+    setExpandedStores((prev) => {
+      const next = new Set(prev)
+      if (next.has(sku)) next.delete(sku)
+      else next.add(sku)
+      return next
+    })
+  }, [])
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const skipLoadRef = useRef(false)
+
+  // Fetch user's saved stores once (for availability display on wine cards)
+  useEffect(() => {
+    let cancelled = false
+    apiClient<UserStorePreferenceOut[]>('/stores/preferences')
+      .then((prefs) => {
+        if (!cancelled) setStoreNames(new Map(prefs.map((p) => [p.saq_store_id, p.store.name])))
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [apiClient])
 
   // Reset transient state when URL changes (new chat vs resume)
   useEffect(() => {
@@ -231,7 +246,12 @@ function ChatPage() {
                 {msg.role === 'user' ? (
                   <p className="text-sm whitespace-pre-wrap">{msg.content as string}</p>
                 ) : (
-                  <AssistantMessage content={msg.content} />
+                  <AssistantMessage
+                    content={msg.content}
+                    storeNames={storeNames}
+                    expandedStores={expandedStores}
+                    onToggleStores={toggleStoreExpand}
+                  />
                 )}
               </div>
             </div>

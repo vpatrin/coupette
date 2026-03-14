@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Wine cards in chat now show grape, vintage, availability, and bottle size (#440)
 - Chat recommendations now use multi-turn context — previous wines are excluded and curation references prior conversation (#428)
 - REST API hygiene — pagination uses `limit`/`offset` instead of `page`/`per_page`, verb-based URLs replaced with PATCH (#431)
 

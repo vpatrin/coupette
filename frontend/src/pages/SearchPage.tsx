@@ -10,7 +10,7 @@ import type {
   UserStorePreferenceOut,
 } from '@/lib/types'
 import { Button } from '@/components/ui/button'
-import { formatOrigin } from '@/lib/utils'
+import WineCard from '@/components/WineCard'
 
 const DEBOUNCE_MS = 300
 const LIMIT = 20
@@ -77,6 +77,14 @@ function SearchPage() {
   const [watchedSkus, setWatchedSkus] = useState<Set<string>>(new Set())
   const [watchingInProgress, setWatchingInProgress] = useState<string | null>(null)
   const [expandedStores, setExpandedStores] = useState<Set<string>>(new Set())
+  const toggleStoreExpand = useCallback((sku: string) => {
+    setExpandedStores((prev) => {
+      const next = new Set(prev)
+      if (next.has(sku)) next.delete(sku)
+      else next.add(sku)
+      return next
+    })
+  }, [])
 
   // Saved store IDs + names — for "In my stores" filter and availability display
   const [savedStoreIdsRaw, setSavedStoreIds] = useState<string[]>([])
@@ -612,84 +620,12 @@ function SearchPage() {
                         key={product.sku}
                         className={`border border-border p-4 flex justify-between items-start gap-4${hasAvailability ? '' : ' opacity-50'}`}
                       >
-                        <div className="flex-1 min-w-0">
-                          <p className="font-mono font-bold truncate">
-                            {product.url ? (
-                              <a
-                                href={product.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="hover:text-primary"
-                              >
-                                {product.name}
-                              </a>
-                            ) : (
-                              product.name
-                            )}
-                          </p>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {[product.grape, formatOrigin(product), product.vintage]
-                              .filter(Boolean)
-                              .join(' · ')}
-                          </p>
-                          <div className="flex items-center gap-3 mt-1">
-                            {product.price && <span className="text-sm">{product.price} $</span>}
-                            {(() => {
-                              const canExpand = matchingIds.length > 1
-
-                              const storeText =
-                                matchingIds.length === 1
-                                  ? `At ${storeNames.get(matchingIds[0])}`
-                                  : `In ${matchingIds.length} of your stores`
-
-                              const storeNode =
-                                hasStores && matchingIds.length > 0 ? (
-                                  canExpand ? (
-                                    <button
-                                      type="button"
-                                      className="text-xs text-green-500 hover:underline underline-offset-4 cursor-pointer"
-                                      onClick={() =>
-                                        setExpandedStores((prev) => {
-                                          const next = new Set(prev)
-                                          if (next.has(product.sku)) next.delete(product.sku)
-                                          else next.add(product.sku)
-                                          return next
-                                        })
-                                      }
-                                    >
-                                      {storeText}
-                                    </button>
-                                  ) : (
-                                    <span className="text-xs text-green-500">{storeText}</span>
-                                  )
-                                ) : !hasStores && storeAvail.length > 0 ? (
-                                  <span className="text-xs text-green-500">
-                                    In {storeAvail.length} store{storeAvail.length !== 1 ? 's' : ''}
-                                  </span>
-                                ) : null
-
-                              if (!isOnline && !storeNode) return null
-                              return (
-                                <>
-                                  {isOnline && (
-                                    <span className="text-xs text-green-500">Online</span>
-                                  )}
-                                  {isOnline && storeNode && (
-                                    <span className="text-xs text-muted-foreground">·</span>
-                                  )}
-                                  {storeNode}
-                                </>
-                              )
-                            })()}
-                          </div>
-                          {expandedStores.has(product.sku) && matchingIds.length > 1 && (
-                            <ul className="text-muted-foreground text-xs ml-1 mt-1">
-                              {matchingIds.map((id) => (
-                                <li key={id}>{storeNames.get(id)}</li>
-                              ))}
-                            </ul>
-                          )}
-                        </div>
+                        <WineCard
+                          product={product}
+                          storeNames={storeNames}
+                          storesExpanded={expandedStores.has(product.sku)}
+                          onToggleStores={() => toggleStoreExpand(product.sku)}
+                        />
 
                         <button
                           type="button"
