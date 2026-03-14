@@ -68,7 +68,7 @@ Wraps existing Haiku RAG pipeline for web consumption. No new AI architecture.
 
 - [x] Chat UI — message input, response display, conversation history (#426)
 - [x] Session history sidebar — list sessions, resume, rename, delete
-- [ ] Wine card component — structured recommendation display inline in chat
+- [x] Wine card component — structured recommendation display inline in chat (#440)
 
 SSE (#427) and SSE rendering are deferred — current response times (2-3s) are fine with a loading state, and streaming structured JSON (RecommendationOut) is awkward. Revisit when/if freeform conversational responses ship (Phase 10).
 
