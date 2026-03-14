@@ -66,7 +66,7 @@ Wraps existing Haiku RAG pipeline for web consumption. No new AI architecture.
 
 ### Phase 9b — Chat Interface
 
-- [ ] Chat UI — message input, response display, conversation history (#426)
+- [x] Chat UI — message input, response display, conversation history (#426)
 - [ ] Session history sidebar — list sessions, resume, delete
 - [ ] Wine card component — structured recommendation display inline in chat
 
