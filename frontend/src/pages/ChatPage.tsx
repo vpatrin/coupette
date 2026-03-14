@@ -19,7 +19,18 @@ function WineCard({ product, reason }: { product: ProductOut; reason: string }) 
   const origin = formatOrigin(product)
   return (
     <div className="border border-border p-3">
-      <p className="font-mono font-bold text-sm truncate">{product.name}</p>
+      {product.url ? (
+        <a
+          href={product.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-mono font-bold text-sm line-clamp-2 hover:text-primary"
+        >
+          {product.name}
+        </a>
+      ) : (
+        <p className="font-mono font-bold text-sm line-clamp-2">{product.name}</p>
+      )}
       <p className="text-xs text-muted-foreground mt-0.5">
         {[origin, product.category, product.price ? `${product.price} $` : null]
           .filter(Boolean)
@@ -91,20 +102,20 @@ function ChatPage() {
       let sid = sessionId
 
       if (sid === null) {
-        // First message — create session
+        // First message — create session, then send the message
         const session = await apiClient<ChatSessionOut>('/chat/sessions', {
           method: 'POST',
           body: JSON.stringify({ message: text }),
         })
-        sid = session.id 
+        sid = session.id
         setSessionId(sid)
-      } else {
-        // Follow-up message
-        await apiClient(`/chat/sessions/${sid}/messages`, {
-          method: 'POST',
-          body: JSON.stringify({ message: text }),
-        })
       }
+
+      // Send message (first or follow-up — same endpoint)
+      await apiClient(`/chat/sessions/${sid}/messages`, {
+        method: 'POST',
+        body: JSON.stringify({ message: text }),
+      })
 
       // Re-fetch full session to get real messages
       const detail = await apiClient<ChatSessionDetailOut>(`/chat/sessions/${sid}`)
@@ -166,8 +177,10 @@ function ChatPage() {
           ))}
 
           {sending && (
-            <div className="flex items-start">
-              <p className="text-sm text-muted-foreground font-mono">Thinking...</p>
+            <div className="flex flex-col gap-1 items-start">
+              <div className="max-w-[85%]">
+                <p className="text-sm text-muted-foreground font-mono">Thinking...</p>
+              </div>
             </div>
           )}
 
@@ -231,7 +244,7 @@ function ChatPage() {
           <button
             type="submit"
             disabled={sending || !input.trim()}
-            className="border border-border px-4 py-2 text-sm font-mono hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+            className="self-end border border-border px-4 py-2 text-sm font-mono hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Send
           </button>
