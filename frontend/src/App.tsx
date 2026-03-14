@@ -24,6 +24,7 @@ function App() {
       <Route element={<AuthedLayout />}>
         <Route path="/dashboard" element={<Navigate to="/chat" replace />} />
         <Route path="/chat" element={<ChatPage />} />
+        <Route path="/chat/:sessionId" element={<ChatPage />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/watches" element={<WatchesPage />} />
         <Route path="/stores" element={<SavedStoresPage />} />

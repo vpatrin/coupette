@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { useParams, useNavigate, useOutletContext } from 'react-router'
 import { useApiClient } from '@/lib/api'
 import { formatOrigin } from '@/lib/utils'
+import type { ChatOutletContext } from '@/components/AppShell'
 import type {
   ChatSessionOut,
   ChatMessageOut,
@@ -58,24 +60,69 @@ function AssistantMessage({ content }: { content: string | RecommendationOut }) 
 
 function ChatPage() {
   const apiClient = useApiClient()
-  const [sessionId, setSessionId] = useState<number | null>(null)
+  const navigate = useNavigate()
+  const { sessionId: urlSessionId } = useParams<{ sessionId: string }>()
+  const { refreshSessions } = useOutletContext<ChatOutletContext>()
+
+  // Derive sessionId directly from URL — no intermediate state to get stale
+  const sessionId = urlSessionId ? Number(urlSessionId) : null
+
   const [messages, setMessages] = useState<ChatMessageOut[]>([])
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [lastFailedInput, setLastFailedInput] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const skipLoadRef = useRef(false)
+
+  // Reset transient state when URL changes (new chat vs resume)
+  useEffect(() => {
+    setMessages([])
+    setInput('')
+    setError(null)
+    setLastFailedInput(null)
+  }, [urlSessionId])
+
+  // Load existing session messages (skipped when submitMessage already has data)
+  useEffect(() => {
+    if (!sessionId) return
+    if (skipLoadRef.current) {
+      skipLoadRef.current = false
+      return
+    }
+    let cancelled = false
+    setLoading(true)
+    apiClient<ChatSessionDetailOut>(`/chat/sessions/${sessionId}`)
+      .then((detail) => {
+        if (!cancelled) setMessages(detail.messages)
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Failed to load session')
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+    // sessionId is derived from urlSessionId — use urlSessionId as dep to avoid
+    // re-fetching when React re-renders without a URL change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlSessionId, apiClient])
 
   // Scroll to bottom when messages change
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Focus input on mount
+  // Focus input on mount and when session changes
   useEffect(() => {
     inputRef.current?.focus()
-  }, [])
+  }, [urlSessionId])
 
   const submitMessage = useCallback(async () => {
     const text = input.trim()
@@ -101,14 +148,19 @@ function ChatPage() {
     try {
       let sid = sessionId
 
+      let isNewSession = false
+
       if (sid === null) {
-        // First message — create session, then send the message
+        // First message — create session (title only), then send the message below
         const session = await apiClient<ChatSessionOut>('/chat/sessions', {
           method: 'POST',
           body: JSON.stringify({ message: text }),
         })
         sid = session.id
-        setSessionId(sid)
+        isNewSession = true
+        // Skip the load effect — we'll fetch the data right below
+        skipLoadRef.current = true
+        navigate(`/chat/${sid}`, { replace: true })
       }
 
       // Send message (first or follow-up — same endpoint)
@@ -120,6 +172,9 @@ function ChatPage() {
       // Re-fetch full session to get real messages
       const detail = await apiClient<ChatSessionDetailOut>(`/chat/sessions/${sid}`)
       setMessages(detail.messages)
+
+      // Refresh sidebar only when a new session was created (title added)
+      if (isNewSession) refreshSessions()
     } catch (err) {
       // Remove optimistic message on error
       setMessages((prev) => prev.filter((m) => m.message_id !== tempUserMsg.message_id))
@@ -129,7 +184,7 @@ function ChatPage() {
       setSending(false)
       inputRef.current?.focus()
     }
-  }, [apiClient, input, sending, sessionId])
+  }, [apiClient, input, sending, sessionId, navigate, refreshSessions])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -148,12 +203,18 @@ function ChatPage() {
       {/* Messages area */}
       <div className="flex-1 overflow-y-auto p-6">
         <div className="max-w-2xl mx-auto flex flex-col gap-6">
-          {messages.length === 0 && !sending && (
+          {messages.length === 0 && !sending && !loading && (
             <div className="flex flex-col items-center justify-center h-full min-h-[40vh] gap-2">
               <h1 className="text-2xl font-mono font-bold">What are you drinking tonight?</h1>
               <p className="text-muted-foreground text-sm">
                 Ask for a recommendation — try "A bold red under $30" or "Something for sushi"
               </p>
+            </div>
+          )}
+
+          {loading && (
+            <div className="flex flex-col items-center justify-center min-h-[20vh]">
+              <p className="text-sm text-muted-foreground font-mono">Loading...</p>
             </div>
           )}
 
