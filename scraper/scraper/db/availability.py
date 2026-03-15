@@ -43,6 +43,36 @@ async def bulk_update_availability(
     return len(updates)
 
 
+async def reset_stale_availability(exclude_skus: set[str]) -> int:
+    """Reset availability for non-delisted products absent from Adobe results.
+
+    Sets online_availability=False and store_availability=NULL for all
+    non-delisted products whose SKU is not in exclude_skus.
+    """
+    if not exclude_skus:
+        logger.warning(
+            "No SKUs to exclude — skipping stale reset to avoid clearing all availability"
+        )
+        return 0
+    table = Product.__table__
+    stmt = (
+        update(table)
+        .where(table.c.delisted_at.is_(None))
+        .where(table.c.sku.not_in(exclude_skus))
+        .where((table.c.online_availability.is_(True)) | (table.c.store_availability.is_not(None)))
+        .values(online_availability=False, store_availability=None)
+    )
+    async with SessionLocal() as session:
+        try:
+            result = await session.execute(stmt)
+            await session.commit()
+            return result.rowcount  # type: ignore[return-value]
+        except SQLAlchemyError as exc:
+            await session.rollback()
+            logger.opt(exception=exc).error("Failed to clear stale availability")
+            raise
+
+
 async def get_watched_product_availability() -> dict[str, tuple[bool | None, list[str] | None]]:
     """Load current availability for all watched, non-delisted products.
 

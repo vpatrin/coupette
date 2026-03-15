@@ -16,6 +16,7 @@ from ..db import (
     get_montreal_store_ids,
     get_preferred_store_ids,
     get_watched_product_availability,
+    reset_stale_availability,
 )
 
 
@@ -85,6 +86,7 @@ async def _detect_transitions(data: _AvailabilityData) -> _TransitionStats:
         return stats
 
     preferred = await get_preferred_store_ids()
+    collected_skus = data.skus
 
     for sku, (prev_online, prev_stores) in prev_avail.items():
         new_online = data.online.get(sku)
@@ -111,8 +113,8 @@ async def _detect_transitions(data: _AvailabilityData) -> _TransitionStats:
                 stats.errors += 1
 
         # Store transitions — only for user-preferred stores, and only if
-        # the product appeared in Adobe results (absent SKUs keep stale data)
-        if sku not in data.skus:
+        # the product appeared in Adobe results (step 1b already cleared absent SKUs)
+        if sku not in collected_skus:
             continue
         user_stores = preferred.get(sku, set())
         for store_id in user_stores:
@@ -168,7 +170,8 @@ async def availability_check() -> int:
             logger.opt(exception=exc).error("Adobe API request failed — aborting")
             return EXIT_FATAL
 
-    logger.info("Step 1 complete: {} unique products collected", len(data.skus))
+    collected_skus = data.skus
+    logger.info("Step 1 complete: {} unique products collected", len(collected_skus))
 
     # Step 1 write: bulk-update availability columns (only for SKUs already in DB)
     try:
@@ -176,12 +179,20 @@ async def availability_check() -> int:
     except SQLAlchemyError as exc:
         logger.opt(exception=exc).error("Failed to load product SKUs — aborting")
         return EXIT_FATAL
-    matching = data.skus & known_skus
+    matching = collected_skus & known_skus
     updates = {sku: (data.online.get(sku, False), data.stores.get(sku, [])) for sku in matching}
-    logger.info("{} of {} collected products exist in DB", len(matching), len(data.skus))
+    logger.info("{} of {} collected products exist in DB", len(matching), len(collected_skus))
     try:
         updated = await bulk_update_availability(updates)
         logger.info("Updated availability for {} products", updated)
+    except SQLAlchemyError:
+        return EXIT_FATAL
+
+    # Step 1b: clear stale availability for products not in Adobe results
+    try:
+        cleared = await reset_stale_availability(exclude_skus=collected_skus)
+        if cleared:
+            logger.info("Cleared stale availability for {} products", cleared)
     except SQLAlchemyError:
         return EXIT_FATAL
 
@@ -201,6 +212,7 @@ async def availability_check() -> int:
     logger.info(
         "Availability check complete in {}m {}s:\n"
         "  Products updated: {}\n"
+        "  Stale cleared: {}\n"
         "  Online restocks: {}\n"
         "  Online destocks: {}\n"
         "  Store restocks: {}\n"
@@ -209,6 +221,7 @@ async def availability_check() -> int:
         minutes,
         seconds,
         updated,
+        cleared,
         transitions.online_restock,
         transitions.online_destock,
         transitions.store_restock,
