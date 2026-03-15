@@ -27,8 +27,8 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /app
 
-# CVE-2025-7709: python:3.12-slim ships unpatched libsqlite3-0 — remove when base image catches up
-RUN apt-get update && apt-get install -y --no-install-recommends libsqlite3-0 && rm -rf /var/lib/apt/lists/*
+# Patch CVEs in base image packages — remove when python:3.12-slim catches up
+RUN apt-get update && apt-get install -y --no-install-recommends dpkg libsqlite3-0 && rm -rf /var/lib/apt/lists/*
 
 # Copy only the virtualenv — no pip/setuptools/poetry leak
 COPY --from=builder /opt/venv /opt/venv

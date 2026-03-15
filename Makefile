@@ -9,6 +9,7 @@
 	coverage coverage-backend coverage-scraper coverage-bot \
 	audit audit-core audit-backend audit-scraper audit-bot audit-frontend \
 	build build-backend build-scraper build-bot build-frontend \
+	scan scan-backend scan-scraper scan-bot \
 	start-db stop-db \
 	clean
 
@@ -32,6 +33,7 @@ help:
 	@echo "Coverage:  coverage  coverage-{backend,scraper,bot}"
 	@echo "Audit:     audit  audit-{core,backend,scraper,bot,frontend}"
 	@echo "Build:     build  build-{backend,scraper,bot,frontend}"
+	@echo "Scan:      scan  scan-{backend,scraper,bot}"
 	@echo "Docker:    start-db  stop-db"
 	@echo "Cleanup:   clean"
 
@@ -245,6 +247,24 @@ build-frontend:
 	cd frontend && yarn build
 
 build: build-backend build-scraper build-bot build-frontend
+
+# --- Scan (Trivy CVE scan on built images) ---
+
+TRIVY_FLAGS := --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed --ignorefile .trivyignore
+
+scan-backend: build-backend
+	@echo "\n▶ Scanning coupette-backend"
+	trivy image $(TRIVY_FLAGS) coupette-backend
+
+scan-scraper: build-scraper
+	@echo "\n▶ Scanning coupette-scraper"
+	trivy image $(TRIVY_FLAGS) coupette-scraper
+
+scan-bot: build-bot
+	@echo "\n▶ Scanning coupette-bot"
+	trivy image $(TRIVY_FLAGS) coupette-bot
+
+scan: scan-backend scan-scraper scan-bot
 
 # --- Docker ---
 

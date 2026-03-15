@@ -49,6 +49,11 @@ async def reset_stale_availability(exclude_skus: set[str]) -> int:
     Sets online_availability=False and store_availability=NULL for all
     non-delisted products whose SKU is not in exclude_skus.
     """
+    if not exclude_skus:
+        logger.warning(
+            "No SKUs to exclude — skipping stale reset to avoid clearing all availability"
+        )
+        return 0
     table = Product.__table__
     stmt = (
         update(table)
