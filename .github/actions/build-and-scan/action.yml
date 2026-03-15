@@ -34,6 +34,7 @@ runs:
         severity: ${{ inputs.trivy-severity }}
         exit-code: 1
         ignore-unfixed: true
+        trivyignores: .trivyignore
     # Tag + push the already-built local image (CD only)
     - if: inputs.push == 'true'
       shell: bash

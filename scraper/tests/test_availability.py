@@ -160,7 +160,7 @@ class TestDetectTransitions:
 
     @pytest.mark.asyncio
     async def test_absent_sku_skips_store_transitions(self) -> None:
-        """Products not in Adobe results should NOT trigger store destock events."""
+        """Absent SKUs skip store transitions (step 1b already cleared availability)."""
         data = _AvailabilityData()
         # 111 absent from Adobe — not in data.skus
 

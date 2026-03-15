@@ -250,7 +250,7 @@ build: build-backend build-scraper build-bot build-frontend
 
 # --- Scan (Trivy CVE scan on built images) ---
 
-TRIVY_FLAGS := --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed --ignorefile .trivyignore
+TRIVY_FLAGS := --exit-code 1 --severity LOW,MEDIUM,HIGH,CRITICAL --ignore-unfixed --ignorefile .trivyignore
 
 scan-backend: build-backend
 	@echo "\n▶ Scanning coupette-backend"

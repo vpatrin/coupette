@@ -1,4 +1,4 @@
-FROM python:3.12-slim AS builder
+FROM python:3.12-slim@sha256:ccc7089399c8bb65dd1fb3ed6d55efa538a3f5e7fca3f5988ac3b5b87e593bf0 AS builder
 
 ARG POETRY_VERSION=2.3.2
 RUN pip install --no-cache-dir poetry==${POETRY_VERSION}
@@ -18,7 +18,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 RUN poetry install --only main --no-interaction \
     && pip install --no-cache-dir --no-deps --force-reinstall /build/core
 
-FROM python:3.12-slim
+FROM python:3.12-slim@sha256:ccc7089399c8bb65dd1fb3ed6d55efa538a3f5e7fca3f5988ac3b5b87e593bf0
 
 # Logs appear immediately in docker compose logs (no buffering)
 ENV PYTHONUNBUFFERED=1 \
@@ -26,9 +26,6 @@ ENV PYTHONUNBUFFERED=1 \
     PATH="/opt/venv/bin:$PATH"
 
 WORKDIR /app
-
-# Patch CVEs in base image packages — remove when python:3.12-slim catches up
-RUN apt-get update && apt-get install -y --no-install-recommends dpkg libsqlite3-0 && rm -rf /var/lib/apt/lists/*
 
 # Copy only the virtualenv — no pip/setuptools/poetry leak
 COPY --from=builder /opt/venv /opt/venv
