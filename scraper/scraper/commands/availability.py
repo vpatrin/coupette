@@ -16,6 +16,7 @@ from ..db import (
     get_montreal_store_ids,
     get_preferred_store_ids,
     get_watched_product_availability,
+    reset_stale_availability,
 )
 
 
@@ -185,6 +186,14 @@ async def availability_check() -> int:
     except SQLAlchemyError:
         return EXIT_FATAL
 
+    # Step 1b: clear stale availability for products not in Adobe results
+    try:
+        cleared = await reset_stale_availability(exclude_skus=data.skus)
+        if cleared:
+            logger.info("Cleared stale availability for {} products", cleared)
+    except SQLAlchemyError:
+        return EXIT_FATAL
+
     # Step 2: watch transition detection
     try:
         transitions = await _detect_transitions(data)
@@ -201,6 +210,7 @@ async def availability_check() -> int:
     logger.info(
         "Availability check complete in {}m {}s:\n"
         "  Products updated: {}\n"
+        "  Stale cleared: {}\n"
         "  Online restocks: {}\n"
         "  Online destocks: {}\n"
         "  Store restocks: {}\n"
@@ -209,6 +219,7 @@ async def availability_check() -> int:
         minutes,
         seconds,
         updated,
+        cleared,
         transitions.online_restock,
         transitions.online_destock,
         transitions.store_restock,

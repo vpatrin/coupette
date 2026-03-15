@@ -4,6 +4,7 @@ from .availability import (
     bulk_update_availability,
     get_preferred_store_ids,
     get_watched_product_availability,
+    reset_stale_availability,
 )
 from .embeddings import (
     bulk_update_embeddings,
@@ -39,6 +40,7 @@ __all__ = [
     "get_watched_product_availability",
     "get_watched_skus",
     "mark_delisted",
+    "reset_stale_availability",
     "upsert_product",
     "upsert_stores",
 ]

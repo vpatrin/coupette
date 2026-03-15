@@ -318,6 +318,11 @@ class TestAvailabilityCheck:
                 return_value=2,
             ) as mock_bulk,
             patch(
+                "scraper.commands.availability.reset_stale_availability",
+                new_callable=AsyncMock,
+                return_value=0,
+            ),
+            patch(
                 "scraper.commands.availability.get_watched_product_availability",
                 new_callable=AsyncMock,
                 return_value={},
@@ -337,6 +342,56 @@ class TestAvailabilityCheck:
         assert updates["111"] == (True, ["23101"])
         assert updates["222"] == (False, ["23101"])
         mock_cleanup.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_clears_stale_availability(self) -> None:
+        """Products not in Adobe results get availability cleared."""
+        products_1a = [_make_product("111", in_stock=True, store_ids=["23101"])]
+
+        call_count = 0
+
+        async def mock_search(client, filters, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                for p in products_1a:
+                    yield p
+
+        with (
+            patch(
+                "scraper.commands.availability.get_montreal_store_ids",
+                new_callable=AsyncMock,
+                return_value=["23101"],
+            ),
+            patch("scraper.commands.availability.search_products", side_effect=mock_search),
+            patch(
+                "scraper.commands.availability.get_all_skus",
+                new_callable=AsyncMock,
+                return_value={"111", "222"},  # 222 exists in DB but not in Adobe
+            ),
+            patch(
+                "scraper.commands.availability.bulk_update_availability",
+                new_callable=AsyncMock,
+                return_value=1,
+            ),
+            patch(
+                "scraper.commands.availability.reset_stale_availability",
+                new_callable=AsyncMock,
+                return_value=1,
+            ) as mock_clear,
+            patch(
+                "scraper.commands.availability.get_watched_product_availability",
+                new_callable=AsyncMock,
+                return_value={},
+            ),
+            patch("scraper.commands.availability.delete_old_stock_events", new_callable=AsyncMock),
+        ):
+            result = await availability_check()
+
+        assert result == EXIT_OK
+        mock_clear.assert_called_once()
+        # exclude_skus should contain only the SKUs Adobe returned
+        assert mock_clear.call_args[1]["exclude_skus"] == {"111"}
 
     @pytest.mark.asyncio
     async def test_partial_on_transition_errors(self) -> None:
@@ -369,6 +424,11 @@ class TestAvailabilityCheck:
                 "scraper.commands.availability.bulk_update_availability",
                 new_callable=AsyncMock,
                 return_value=1,
+            ),
+            patch(
+                "scraper.commands.availability.reset_stale_availability",
+                new_callable=AsyncMock,
+                return_value=0,
             ),
             patch(
                 "scraper.commands.availability.get_watched_product_availability",
