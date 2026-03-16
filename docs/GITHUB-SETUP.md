@@ -233,6 +233,28 @@ Version tags (`v1.2.3`) typically trigger your CD pipeline. If someone
 deletes or overwrites a tag, they can re-trigger a deploy with different
 code. Making tags immutable means your release history is trustworthy.
 
+### Signed commits
+
+The `required_signatures` rule in the main-protection ruleset above
+rejects unsigned commits. To sign with an existing SSH key:
+
+```bash
+git config --global gpg.format ssh
+git config --global user.signingkey ~/.ssh/id_ed25519
+git config --global commit.gpgsign true
+git config --global tag.gpgsign true
+```
+
+Then add the same public key on GitHub as a **Signing Key**
+(Settings → SSH and GPG keys → New SSH key → type: Signing Key).
+One key can serve as both authentication and signing key.
+
+If a branch has unsigned commits, rebase to re-sign them:
+
+```bash
+git rebase --force-rebase origin/main
+```
+
 ---
 
 ## 4. Security Scanning
