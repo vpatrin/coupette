@@ -9,11 +9,12 @@ from fastapi import status
 
 from backend.app import app
 from backend.auth import get_current_active_user
+from backend.config import NON_WINE_MESSAGE
 from backend.db import get_db
 from backend.exceptions import ForbiddenError, NotFoundError
 from backend.schemas.chat import ChatMessageOut, ChatSessionDetailOut
 from backend.schemas.recommendation import IntentResult, RecommendationOut
-from backend.services.chat import _extract_multi_turn_context
+from backend.services.chat import _extract_multi_turn_context, send_message
 from backend.tests.conftest import _mock_authenticated_user
 
 NOW = datetime(2026, 3, 12, 12, 0, 0, tzinfo=UTC)
@@ -29,7 +30,7 @@ def _fake_session(**overrides: object) -> SimpleNamespace:
 def _fake_recommendation() -> RecommendationOut:
     return RecommendationOut(
         products=[],
-        intent=IntentResult(is_wine=True, semantic_query="bold red"),
+        intent=IntentResult(intent_type="recommendation", semantic_query="bold red"),
         summary="Here are some bold reds.",
     )
 
@@ -353,3 +354,122 @@ class TestExtractMultiTurnContext:
         # History only from last 1 turn (2 messages)
         assert "first query" not in history
         assert "second query" in history
+
+
+# --- Intent routing in send_message ---
+
+
+def _fake_chat_message(id: int, role: str, content: str) -> SimpleNamespace:
+    return SimpleNamespace(id=id, session_id=1, role=role, content=content, created_at=NOW)
+
+
+class TestSendMessageRouting:
+    """Tests for three-way intent routing in send_message()."""
+
+    @pytest.mark.asyncio
+    @patch("backend.services.chat.chat_repo")
+    @patch("backend.services.chat.recommend", new_callable=AsyncMock)
+    @patch("backend.services.chat.parse_intent", new_callable=AsyncMock)
+    async def test_recommendation_path(
+        self,
+        mock_parse: AsyncMock,
+        mock_recommend: AsyncMock,
+        mock_repo: AsyncMock,
+    ) -> None:
+        """intent_type='recommendation' → RAG pipeline."""
+        intent = IntentResult(intent_type="recommendation", semantic_query="bold red")
+        mock_parse.return_value = intent
+        rec = _fake_recommendation()
+        mock_recommend.return_value = rec
+
+        mock_repo.find_by_id = AsyncMock(return_value=_fake_session(user_id=1))
+        mock_repo.find_messages = AsyncMock(return_value=[])
+        mock_repo.create_message = AsyncMock(
+            return_value=_fake_chat_message(2, "assistant", rec.model_dump_json())
+        )
+
+        db = AsyncMock()
+        result = await send_message(db, user_id=1, session_id=1, message="bold red under 30")
+
+        mock_recommend.assert_called_once()
+        assert mock_recommend.call_args.kwargs["intent"] is intent
+        assert isinstance(result.content, RecommendationOut)
+
+    @pytest.mark.asyncio
+    @patch("backend.services.chat.chat_repo")
+    @patch("backend.services.chat.sommelier_chat", new_callable=AsyncMock)
+    @patch("backend.services.chat.parse_intent", new_callable=AsyncMock)
+    async def test_wine_chat_path(
+        self,
+        mock_parse: AsyncMock,
+        mock_sommelier: AsyncMock,
+        mock_repo: AsyncMock,
+    ) -> None:
+        """intent_type='wine_chat' → sommelier service."""
+        mock_parse.return_value = IntentResult(intent_type="wine_chat", semantic_query="Burgundy")
+        mock_sommelier.return_value = "Burgundy is a famous wine region in eastern France."
+
+        mock_repo.find_by_id = AsyncMock(return_value=_fake_session(user_id=1))
+        mock_repo.find_messages = AsyncMock(return_value=[])
+        mock_repo.create_message = AsyncMock(
+            return_value=_fake_chat_message(2, "assistant", "Burgundy is a famous wine region.")
+        )
+
+        db = AsyncMock()
+        result = await send_message(db, user_id=1, session_id=1, message="tell me about Burgundy")
+
+        mock_sommelier.assert_called_once()
+        assert result.content == "Burgundy is a famous wine region in eastern France."
+
+    @pytest.mark.asyncio
+    @patch("backend.services.chat.chat_repo")
+    @patch("backend.services.chat.parse_intent", new_callable=AsyncMock)
+    async def test_off_topic_path(
+        self,
+        mock_parse: AsyncMock,
+        mock_repo: AsyncMock,
+    ) -> None:
+        """intent_type='off_topic' → non-wine deflection message."""
+        mock_parse.return_value = IntentResult(intent_type="off_topic")
+
+        mock_repo.find_by_id = AsyncMock(return_value=_fake_session(user_id=1))
+        mock_repo.find_messages = AsyncMock(return_value=[])
+        mock_repo.create_message = AsyncMock(
+            return_value=_fake_chat_message(2, "assistant", NON_WINE_MESSAGE)
+        )
+
+        db = AsyncMock()
+        result = await send_message(db, user_id=1, session_id=1, message="do you sell beer?")
+
+        assert result.content == NON_WINE_MESSAGE
+
+    @pytest.mark.asyncio
+    @patch("backend.services.chat.chat_repo")
+    @patch("backend.services.chat.sommelier_chat", new_callable=AsyncMock)
+    @patch("backend.services.chat.parse_intent", new_callable=AsyncMock)
+    async def test_sommelier_receives_conversation_history(
+        self,
+        mock_parse: AsyncMock,
+        mock_sommelier: AsyncMock,
+        mock_repo: AsyncMock,
+    ) -> None:
+        """Sommelier path passes conversation history for multi-turn coherence."""
+        mock_parse.return_value = IntentResult(intent_type="wine_chat", semantic_query="pairing")
+        mock_sommelier.return_value = "Lamb pairs well with Syrah."
+
+        prior = [
+            _fake_chat_message(1, "user", "what pairs with lamb?"),
+            _fake_chat_message(2, "assistant", "Lamb pairs well with bold reds."),
+        ]
+        mock_repo.find_by_id = AsyncMock(return_value=_fake_session(user_id=1))
+        mock_repo.find_messages = AsyncMock(return_value=prior)
+        mock_repo.create_message = AsyncMock(
+            return_value=_fake_chat_message(3, "assistant", "Lamb pairs well with Syrah.")
+        )
+
+        db = AsyncMock()
+        await send_message(db, user_id=1, session_id=1, message="what about a specific grape?")
+
+        mock_sommelier.assert_called_once()
+        _, kwargs = mock_sommelier.call_args
+        assert kwargs["conversation_history"] is not None

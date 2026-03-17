@@ -2,7 +2,7 @@ from loguru import logger
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.config import CONTEXT_WINDOW_TURNS
+from backend.config import CONTEXT_WINDOW_TURNS, NON_WINE_MESSAGE
 from backend.exceptions import ForbiddenError, NotFoundError
 from backend.repositories import chat as chat_repo
 from backend.schemas.chat import (
@@ -12,7 +12,9 @@ from backend.schemas.chat import (
     ChatSessionOut,
 )
 from backend.schemas.recommendation import RecommendationOut
+from backend.services.intent import parse_intent
 from backend.services.recommendations import recommend
+from backend.services.sommelier import sommelier_chat
 from core.db.models import ChatMessage, ChatSession
 
 
@@ -102,35 +104,47 @@ async def send_message(
     session_id: int,
     message: str,
 ) -> ChatMessageOut:
-    """Send a message in an existing session: save user msg, call recommend, save response."""
+    """Send a message in an existing session: classify intent, route to the right service."""
     await _get_owned_session(db, user_id, session_id)
-
-    # Fetch prior messages for multi-turn context
-    prior_messages = await chat_repo.find_messages(db, session_id)
-    exclude_skus, conversation_history = _extract_multi_turn_context(prior_messages)
 
     # Save user message
     await chat_repo.create_message(db, session_id, "user", message)
 
-    # Call recommendation pipeline with multi-turn context
-    result = await recommend(
-        db,
-        message,
-        user_id=f"web:{user_id}",
-        exclude_skus=exclude_skus or None,
-        conversation_history=conversation_history or None,
-    )
+    # Classify intent — Claude picks one of three tools
+    intent = await parse_intent(message)
 
-    # Save assistant response as JSON
-    assistant_msg = await chat_repo.create_message(
-        db, session_id, "assistant", result.model_dump_json()
-    )
+    # Route based on intent_type
+    content: str | RecommendationOut
+    if intent.intent_type == "off_topic":
+        content = NON_WINE_MESSAGE
+    elif intent.intent_type == "wine_chat":
+        prior_messages = await chat_repo.find_messages(db, session_id)
+        # Fetch prior messages for multi-turn context
+        _, conversation_history = _extract_multi_turn_context(prior_messages)
+        content = await sommelier_chat(message, conversation_history=conversation_history or None)
+    elif intent.intent_type == "recommendation":
+        prior_messages = await chat_repo.find_messages(db, session_id)
+        exclude_skus, conversation_history = _extract_multi_turn_context(prior_messages)
+        content = await recommend(
+            db,
+            message,
+            user_id=f"web:{user_id}",
+            exclude_skus=exclude_skus or None,
+            conversation_history=conversation_history or None,
+            intent=intent,
+        )
+    else:
+        content = NON_WINE_MESSAGE
+
+    # Save assistant response
+    response_text = content.model_dump_json() if isinstance(content, RecommendationOut) else content
+    assistant_msg = await chat_repo.create_message(db, session_id, "assistant", response_text)
 
     return ChatMessageOut(
         message_id=assistant_msg.id,
         session_id=session_id,
         role="assistant",
-        content=result,
+        content=content,
         created_at=assistant_msg.created_at,
     )
 

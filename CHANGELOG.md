@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Chat API — session-based chat endpoints wrapping the recommendation pipeline (`/api/chat/sessions/*`) (#425)
 - Chat UI — sommelier conversation page with message input, response display, and session persistence (#426)
 - Session history sidebar — list, resume, rename, and delete past chat sessions
+- Three-way intent routing — chat queries are classified as recommendation, wine knowledge, or off-topic; wine knowledge questions get conversational answers instead of product cards (#473)
 
 ### Changed
 

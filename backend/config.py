@@ -22,6 +22,13 @@ CONTEXT_WINDOW_TURNS = 5
 ROLE_USER = "user"
 ROLE_ADMIN = "admin"
 
+NON_WINE_MESSAGE = (
+    "Je suis un assistant spécialisé en vin — je ne peux pas vous aider avec ça. "
+    "Essayez de me poser une question sur le vin! / "
+    "I'm a wine assistant — I can't help with that. "
+    "Try asking me a wine question!"
+)
+
 
 class BackendSettings(BaseSettings):
     """Backend-specific configuration (CORS, auth, etc.)."""
