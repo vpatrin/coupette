@@ -7,11 +7,11 @@ import pytest
 from backend.services.intent import parse_intent
 
 
-def _mock_tool_use_response(tool_input: dict) -> MagicMock:
+def _mock_tool_use_response(tool_name: str, tool_input: dict) -> MagicMock:
     """Build a mock Claude response with a single tool_use block."""
     block = MagicMock()
     block.type = "tool_use"
-    block.name = "search_wines"
+    block.name = tool_name
     block.input = tool_input
 
     response = MagicMock()
@@ -40,17 +40,19 @@ class TestParseIntent:
         mock_client = AsyncMock()
         mock_get_client.return_value = mock_client
         mock_client.messages.create.return_value = _mock_tool_use_response(
+            "search_wines",
             {
                 "categories": ["Vin rouge"],
                 "min_price": 20,
                 "max_price": 30,
                 "country": None,
                 "semantic_query": "fruité",
-            }
+            },
         )
 
         result = await parse_intent("un rouge fruité autour de 25$")
 
+        assert result.intent_type == "recommendation"
         assert result.categories == ["Vin rouge"]
         assert result.min_price == Decimal("20")
         assert result.max_price == Decimal("30")
@@ -67,11 +69,12 @@ class TestParseIntent:
         mock_client = AsyncMock()
         mock_get_client.return_value = mock_client
         mock_client.messages.create.return_value = _mock_tool_use_response(
+            "search_wines",
             {
                 "categories": ["Vin blanc"],
                 "country": "France",
                 "semantic_query": "crisp dry white",
-            }
+            },
         )
 
         result = await parse_intent("a crisp dry white from France")
@@ -91,14 +94,16 @@ class TestParseIntent:
         mock_client = AsyncMock()
         mock_get_client.return_value = mock_client
         mock_client.messages.create.return_value = _mock_tool_use_response(
+            "search_wines",
             {
                 "categories": [],
                 "semantic_query": "something for a BBQ with friends",
-            }
+            },
         )
 
         result = await parse_intent("something for a BBQ with friends")
 
+        assert result.intent_type == "recommendation"
         assert result.categories == []
         assert result.min_price is None
         assert result.max_price is None
@@ -122,22 +127,8 @@ class TestParseIntent:
         result = await parse_intent("un rouge")
 
         assert result.semantic_query == "un rouge"
+        assert result.intent_type == "recommendation"
         assert result.categories == []
-
-    @pytest.mark.asyncio
-    @patch("backend.services.intent.get_anthropic_client")
-    @patch("backend.services.intent.backend_settings")
-    async def test_falls_back_on_no_tool_use_block(
-        self, mock_settings: MagicMock, mock_get_client: MagicMock
-    ) -> None:
-        mock_settings.ANTHROPIC_API_KEY = "sk-test"
-        mock_client = AsyncMock()
-        mock_get_client.return_value = mock_client
-        mock_client.messages.create.return_value = _mock_text_response()
-
-        result = await parse_intent("surprise me")
-
-        assert result.semantic_query == "surprise me"
 
     @pytest.mark.asyncio
     @patch("backend.services.intent.backend_settings")
@@ -147,6 +138,7 @@ class TestParseIntent:
         result = await parse_intent("un rouge")
 
         assert result.semantic_query == "un rouge"
+        assert result.intent_type == "recommendation"
         assert result.categories == []
 
     @pytest.mark.asyncio
@@ -160,7 +152,7 @@ class TestParseIntent:
         mock_client = AsyncMock()
         mock_get_client.return_value = mock_client
         mock_client.messages.create.return_value = _mock_tool_use_response(
-            {"semantic_query": "bold red"}
+            "search_wines", {"semantic_query": "bold red"}
         )
 
         result = await parse_intent("bold red")
@@ -170,3 +162,55 @@ class TestParseIntent:
         assert result.max_price is None
         assert result.country is None
         assert result.semantic_query == "bold red"
+
+    @pytest.mark.asyncio
+    @patch("backend.services.intent.get_anthropic_client")
+    @patch("backend.services.intent.backend_settings")
+    async def test_wine_chat_tool_returns_wine_chat_intent(
+        self, mock_settings: MagicMock, mock_get_client: MagicMock
+    ) -> None:
+        """Claude picks wine_chat tool → intent_type='wine_chat'."""
+        mock_settings.ANTHROPIC_API_KEY = "sk-test"
+        mock_client = AsyncMock()
+        mock_get_client.return_value = mock_client
+        mock_client.messages.create.return_value = _mock_tool_use_response(
+            "wine_chat", {"topic": "Burgundy region overview"}
+        )
+
+        result = await parse_intent("tell me about Burgundy")
+
+        assert result.intent_type == "wine_chat"
+        assert result.semantic_query == "tell me about Burgundy"
+
+    @pytest.mark.asyncio
+    @patch("backend.services.intent.get_anthropic_client")
+    @patch("backend.services.intent.backend_settings")
+    async def test_off_topic_tool_returns_off_topic_intent(
+        self, mock_settings: MagicMock, mock_get_client: MagicMock
+    ) -> None:
+        """Claude picks off_topic tool → intent_type='off_topic'."""
+        mock_settings.ANTHROPIC_API_KEY = "sk-test"
+        mock_client = AsyncMock()
+        mock_get_client.return_value = mock_client
+        mock_client.messages.create.return_value = _mock_tool_use_response("off_topic", {})
+
+        result = await parse_intent("do you sell beer?")
+
+        assert result.intent_type == "off_topic"
+
+    @pytest.mark.asyncio
+    @patch("backend.services.intent.get_anthropic_client")
+    @patch("backend.services.intent.backend_settings")
+    async def test_no_tool_call_falls_back_to_wine_chat(
+        self, mock_settings: MagicMock, mock_get_client: MagicMock
+    ) -> None:
+        """tool_choice=auto may return text without a tool — falls back to wine_chat."""
+        mock_settings.ANTHROPIC_API_KEY = "sk-test"
+        mock_client = AsyncMock()
+        mock_get_client.return_value = mock_client
+        mock_client.messages.create.return_value = _mock_text_response()
+
+        result = await parse_intent("bonjour")
+
+        assert result.intent_type == "wine_chat"
+        assert result.semantic_query == "bonjour"

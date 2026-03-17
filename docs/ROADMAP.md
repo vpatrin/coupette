@@ -74,9 +74,9 @@ SSE (#427) and SSE rendering are deferred — current response times (2-3s) are 
 
 ### Phase 10 — Intent Router
 
-Chat becomes the primary interface. Existing `is_recommendation()` check routes recommendation queries through the RAG pipeline; everything else (wine chat, food pairings, region questions, comparisons) goes direct to Claude. No granular intent taxonomy needed — if it's wine-related, the sommelier handles it.
+Chat becomes the primary interface. Claude picks from three tools (`search_wines`, `wine_chat`, `off_topic`) to route queries — recommendations go through the RAG pipeline, wine knowledge goes to the sommelier service, off-topic gets deflected.
 
-- [ ] Chat-only path — non-recommendation wine queries skip the RAG pipeline, respond via Claude directly
+- [x] Chat-only path — non-recommendation wine queries skip the RAG pipeline, respond via Claude directly (#472, #473)
 - [ ] Structured data in chat — wine cards rendered inline when the sommelier references a product
 - [ ] Prompt templates — suggested conversation starters on empty chat state ("Blind tasting challenge", "What pairs with...", "Compare two wines", "Explore a region")
 

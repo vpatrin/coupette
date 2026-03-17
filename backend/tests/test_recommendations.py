@@ -128,7 +128,7 @@ class TestRecommend:
         mock_parse: AsyncMock,
         mock_write_log: AsyncMock,
     ) -> None:
-        mock_parse.return_value = IntentResult(is_wine=False, semantic_query="beer")
+        mock_parse.return_value = IntentResult(intent_type="off_topic", semantic_query="beer")
 
         db = AsyncMock()
         result = await recommend(db, "give me a beer")

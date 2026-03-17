@@ -3,9 +3,11 @@ import time
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from backend.config import NON_WINE_MESSAGE
 from backend.repositories.recommendations import find_similar
 from backend.schemas.product import ProductOut
 from backend.schemas.recommendation import (
+    IntentResult,
     RecommendationOut,
     RecommendationProductOut,
 )
@@ -14,13 +16,6 @@ from backend.services.curation import explain_recommendations
 from backend.services.intent import parse_intent
 from core.db.models import RecommendationLog
 from core.embedding_client import async_embed_query
-
-_NON_WINE_MESSAGE = (
-    "Je suis un assistant de recommandation de vins — je ne peux pas vous aider avec ça. "
-    "Essayez de me demander un rouge, blanc, rosé ou mousseux! / "
-    "I'm a wine recommendation assistant — I can't help with that. "
-    "Try asking me about a red, white, rosé, or sparkling wine!"
-)
 
 
 async def _write_log(
@@ -67,20 +62,24 @@ async def recommend(
     conversation_history: str | None = None,
     available_online: bool = True,
     in_store: str | None = None,
+    intent: IntentResult | None = None,
 ) -> RecommendationOut:
-    """Full recommendation pipeline: parse intent → embed → retrieve → explain."""
+    """Full recommendation pipeline: parse intent → embed → retrieve → explain.
+
+    If `intent` is provided (pre-parsed by caller), skip intent parsing.
+    """
     t_start = time.monotonic()
     latency: dict[str, int] = {}
-    intent = None
     skus: list[str] = []
 
     try:
-        t0 = time.monotonic()
-        intent = await parse_intent(query)
-        latency["intent"] = _time_ms(t0)
+        if intent is None:
+            t0 = time.monotonic()
+            intent = await parse_intent(query)
+            latency["intent"] = _time_ms(t0)
 
-        if not intent.is_wine:
-            return RecommendationOut(products=[], intent=intent, summary=_NON_WINE_MESSAGE)
+        if intent.intent_type != "recommendation":
+            return RecommendationOut(products=[], intent=intent, summary=NON_WINE_MESSAGE)
 
         t0 = time.monotonic()
         vector = await async_embed_query(intent.semantic_query, client=get_openai_client())

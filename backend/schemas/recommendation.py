@@ -1,15 +1,18 @@
 from decimal import Decimal
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
 from backend.config import MAX_SEARCH_LENGTH
 from backend.schemas.product import ProductOut
 
+IntentType = Literal["recommendation", "wine_chat", "off_topic"]
+
 
 class IntentResult(BaseModel):
     """Structured filters extracted from a natural language wine query."""
 
-    is_wine: bool = True
+    intent_type: IntentType = "recommendation"
     categories: list[str] = []
     min_price: Decimal | None = None
     max_price: Decimal | None = None
