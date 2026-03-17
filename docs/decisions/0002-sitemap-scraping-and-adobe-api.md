@@ -51,4 +51,4 @@ One-shot batch job model: scraper runs via systemd timer (weekly for catalog, da
 
 - Two external dependencies (SAQ website + Adobe API) instead of one. If Adobe changes their API, enrichment breaks but base scraping still works.
 - Wine-only filtering happens post-scrape — the sitemap contains all categories (spirits, beer, cider).
-- Five CLI commands instead of one, requiring coordination (Makefile target `scrape-all` runs them in order).
+- Five CLI commands instead of one. `scrape-all` runs the first four in order; `embed-sync` is intentionally separate (slower, costs money, only needed after content changes).

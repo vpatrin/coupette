@@ -25,7 +25,7 @@ Multi-turn context: sliding window of last 5 turns. Previously recommended SKUs 
 
 ## Key choices and rationale
 
-**pgvector over Pinecone/Weaviate.** Hybrid queries (vector similarity + SQL filters for price, category, country, availability) in a single statement. No extra service competing for 4GB RAM. No vendor lock-in. 14k vectors fit in memory; IVFFlat indexing sufficient at this scale. Backups and migrations already cover PostgreSQL.
+**pgvector over Pinecone/Weaviate.** Hybrid queries (vector similarity + SQL filters for price, category, country, availability) in a single statement. No extra service competing for 4GB RAM. No vendor lock-in. 14k vectors fit in memory; exact scan is fast enough without a vector index (IVFFlat or HNSW available when scaling requires it). Backups and migrations already cover PostgreSQL.
 
 **text-embedding-3-large over 3-small.** Started with `text-embedding-3-small` (1536-d), upgraded to `text-embedding-3-large` (1536-d, Matryoshka truncated) for better bilingual FR/EN retrieval quality. Same dimension count, same storage — strictly better vectors for ~2× cost per token. Model-aware content hashing ensures embeddings regenerate on model change.
 
