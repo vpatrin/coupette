@@ -169,7 +169,7 @@ _TOOL_INTENT_MAP: dict[str, IntentType] = {
 }
 
 
-async def parse_intent(query: str) -> IntentResult:
+async def parse_intent(query: str, conversation_history: str | None = None) -> IntentResult:
     """Classify a user query and extract search filters if applicable.
 
     Claude picks one of three tools (search_wines, wine_chat, off_topic).
@@ -181,13 +181,19 @@ async def parse_intent(query: str) -> IntentResult:
 
     client = get_anthropic_client()
 
+    if conversation_history:
+        content = f"Prior conversation:\n{conversation_history}\n\nNew query: {query}"
+    else:
+        content = query
+    messages: list[anthropic.types.MessageParam] = [{"role": "user", "content": content}]
+
     try:
         response = await client.messages.create(
             model=_MODEL,
             max_tokens=256,
-            temperature=backend_settings.HAIKU_TEMPERATURE,
+            temperature=0,
             system=_SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": query}],
+            messages=messages,
             tools=_TOOLS,
             tool_choice={"type": "auto"},
         )

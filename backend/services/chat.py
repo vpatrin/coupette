@@ -110,32 +110,37 @@ async def send_message(
     # Save user message
     await chat_repo.create_message(db, session_id, "user", message)
 
-    # Classify intent — Claude picks one of three tools
-    intent = await parse_intent(message)
+    # Fetch history before intent classification so follow-up queries resolve correctly
+    prior_messages = await chat_repo.find_messages(db, session_id)
+    exclude_skus, conversation_history_str = _extract_multi_turn_context(prior_messages)
+    # Coerce empty string → None once; all callers receive None for a fresh session
+    conversation_history: str | None = conversation_history_str or None
+    exclude_skus_opt: list[str] | None = exclude_skus or None
 
-    # Route based on intent_type
+    # Pass last 2 turns (4 lines: user + assistant x2) to intent parser
+    # so follow-ups ("what about lighter?") resolve correctly
+    last_2_turns = "\n".join(conversation_history_str.splitlines()[-4:]) or None
+
+    # Classify intent — Claude picks one of three tools
+    intent = await parse_intent(message, conversation_history=last_2_turns)
+
+    # Route based on intent_type — off_topic skips history entirely
     content: str | RecommendationOut
     if intent.intent_type == "off_topic":
         content = NON_WINE_MESSAGE
+    elif intent.intent_type == "wine_chat":
+        content = await sommelier_chat(message, conversation_history=conversation_history)
+    elif intent.intent_type == "recommendation":
+        content = await recommend(
+            db,
+            message,
+            user_id=f"web:{user_id}",
+            exclude_skus=exclude_skus_opt,
+            conversation_history=conversation_history,
+            intent=intent,
+        )
     else:
-        prior_messages = await chat_repo.find_messages(db, session_id)
-        exclude_skus, conversation_history = _extract_multi_turn_context(prior_messages)
-
-        if intent.intent_type == "wine_chat":
-            content = await sommelier_chat(
-                message, conversation_history=conversation_history or None
-            )
-        elif intent.intent_type == "recommendation":
-            content = await recommend(
-                db,
-                message,
-                user_id=f"web:{user_id}",
-                exclude_skus=exclude_skus or None,
-                conversation_history=conversation_history or None,
-                intent=intent,
-            )
-        else:
-            content = NON_WINE_MESSAGE
+        content = NON_WINE_MESSAGE
 
     # Save assistant response
     response_text = content.model_dump_json() if isinstance(content, RecommendationOut) else content

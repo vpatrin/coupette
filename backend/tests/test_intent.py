@@ -214,3 +214,25 @@ class TestParseIntent:
 
         assert result.intent_type == "wine_chat"
         assert result.semantic_query == "bonjour"
+
+    @pytest.mark.asyncio
+    @patch("backend.services.intent.get_anthropic_client")
+    @patch("backend.services.intent.backend_settings")
+    async def test_conversation_history_included_in_messages(
+        self, mock_settings: MagicMock, mock_get_client: MagicMock
+    ) -> None:
+        """When history is provided, it is prepended as a prior exchange."""
+        mock_settings.ANTHROPIC_API_KEY = "sk-test"
+        mock_client = AsyncMock()
+        mock_get_client.return_value = mock_client
+        mock_client.messages.create.return_value = _mock_tool_use_response(
+            "search_wines", {"semantic_query": "something lighter"}
+        )
+
+        history = "User: bold red\nAssistant: Here are some bold reds."
+        await parse_intent("what about something lighter?", conversation_history=history)
+
+        call_messages = mock_client.messages.create.call_args.kwargs["messages"]
+        assert len(call_messages) == 1
+        assert "Prior conversation" in call_messages[0]["content"]
+        assert "what about something lighter?" in call_messages[0]["content"]
