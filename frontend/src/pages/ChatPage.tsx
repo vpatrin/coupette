@@ -13,6 +13,13 @@ import type {
 
 const MAX_MESSAGE_LENGTH = 2000
 
+const STARTERS = [
+  'A bold red under $30',
+  'What pairs with lamb?',
+  "What's the difference between Syrah and Shiraz?",
+  'Explore wines from Argentina',
+]
+
 function isRecommendation(content: string | RecommendationOut): content is RecommendationOut {
   return typeof content === 'object' && 'products' in content
 }
@@ -139,8 +146,8 @@ function ChatPage() {
     inputRef.current?.focus()
   }, [urlSessionId])
 
-  const submitMessage = useCallback(async () => {
-    const text = input.trim()
+  const submitMessage = useCallback(async (override?: string) => {
+    const text = (override ?? input).trim()
     if (!text || sending) return
 
     setInput('')
@@ -219,11 +226,20 @@ function ChatPage() {
       <div className="flex-1 overflow-y-auto p-6">
         <div className="max-w-2xl mx-auto flex flex-col gap-6">
           {messages.length === 0 && !sending && !loading && (
-            <div className="flex flex-col items-center justify-center h-full min-h-[40vh] gap-2">
+            <div className="flex flex-col items-center justify-center h-full min-h-[40vh] gap-6">
               <h1 className="text-2xl font-mono font-bold">What are you drinking tonight?</h1>
-              <p className="text-muted-foreground text-sm">
-                Ask for a recommendation — try "A bold red under $30" or "Something for sushi"
-              </p>
+              <div className="grid grid-cols-2 gap-2 w-full max-w-lg">
+                {STARTERS.map((starter) => (
+                  <button
+                    key={starter}
+                    type="button"
+                    onClick={() => submitMessage(starter)}
+                    className="border border-border px-4 py-3 text-sm font-mono text-left hover:bg-muted"
+                  >
+                    {starter}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
