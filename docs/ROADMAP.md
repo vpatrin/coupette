@@ -78,7 +78,7 @@ Chat becomes the primary interface. Claude picks from three tools (`search_wines
 
 - [x] Chat-only path — non-recommendation wine queries skip the RAG pipeline, respond via Claude directly (#472, #473)
 - [ ] Structured data in chat — wine cards rendered inline when the sommelier references a product
-- [ ] Prompt templates — suggested conversation starters on empty chat state ("Blind tasting challenge", "What pairs with...", "Compare two wines", "Explore a region")
+- [x] Conversation starters — clickable prompt chips on empty chat state ("Blind tasting challenge", "What pairs with...", "Compare two wines", "Explore a region") (#474)
 
 ### Phase 11 — Tasting Journal
 

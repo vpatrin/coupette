@@ -165,6 +165,8 @@ Unscheduled engineering improvements — not product features, not infra. Picked
 **Testing:**
 
 - [ ] Alembic migration smoke test — `upgrade head && check` against test DB (#316)
+- [ ] Migrate backend tests from `TestClient` to `httpx.AsyncClient` (#430)
+- [ ] Remove tests that test third-party library behavior (scraper, api, bot) (#318)
 - Product test factory (`make_red()`, `make_white()`, `make_wines(n)`) — eliminates repeated fixture setup
 - Integration tests with seeded PostgreSQL (repository layer: search, filter, pagination, upsert idempotency)
 - Contract tests — snapshot API response shapes so bot's assumptions are validated on every PR
@@ -173,10 +175,20 @@ Unscheduled engineering improvements — not product features, not infra. Picked
 **Observability:**
 
 - [ ] Request correlation — X-Request-ID middleware across bot → backend → DB (#315)
-- [ ] Cron failure alerts — Uptime Kuma push monitors for backup + scraper (#350)
+- [ ] Add source identifier to recommendation logs (#340)
+- [x] Cron failure alerts — Uptime Kuma push monitors for backup + scraper (#350)
 - API request logging middleware → `api_request_logs` table (path, status, latency, user_id) — baseline for SLO tracking
 - Structured JSON logging — consistent fields (timestamp, level, service, message) across all services
 - LLM cost tracking — token usage per request, daily budget cap alert
+
+**Bot:**
+
+- [ ] Feedback buttons on recommendation responses (#337)
+
+**Scraper:**
+
+- [ ] Batch embedding step to reduce memory usage (#390)
+- [ ] Monthly scrape refactor — SKU-set diff, new SKUs only (#291)
 
 **AI/ML:**
 
@@ -184,9 +196,15 @@ Unscheduled engineering improvements — not product features, not infra. Picked
 
 **SRE:**
 
+- [ ] DB pool limits + httpx retries in scraper (#314)
 - `/health/detailed` endpoint — Postgres reachability, data freshness, disk space
 - Define SLOs — API p95 < 500ms, 99% uptime; scraper completes weekly, data < 8 days stale; bot ack < 2s
 
 **Platform:**
 
 - Image tagging — `:latest` for production, `:YYYYMMDD-HHMMSS` for rollback archive
+
+**Ops / housekeeping:**
+
+- [ ] Rename database `saq_sommelier` → `coupette` (coordination with infra required) (#423)
+- [ ] Rotate all production secrets (#406)
