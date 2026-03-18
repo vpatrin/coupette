@@ -13,6 +13,13 @@ import type {
 
 const MAX_MESSAGE_LENGTH = 2000
 
+const STARTERS = [
+  'A bold red under $30',
+  'What pairs with lamb?',
+  "What's the difference between Syrah and Shiraz?",
+  'Explore wines from Argentina',
+]
+
 function isRecommendation(content: string | RecommendationOut): content is RecommendationOut {
   return typeof content === 'object' && 'products' in content
 }
@@ -139,67 +146,70 @@ function ChatPage() {
     inputRef.current?.focus()
   }, [urlSessionId])
 
-  const submitMessage = useCallback(async () => {
-    const text = input.trim()
-    if (!text || sending) return
+  const submitMessage = useCallback(
+    async (override?: string) => {
+      const text = (override ?? input).trim()
+      if (!text || sending) return
 
-    setInput('')
-    setError(null)
-    setSending(true)
+      setInput('')
+      setError(null)
+      setSending(true)
 
-    // Reset textarea height
-    if (inputRef.current) inputRef.current.style.height = 'auto'
+      // Reset textarea height
+      if (inputRef.current) inputRef.current.style.height = 'auto'
 
-    // Optimistic user message
-    const tempUserMsg: ChatMessageOut = {
-      message_id: -Date.now(),
-      session_id: sessionId ?? 0,
-      role: 'user',
-      content: text,
-      created_at: new Date().toISOString(),
-    }
-    setMessages((prev) => [...prev, tempUserMsg])
+      // Optimistic user message
+      const tempUserMsg: ChatMessageOut = {
+        message_id: -Date.now(),
+        session_id: sessionId ?? 0,
+        role: 'user',
+        content: text,
+        created_at: new Date().toISOString(),
+      }
+      setMessages((prev) => [...prev, tempUserMsg])
 
-    try {
-      let sid = sessionId
+      try {
+        let sid = sessionId
 
-      let isNewSession = false
+        let isNewSession = false
 
-      if (sid === null) {
-        // First message — create session (title only), then send the message below
-        const session = await apiClient<ChatSessionOut>('/chat/sessions', {
+        if (sid === null) {
+          // First message — create session (title only), then send the message below
+          const session = await apiClient<ChatSessionOut>('/chat/sessions', {
+            method: 'POST',
+            body: JSON.stringify({ message: text }),
+          })
+          sid = session.id
+          isNewSession = true
+          // Skip the load effect — we'll fetch the data right below
+          skipLoadRef.current = true
+          navigate(`/chat/${sid}`, { replace: true })
+        }
+
+        // Send message (first or follow-up — same endpoint)
+        await apiClient(`/chat/sessions/${sid}/messages`, {
           method: 'POST',
           body: JSON.stringify({ message: text }),
         })
-        sid = session.id
-        isNewSession = true
-        // Skip the load effect — we'll fetch the data right below
-        skipLoadRef.current = true
-        navigate(`/chat/${sid}`, { replace: true })
+
+        // Re-fetch full session to get real messages
+        const detail = await apiClient<ChatSessionDetailOut>(`/chat/sessions/${sid}`)
+        setMessages(detail.messages)
+
+        // Refresh sidebar only when a new session was created (title added)
+        if (isNewSession) refreshSessions()
+      } catch (err) {
+        // Remove optimistic message on error
+        setMessages((prev) => prev.filter((m) => m.message_id !== tempUserMsg.message_id))
+        setLastFailedInput(text)
+        setError(err instanceof Error ? err.message : 'Something went wrong')
+      } finally {
+        setSending(false)
+        inputRef.current?.focus()
       }
-
-      // Send message (first or follow-up — same endpoint)
-      await apiClient(`/chat/sessions/${sid}/messages`, {
-        method: 'POST',
-        body: JSON.stringify({ message: text }),
-      })
-
-      // Re-fetch full session to get real messages
-      const detail = await apiClient<ChatSessionDetailOut>(`/chat/sessions/${sid}`)
-      setMessages(detail.messages)
-
-      // Refresh sidebar only when a new session was created (title added)
-      if (isNewSession) refreshSessions()
-    } catch (err) {
-      // Remove optimistic message on error
-      setMessages((prev) => prev.filter((m) => m.message_id !== tempUserMsg.message_id))
-      setLastFailedInput(text)
-      setError(err instanceof Error ? err.message : 'Something went wrong')
-    } finally {
-      setSending(false)
-      inputRef.current?.focus()
-    }
-  }, [apiClient, input, sending, sessionId, navigate, refreshSessions])
+    },
+    [apiClient, input, sending, sessionId, navigate, refreshSessions],
+  )
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -219,11 +229,20 @@ function ChatPage() {
       <div className="flex-1 overflow-y-auto p-6">
         <div className="max-w-2xl mx-auto flex flex-col gap-6">
           {messages.length === 0 && !sending && !loading && (
-            <div className="flex flex-col items-center justify-center h-full min-h-[40vh] gap-2">
+            <div className="flex flex-col items-center justify-center h-full min-h-[40vh] gap-6">
               <h1 className="text-2xl font-mono font-bold">What are you drinking tonight?</h1>
-              <p className="text-muted-foreground text-sm">
-                Ask for a recommendation — try "A bold red under $30" or "Something for sushi"
-              </p>
+              <div className="grid grid-cols-2 gap-2 w-full max-w-lg">
+                {STARTERS.map((starter) => (
+                  <button
+                    key={starter}
+                    type="button"
+                    onClick={() => submitMessage(starter)}
+                    className="border border-border px-4 py-3 text-sm font-mono text-left hover:bg-muted"
+                  >
+                    {starter}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
