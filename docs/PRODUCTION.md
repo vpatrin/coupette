@@ -10,13 +10,16 @@ VPS-level infrastructure (firewall, SSH, TLS, networking) is documented in the [
 
 ## Deploying
 
-Tag on main first (see [CHANGELOG.md](../CHANGELOG.md)), then deploy the tag on the VPS.
+Tag on main, push the tag — CD deploys automatically (see [cd.yml](../.github/workflows/cd.yml)).
 
-```bash
-./deploy/deploy_backend.sh vX.Y.Z        # pull → backup → migrate → bootstrap admin → restart → health check
-```
+**Flow:** tag push → build + scan + push to GHCR → GitHub Release → SSH to VPS → `git checkout <tag>` → `deploy_frontend.sh` → `deploy_backend.sh`
 
-Systemd unit files are synced automatically by `deploy_backend.sh` on every run (diff-before-copy, idempotent).
+**Prerequisites:** `SOPS_AGE_KEY`, `SSH_DEPLOY_*` secrets on GitHub. `sops` installed on VPS.
+
+**What the scripts do:**
+
+- `deploy_frontend.sh` — `yarn build` with tag as `VITE_APP_VERSION`, copies to `/srv/coupette`
+- `deploy_backend.sh` — decrypt secrets → pull GHCR images → sync systemd units → backup DB → migrate → restart → health check
 
 Verify:
 
@@ -27,7 +30,7 @@ systemctl status coupette-scraper.timer   # timer active, next run scheduled
 systemctl status coupette-availability.timer   # timer active, next run scheduled
 ```
 
-Rollback: `./deploy/deploy_backend.sh vPREVIOUS` (pulls the previous tag's images from GHCR)
+Rollback: `git checkout vPREVIOUS && SOPS_AGE_KEY=... ./deploy/deploy_backend.sh` (pulls previous tag's images from GHCR)
 
 Migrations are forward-only — never run `downgrade()` in production. Write a new migration to fix mistakes. See [OPERATIONS.md](OPERATIONS.md#forward-only-in-production).
 
