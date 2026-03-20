@@ -1,6 +1,6 @@
 # Base configuration — service topology + security hardening.
 # NO restart, mem_limit, env_file, or dev port bindings — those live in overlays.
-# Dev: auto-loads docker-compose.override.yml (ports, env_file, hot reload).
+# Dev: docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 # Prod: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 name: coupette
 services:
@@ -9,9 +9,6 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     container_name: coupette-backend
-    environment:
-      # Override localhost → Compose service name for container-to-container networking.
-      DB_HOST: postgres
     # Filesystem is immutable — prevents writes if the container is compromised.
     read_only: true
     # Blocks privilege escalation (e.g. setuid binaries).
@@ -42,9 +39,6 @@ services:
     build:
       context: .
       dockerfile: bot/Dockerfile
-    environment:
-      # Compose service name for container-to-container networking.
-      BACKEND_URL: http://backend:8001
     read_only: true
     security_opt: [no-new-privileges:true]
     cap_drop: [ALL]
@@ -63,8 +57,6 @@ services:
     build:
       context: .
       dockerfile: scraper/Dockerfile
-    environment:
-      DB_HOST: postgres
     # One-shot job — don't restart after exit. Systemd timer handles scheduling.
     restart: "no"
     read_only: true
@@ -82,15 +74,13 @@ services:
         condition: service_healthy
         required: false
 
-  # --- Profiled services (not started by default) ---
+  # --- On-demand services (not started by default) ---
 
   migrate:
     profiles: ["migrate"]
     build:
       context: .
       dockerfile: backend/Dockerfile
-    environment:
-      DB_HOST: postgres
     command: ["alembic", "-c", "core/alembic.ini", "upgrade", "head"]
     read_only: true
     security_opt: [no-new-privileges:true]
@@ -101,31 +91,6 @@ services:
       postgres:
         condition: service_healthy
         required: false
-
-  postgres:
-    profiles: ["dev"]
-    image: pgvector/pgvector:pg16
-    container_name: coupette-postgres
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-    security_opt: [no-new-privileges:true]
-    # Drop everything, then re-add only what Postgres needs to init its data dir.
-    # CHOWN/FOWNER: initdb sets ownership of /var/lib/postgresql/data to postgres user.
-    # SETUID/SETGID: entrypoint drops from root to postgres via gosu.
-    # DAC_OVERRIDE: reads/writes data dir before ownership is transferred.
-    cap_drop: [ALL]
-    cap_add: [CHOWN, SETUID, SETGID, DAC_OVERRIDE, FOWNER]
-    networks:
-      - internal
 
 volumes:
   pgdata:
