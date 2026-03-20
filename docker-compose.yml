@@ -1,6 +1,6 @@
 # Base configuration — service topology + security hardening.
 # NO restart, mem_limit, env_file, or dev port bindings — those live in overlays.
-# Dev: auto-loads docker-compose.override.yml (ports, env_file, hot reload).
+# Dev: docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 # Prod: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 name: coupette
 services:
@@ -39,9 +39,6 @@ services:
     build:
       context: .
       dockerfile: bot/Dockerfile
-    environment:
-      # Compose service name for container-to-container networking.
-      BACKEND_URL: http://backend:8001
     read_only: true
     security_opt: [no-new-privileges:true]
     cap_drop: [ALL]
@@ -114,7 +111,7 @@ services:
     # Drop everything, then re-add only what Postgres needs to init its data dir.
     # CHOWN/FOWNER: initdb sets ownership of /var/lib/postgresql/data to postgres user.
     # SETUID/SETGID: entrypoint drops from root to postgres via gosu.
-    # DAC_OVERRIDE: reads/writes data dir before ownership is transferred.
+    # DAC_READ_SEARCH: reads data dir before ownership is transferred.
     cap_drop: [ALL]
     # TODO: re-evaluate these caps for production.
     cap_add: [SETUID, SETGID, DAC_READ_SEARCH, CHOWN, FOWNER]

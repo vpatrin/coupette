@@ -125,7 +125,7 @@ Docker log rotation configured per service (10MB × 3 files = 30MB cap). Platfor
 **Docker:**
 
 - Multi-stage builds, non-root users, read-only filesystem, `no-new-privileges`, memory limits
-- Dev: `docker compose up` (postgres only, services run bare-metal for hot reload)
+- Dev: `docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d` (postgres only, services run bare-metal for hot reload)
 - Prod: full compose with GHCR images
 
 See [PRODUCTION.md](PRODUCTION.md) for deploy process. Systemd timers and backup scheduling are documented in the [infra SERVICE_CATALOG.md](https://github.com/vpatrin/infra/blob/main/docs/SERVICE_CATALOG.md).

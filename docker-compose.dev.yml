@@ -1,4 +1,4 @@
-# Dev overrides — auto-loaded by `docker compose up`.
+# Dev overrides — must be loaded explicitly to prevent accidental use in prod.
 #! Adds port bindings, env_file, volume mounts, and hot reload.
 services:
   backend:
