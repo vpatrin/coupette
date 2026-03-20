@@ -75,12 +75,13 @@ echo "==> Restarting services..."
 echo "==> Health check..."
 healthy=false
 for i in 1 2 3 4 5 6; do
-  curl -sf localhost:8001/health > /dev/null && healthy=true && break
+  status=$(docker inspect --format='{{.State.Health.Status}}' coupette-backend 2>/dev/null || echo "unknown")
+  [[ "$status" == "healthy" ]] && healthy=true && break
   sleep 2
 done
 
 if ! $healthy; then
-  echo "ERROR: backend health check failed after 12s"
+  echo "ERROR: backend health check failed after 12s (status: $status)"
   exit 1
 fi
 echo "OK: backend healthy"
