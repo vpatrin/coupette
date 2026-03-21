@@ -2,6 +2,10 @@
 # NO restart, mem_limit, env_file, or dev port bindings — those live in overlays.
 # Dev: docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 # Prod: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# Key order: image/build → container_name → command → shm_size → volumes/tmpfs →
+#   env_file → ports → depends_on → networks → healthcheck → restart/mem_limit →
+#   read_only → security_opt/cap_drop/cap_add → logging
 name: coupette
 services:
   backend:
@@ -9,6 +13,14 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     container_name: coupette-backend
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
     # Filesystem is immutable — prevents writes if the container is compromised.
     read_only: true
     # Blocks privilege escalation (e.g. setuid binaries).
@@ -21,19 +33,16 @@ services:
       options:
         max-size: "50m"
         max-file: "3"
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
-      interval: 10s
-      timeout: 3s
-      retries: 3
-      start_period: 5s
-    networks:
-      - internal
 
   bot:
     build:
       context: .
       dockerfile: bot/Dockerfile
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - internal
     read_only: true
     security_opt: [no-new-privileges:true]
     cap_drop: [ALL]
@@ -42,16 +51,13 @@ services:
       options:
         max-size: "50m"
         max-file: "3"
-    networks:
-      - internal
-    depends_on:
-      backend:
-        condition: service_healthy
 
   scraper:
     build:
       context: .
       dockerfile: scraper/Dockerfile
+    networks:
+      - internal
     # One-shot job — don't restart after exit. Systemd timer handles scheduling.
     restart: "no"
     read_only: true
@@ -62,8 +68,6 @@ services:
       options:
         max-size: "50m"
         max-file: "3"
-    networks:
-      - internal
 
   # --- On-demand services (not started by default) ---
 
@@ -73,11 +77,11 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     command: ["alembic", "-c", "core/alembic.ini", "upgrade", "head"]
+    networks:
+      - internal
     read_only: true
     security_opt: [no-new-privileges:true]
     cap_drop: [ALL]
-    networks:
-      - internal
 
 volumes:
   pgdata:

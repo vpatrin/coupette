@@ -3,8 +3,11 @@ set -euo pipefail # Standard bash strict mode
 
 cd "$(dirname "$0")/.." # Works regardless of where you run the script from
 
-# Called by CD workflow after `git checkout <tag>`, or manually from a tagged commit.
-IMAGE_TAG=$(git describe --tags --exact-match 2>/dev/null) || { echo "ERROR: not on a tag"; exit 1; }
+# Called by CD workflow after `git checkout <tag|commit>`.
+# IMAGE_TAG comes from the CD pipeline env; fall back to git tag for manual runs.
+if [[ -z "${IMAGE_TAG:-}" ]]; then
+    IMAGE_TAG=$(git describe --tags --exact-match 2>/dev/null) || { echo "ERROR: IMAGE_TAG not set and not on a tag"; exit 1; }
+fi
 export IMAGE_TAG
 echo "==> Deploying $IMAGE_TAG"
 

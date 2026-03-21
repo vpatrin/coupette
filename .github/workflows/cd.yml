@@ -3,6 +3,12 @@ name: CD
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: "Commit SHA on main to deploy (builds images from source)"
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -15,6 +21,8 @@ env:
   IMAGE_PREFIX: ghcr.io/vpatrin/coupette
   TRIVY_SEVERITY: "LOW,MEDIUM,HIGH,CRITICAL"
   NODE_VERSION: "24"
+  # Tag push → semver tag; dispatch → short SHA
+  IMAGE_TAG: ${{ github.event_name == 'workflow_dispatch' && format('sha-{0}', inputs.commit) || github.ref_name }}
 
 jobs:
   # ── Build, scan, push ───────────────────────────────────────
@@ -31,6 +39,8 @@ jobs:
         service: [backend, bot, scraper]
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.commit || github.ref }}
 
       - uses: docker/login-action@v4
         with:
@@ -43,11 +53,12 @@ jobs:
           service: ${{ matrix.service }}
           trivy-severity: ${{ env.TRIVY_SEVERITY }}
           push: "true"
-          tags: ${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ github.ref_name }}
+          tags: ${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ env.IMAGE_TAG }}
 
-  # ── GitHub Release ──────────────────────────────────────────
+  # ── GitHub Release (tag push only) ─────────────────────────
 
   release:
+    if: github.event_name == 'push'
     needs: [build-scan-push]
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -79,12 +90,15 @@ jobs:
   # ── Deploy ──────────────────────────────────────────────────
 
   deploy:
-    needs: [build-scan-push, release]
+    needs: [build-scan-push]
+    if: always() && needs.build-scan-push.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment: production
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.commit || github.ref }}
 
       - uses: actions/setup-node@v6
         with:
@@ -93,7 +107,7 @@ jobs:
       - name: Build frontend
         working-directory: frontend
         env:
-          VITE_APP_VERSION: ${{ github.ref_name }}
+          VITE_APP_VERSION: ${{ env.IMAGE_TAG }}
           VITE_TELEGRAM_BOT_USERNAME: CoupetteBot
         run: |
           yarn install --frozen-lockfile
@@ -125,11 +139,10 @@ jobs:
           key: ${{ secrets.SSH_DEPLOY_KEY }}
           envs: SOPS_AGE_KEY,IMAGE_TAG
           script: |
-            [[ "$IMAGE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$ ]] || { echo "ERROR: IMAGE_TAG '$IMAGE_TAG' is not a valid semver tag (expected vX.Y.Z)"; exit 1; }
             cd /opt/coupette
-            git fetch origin tag "$IMAGE_TAG" --no-tags
-            git checkout "$IMAGE_TAG"
-            ./deploy/deploy_backend.sh
+            git fetch origin
+            git checkout "$IMAGE_TAG" 2>/dev/null || git checkout "$( echo "$IMAGE_TAG" | sed 's/^sha-//' )"
+            IMAGE_TAG="$IMAGE_TAG" ./deploy/deploy_backend.sh
         env:
           SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
-          IMAGE_TAG: ${{ github.ref_name }}
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
