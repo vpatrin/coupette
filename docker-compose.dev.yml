@@ -2,21 +2,21 @@
 #! Adds port bindings, env_file, volume mounts, and hot reload.
 services:
   backend:
+    command: ["uvicorn", "backend.app:app", "--reload", "--host", "0.0.0.0", "--port", "8001"]
+    volumes:
+      - ./backend:/app/backend
     env_file: .env
-    depends_on:
-      postgres:
-        condition: service_healthy
     # Exposed on localhost for bare-metal tools (curl, browser, DBeaver).
     ports:
       - "127.0.0.1:8001:8001"
-    volumes:
-      - ./backend:/app/backend
-    command: ["uvicorn", "backend.app:app", "--reload", "--host", "0.0.0.0", "--port", "8001"]
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   bot:
-    env_file: .env
     volumes:
       - ./bot/bot:/app/bot/bot
+    env_file: .env
 
   scraper:
     env_file: .env
@@ -33,16 +33,18 @@ services:
   postgres:
     image: pgvector/pgvector:pg16
     container_name: coupette-postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
     env_file: .env
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
-    volumes:
-      - pgdata:/var/lib/postgresql/data
     # Exposed on localhost for bare-metal tools (alembic, make dev, DBeaver).
     ports:
       - "127.0.0.1:5432:5432"
+    networks:
+      - internal
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
       interval: 5s
@@ -55,8 +57,6 @@ services:
     # DAC_READ_SEARCH: reads data dir before ownership is transferred.
     cap_drop: [ALL]
     cap_add: [SETUID, SETGID, DAC_READ_SEARCH, CHOWN, FOWNER]
-    networks:
-      - internal
 
 volumes:
   pgdata:
