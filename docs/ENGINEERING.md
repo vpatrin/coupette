@@ -161,6 +161,57 @@ Full architecture, rationale, and key decisions in [ADR 0005](decisions/0005-rag
 
 ---
 
+## Benchmarks
+
+Two separate measurement tracks: load performance and AI quality. Both build a historical record keyed by version so we can track progression over time.
+
+This is a measured scaling journey — each [SCALING.md](SCALING.md) tier action (pool tuning, PgBouncer, replicas) gets a before/after baseline as proof it worked. Tests run manually against prod; no CI automation.
+
+### Load testing
+
+k6 scripts in `backend/benchmarks/load/`. Tier runner scripts automate the full scenario suite for a given scaling tier.
+
+| Script | What it runs | Usage |
+| ------ | ------------ | ----- |
+| `tier1-baseline.sh` | All 4 scenarios (search, stores, watches, chat) at 1 VU | `./backend/benchmarks/load/runners/tier1-baseline.sh` |
+
+Results land in `backend/benchmarks/load/results/tier1-<ref>-<datetime>/` (gitignored). Each run produces raw JSON + k6 summary exports. Use `--skip-chat` to save Claude credits on quick runs.
+
+**Roadmap:**
+
+Phase 0 — Run the test:
+
+- [ ] Fix k6 scripts against localhost (default to `localhost:8001`, prod opt-in, validate response shapes)
+- [ ] Run first Tier 1 baseline, eyeball results + Grafana (#502)
+
+Phase 1 — Capture (make results useful):
+
+- [ ] Record metadata + Grafana annotations in runner (#503)
+- [ ] Auto-generate baseline `.md` from k6 summary JSON (#504)
+- [ ] Commit baselines to `benchmarks/baselines/` keyed by tag (#505)
+
+Phase 2 — Compare (see progression):
+
+- [ ] Diff tool: compare two baselines, flag regressions (#506)
+- [ ] k6 Prometheus remote write (optional — adds per-scenario breakdown to existing Grafana dashboard)
+
+Phase 3 — Better tooling:
+
+- [ ] Tier 2 breakpoint script, 10-50 VU ramp (#507)
+- [ ] One-command "run + capture + generate report" workflow
+
+### AI quality
+
+Eval framework in `backend/eval/`, spec in [specs/RECOMMENDATIONS.md](specs/RECOMMENDATIONS.md). Measures recommendation relevance, diversity, and prompt adherence against a frozen test set.
+
+**Backlog:**
+
+- [ ] Integrate eval scores into baseline reports (load + quality in one snapshot)
+
+Synthesized reports and cross-cutting analysis live in [benchmarks/](../benchmarks/).
+
+---
+
 ## Backlog
 
 Unscheduled engineering improvements — not product features, not infra. Picked up opportunistically or when they unblock product work.
