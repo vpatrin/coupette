@@ -9,7 +9,7 @@ Coupette needs wine catalog data from the SAQ (Société des alcools du Québec)
 
 Started with **pure sitemap + HTML scraping** (Feb 2026) — legally conservative (only fetching URLs SAQ publishes in `robots.txt`), but brittle. SAQ's markup varied across pages, some attributes were missing from HTML, and in-store availability only rendered via JavaScript.
 
-While debugging availability in the browser's network console, discovered SAQ's frontend calls an **Adobe Live Search GraphQL endpoint** (`livesearch.adobe.io`) — public, no auth, structured data. This opened a hybrid approach.
+While debugging availability in the browser's network console, discovered SAQ's frontend calls an **Adobe Live Search GraphQL endpoint** (`livesearch.adobe.io`) — public, no auth, structured data. This discovery opened a hybrid approach.
 
 ## Options considered
 

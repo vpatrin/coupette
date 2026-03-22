@@ -120,6 +120,6 @@ Rendered as clickable prompt chips. On click, submitted as a regular message.
 | `DEFAULT_RECOMMENDATION_LIMIT` | 5 | Max products per recommendation |
 | `NON_WINE_MESSAGE` | bilingual string | Off-topic / fallback response |
 
-## Not Yet Implemented
+## Design Constraints
 
-- **SSE streaming** — responses are returned in full after pipeline completes. Frontend shows "Thinking..." spinner.
+- **Synchronous responses** — no SSE streaming. The full pipeline completes before the API returns. Frontend shows "Thinking..." while waiting.
