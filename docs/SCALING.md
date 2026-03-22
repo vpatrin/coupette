@@ -11,7 +11,7 @@ Design principle: **add infrastructure when a bottleneck is measured, not when i
 | Component | Configuration | Notes |
 |-----------|--------------|-------|
 | VPS | Hetzner CX22 — 4GB RAM, 40GB SSD, 2GB swap | Shared with Uptime Kuma, Umami, observability stack (~600MB for Alloy/Loki/Prometheus) |
-| Database | Shared Postgres 16 + pgvector, `max_connections=100` | SQLAlchemy async, pool defaults (size=5, overflow=10) |
+| Database | Shared Postgres 16 + pgvector, `max_connections=100` | SQLAlchemy async, backend pool: size=10, overflow=10, timeout=5s |
 | Backend | Single uvicorn async worker, 512MB mem limit | Stateless, horizontally scalable by design |
 | Bot | 256MB mem limit, long polling | Stock alerts triggered by scraper `--availability-check`, not bot polling |
 | Scraper | 512MB mem limit, weekly + 6h availability check | 2s rate limit between SAQ requests |
@@ -28,7 +28,7 @@ Design principle: **add infrastructure when a bottleneck is measured, not when i
 **What to monitor** (observability stack is in place):
 
 - API p95 latency (baseline: sub-500ms for search, 5-6s for recommendations — dominated by embedding + LLM calls)
-- DB connection count (should stay well under pool_size=5 per service)
+- DB connection count (backend pool: size=10, overflow=10 — facets endpoint uses 5 concurrent connections)
 - VPS memory usage (target: keep ~1GB free — observability stack claims ~600MB, leaving less app headroom than the raw 4GB suggests)
 - Claude API monthly spend
 
@@ -51,7 +51,7 @@ Design principle: **add infrastructure when a bottleneck is measured, not when i
 #### 1. Tune connection pool
 Explicit `pool_size`, `max_overflow`, `pool_timeout` in `core/db/base.py`. Three services share one Postgres — total connections = 3 × (pool_size + max_overflow). Shared Postgres serves other databases too (Umami, URL shortener), so coordinate max_connections.
 
-Suggested starting point: `pool_size=10, max_overflow=5` per service = 45 max connections from Coupette.
+Backend already tuned: `pool_size=10, max_overflow=10, pool_timeout=5` (facets endpoint uses 5 concurrent connections via `asyncio.gather`). Scraper uses defaults (pool_size=5) — sufficient for sequential batch work.
 
 **Effort:** 1h. **Owner:** coupette repo.
 

@@ -153,14 +153,7 @@ No in-memory state in the backend. Any request can hit any instance. This enable
 
 ## Scaling path
 
-| Scale | Bottleneck | Solution |
-|-------|-----------|----------|
-| 20 users | Nothing | Current setup |
-| 200 users | Slow queries | Add DB indexes, connection pooling |
-| 2,000 users | Repeated queries | Redis cache, read replica |
-| 10,000+ users | Claude API latency | Async task queue, response caching |
-
-The design principle: add infrastructure when a bottleneck is measured, not when it's imagined.
+See [SCALING.md](SCALING.md) for tiered scaling plan, benchmarks, and cost projections.
 
 ## Infrastructure
 
