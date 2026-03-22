@@ -8,7 +8,7 @@
 import http from "k6/http";
 import { check, sleep } from "k6";
 import { Trend } from "k6/metrics";
-import { BASE_URL, JWT, authHeaders, publicHeaders, defaultThresholds } from "./config.js";
+import { BASE_URL, JWT, authHeaders, defaultThresholds } from "./config.js";
 
 const nearbyDuration = new Trend("stores_nearby_duration", true);
 const prefListDuration = new Trend("stores_pref_list_duration", true);
@@ -32,7 +32,7 @@ export default function () {
   const loc = locations[Math.floor(Math.random() * locations.length)];
   const nearbyRes = http.get(
     `${BASE_URL}/api/stores/nearby?lat=${loc.lat}&lng=${loc.lng}&limit=5`,
-    publicHeaders,
+    authHeaders,
   );
   nearbyDuration.add(nearbyRes.timings.duration);
   check(nearbyRes, {

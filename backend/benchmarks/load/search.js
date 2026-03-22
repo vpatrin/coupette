@@ -1,5 +1,5 @@
 // Product search + filter benchmark.
-// No auth required — tests DB query performance under load.
+// Auth required — tests DB query performance under load.
 //
 // Run:
 //   k6 run --vus 1 --duration 30s backend/benchmarks/load/search.js
@@ -9,7 +9,7 @@
 import http from "k6/http";
 import { check, sleep } from "k6";
 import { Trend, Rate } from "k6/metrics";
-import { BASE_URL, publicHeaders, defaultThresholds } from "./config.js";
+import { BASE_URL, authHeaders, defaultThresholds } from "./config.js";
 
 // Custom metrics for per-endpoint tracking
 const searchDuration = new Trend("search_duration", true);
@@ -38,21 +38,21 @@ export default function () {
   const scenario = searchScenarios[Math.floor(Math.random() * searchScenarios.length)];
   const searchRes = http.get(
     `${BASE_URL}/api/products${scenario.qs}`,
-    publicHeaders,
+    authHeaders,
   );
 
   searchDuration.add(searchRes.timings.duration);
   const searchBody = JSON.parse(searchRes.body);
   const searchOk = check(searchRes, {
     "search 200": (r) => r.status === 200,
-    "search has items": () => Array.isArray(searchBody.items),
+    "search has items": () => Array.isArray(searchBody.products),
   });
   searchFailRate.add(!searchOk);
 
   // 2. Facets endpoint (filter counts)
   const facetsRes = http.get(
     `${BASE_URL}/api/products/facets`,
-    publicHeaders,
+    authHeaders,
   );
   facetsDuration.add(facetsRes.timings.duration);
   check(facetsRes, {
@@ -60,11 +60,11 @@ export default function () {
   });
 
   // 3. Product detail by SKU (grab one from search results if available)
-  if (searchBody.items && searchBody.items.length > 0) {
-    const sku = searchBody.items[0].sku;
+  if (searchBody.products && searchBody.products.length > 0) {
+    const sku = searchBody.products[0].sku;
     const detailRes = http.get(
       `${BASE_URL}/api/products/${sku}`,
-      publicHeaders,
+      authHeaders,
     );
     detailDuration.add(detailRes.timings.duration);
     check(detailRes, {

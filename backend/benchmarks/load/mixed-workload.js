@@ -2,7 +2,7 @@
 // Use this to find the break point between tiers.
 //
 // Traffic mix (approximating real usage):
-//   70% search/browse (public, no auth)
+//   70% search/browse (authenticated, DB-bound)
 //   20% watches CRUD (authenticated, DB-bound)
 //   10% chat (authenticated, LLM-bound)
 //
@@ -15,7 +15,7 @@
 import http from "k6/http";
 import { check, sleep } from "k6";
 import { Trend, Counter } from "k6/metrics";
-import { BASE_URL, JWT, authHeaders, publicHeaders } from "./config.js";
+import { BASE_URL, JWT, authHeaders } from "./config.js";
 
 const searchOps = new Counter("ops_search");
 const watchOps = new Counter("ops_watches");
@@ -44,7 +44,7 @@ const searchQueries = [
 
 function doSearch() {
   const qs = searchQueries[Math.floor(Math.random() * searchQueries.length)];
-  const res = http.get(`${BASE_URL}/api/products${qs}`, publicHeaders);
+  const res = http.get(`${BASE_URL}/api/products${qs}`, authHeaders);
   searchLatency.add(res.timings.duration);
   searchOps.add(1);
   check(res, { "search ok": (r) => r.status === 200 });

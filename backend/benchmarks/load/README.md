@@ -23,7 +23,7 @@ Grab the token from DevTools → Application → Local Storage → `access_token
 
 | Script | Auth | LLM calls | Safe at high VUs | What it tests |
 | ------ | ---- | --------- | ---------------- | ------------- |
-| `search.js` | No | No | Yes | DB query performance, filters, facets |
+| `search.js` | JWT | No | Yes | DB query performance, filters, facets |
 | `watches.js` | JWT | No | Yes | Authenticated watch CRUD, DB writes |
 | `stores.js` | JWT | No | Yes | Geolocation queries, store preference CRUD |
 | `chat.js` | JWT | Yes | **No** — 1-2 VUs only | Full pipeline: intent → embed → retrieve → curate |
