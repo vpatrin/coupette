@@ -5,7 +5,8 @@
 //
 // Run:
 //   K6_JWT=<token> k6 run --vus 1 --iterations 3 backend/benchmarks/load/chat.js
-//   K6_JWT=<token> k6 run --out json=backend/benchmarks/load/results/chat-<date>.json backend/benchmarks/load/chat.js
+//   K6_JWT=<token> k6 run \
+//     --out json=results/chat-<date>.json chat.js
 //
 // Cost estimate: ~$0.01 per iteration (Haiku input + output tokens).
 

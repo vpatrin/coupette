@@ -5,6 +5,7 @@
 # Usage:
 #   ./backend/benchmarks/load/runners/tier1-baseline.sh
 #   ./backend/benchmarks/load/runners/tier1-baseline.sh --skip-chat
+#   ./backend/benchmarks/load/runners/tier1-baseline.sh --virtual-users 5
 #
 # JWT: loaded from root .env (K6_JWT=...).
 #      Tokens expire every 7 days — refresh from DevTools → Local Storage → access_token.
@@ -34,10 +35,12 @@ DATETIME=$(date +%Y-%m-%d-%H%M)
 RUN_DIR="${RESULTS_BASE}/tier1-${REF}-${DATETIME}"
 
 SKIP_CHAT=false
-for arg in "$@"; do
-  case "$arg" in
-    --skip-chat) SKIP_CHAT=true ;;
-    *) echo "Unknown flag: $arg"; exit 1 ;;
+VUS=1
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --skip-chat) SKIP_CHAT=true; shift ;;
+    --virtual-users) VUS="$2"; shift 2 ;;
+    *) echo "Unknown flag: $1"; exit 1 ;;
   esac
 done
 
@@ -61,18 +64,19 @@ mkdir -p "${RUN_DIR}"
 echo "=== Tier 1 Baseline ==="
 echo "Ref:     ${REF}"
 echo "Date:    ${DATETIME}"
+echo "VUs:     ${VUS}"
 echo "Output:  ${RUN_DIR}"
 echo ""
 
-# Duration-based scenarios (1 VU, 30s each)
+# Duration-based scenarios
 SCENARIOS=(search stores watches)
 STEP=0
 TOTAL=$(( ${#SCENARIOS[@]} + 1 ))
 
 for scenario in "${SCENARIOS[@]}"; do
   STEP=$((STEP + 1))
-  echo "[${STEP}/${TOTAL}] ${scenario} (1 VU, 30s)..."
-  k6 run --vus 1 --duration 30s \
+  echo "[${STEP}/${TOTAL}] ${scenario} (${VUS} VU, 30s)..."
+  k6 run --vus "${VUS}" --duration 30s \
     --out "json=${RUN_DIR}/${scenario}.json" \
     --summary-export="${RUN_DIR}/${scenario}-summary.json" \
     "${LOAD_DIR}/${scenario}.js"
@@ -84,8 +88,8 @@ STEP=$((STEP + 1))
 if [ "$SKIP_CHAT" = true ]; then
   echo "[${STEP}/${TOTAL}] chat — SKIPPED (--skip-chat)"
 else
-  echo "[${STEP}/${TOTAL}] chat (1 VU, 3 iterations, ~\$0.03)..."
-  k6 run --vus 1 --iterations 3 \
+  echo "[${STEP}/${TOTAL}] chat (${VUS} VU, 3 iterations, ~\$0.03)..."
+  k6 run --vus "${VUS}" --iterations 3 \
     --out "json=${RUN_DIR}/chat.json" \
     --summary-export="${RUN_DIR}/chat-summary.json" \
     "${LOAD_DIR}/chat.js"

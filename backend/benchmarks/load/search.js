@@ -4,7 +4,7 @@
 // Run:
 //   k6 run --vus 1 --duration 30s backend/benchmarks/load/search.js
 //   k6 run --vus 5 --duration 1m backend/benchmarks/load/search.js
-//   k6 run --out json=backend/benchmarks/load/results/search-<date>.json backend/benchmarks/load/search.js
+//   k6 run --out json=results/search-<date>.json search.js
 
 import http from "k6/http";
 import { check, sleep } from "k6";

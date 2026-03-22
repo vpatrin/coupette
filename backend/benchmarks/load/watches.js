@@ -3,7 +3,8 @@
 //
 // Run:
 //   K6_JWT=<token> k6 run --vus 1 --duration 30s backend/benchmarks/load/watches.js
-//   K6_JWT=<token> k6 run --out json=backend/benchmarks/load/results/watches-<date>.json backend/benchmarks/load/watches.js
+//   K6_JWT=<token> k6 run \
+//     --out json=results/watches-<date>.json watches.js
 
 import http from "k6/http";
 import { check, sleep } from "k6";
