@@ -19,6 +19,8 @@ echo "==> Decrypting secrets..."
 (
     umask 077  # owner-only from creation — no race window unlike chmod after write
     sops --decrypt --output-type dotenv .env.prod.enc > .env.prod
+    sops --decrypt --output-type dotenv secrets/monitor-scraper.env.enc > secrets/monitor-scraper.env
+    sops --decrypt --output-type dotenv secrets/monitor-availability.env.enc > secrets/monitor-availability.env
 )
 
 if [[ ! -s .env.prod ]]; then
