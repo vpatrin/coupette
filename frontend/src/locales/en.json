@@ -1,11 +1,117 @@
 {
   "brand": "Coupette",
+  "landing": {
+    "mailto": {
+      "subject": "Coupette — Access request",
+      "body": "Hi!\n\nI'd like to try Coupette.\n\nThanks!"
+    },
+    "nav": {
+      "login": "Sign in",
+      "requestAccess": "Request access"
+    },
+    "hero": {
+      "title": {
+        "before": "Your",
+        "accent": "personal sommelier",
+        "afterBefore": "for the",
+        "afterBold": "SAQ",
+        "afterEnd": "."
+      },
+      "subtitle": "Tell it what you're cooking, your budget, your mood — it combs 14,000+ SAQ wines and surfaces the right bottle.",
+      "cta": "Request access",
+      "signin": "Already have access? Sign in",
+      "betaNote": "Closed beta — invite only"
+    },
+    "preview": {
+      "userMsg": "A red for pasta tonight, max $25, something a bit spicy",
+      "botIntro": "A Rhône blend with peppery Syrah — enough character to match the dish without overpowering it.",
+      "tastingNote": "Black cherry and garrigue on the nose. Medium body, supple tannins, nice acidity and a peppery finish.",
+      "placeholder": "What are we drinking tonight?"
+    },
+    "stats": {
+      "wines": "SAQ products indexed",
+      "stores": "stores covered",
+      "llm": "LLM curation",
+      "sync": "catalog sync"
+    },
+    "features": {
+      "title": "Curious. Methodical. Passionate.",
+      "subtitle": "The catalog to explore. The journal to remember.\nThe rest to go further.",
+      "catalog": {
+        "title": "Catalog",
+        "desc": "Browse 14,000+ SAQ wines. Filter by type, price, region, grape."
+      },
+      "watchlist": {
+        "title": "Watchlist",
+        "desc": "Save wines you want. Get availability alerts at your stores."
+      },
+      "journal": {
+        "title": "Journal",
+        "desc": "Your tasting notes. The sommelier learns your palate."
+      },
+      "cellar": {
+        "title": "Cellar",
+        "desc": "Your digital wine cellar. By region, vintage, or tonight's mood."
+      }
+    },
+    "rag": {
+      "title": { "before": "Under the", "bold": "hood." },
+      "subtitle": "Your sommelier did its homework.",
+      "step1": {
+        "title": "Intent analysis",
+        "detail": "Claude classifies the query: food pairing, discovery, budget, region…",
+        "code": "intent_route: pairing"
+      },
+      "step2": {
+        "title": "SQL filters on the catalog",
+        "detail": "Price, color, grape, region — narrows 14,000 products to ~200 candidates",
+        "code": "WHERE price ≤ 25 AND color = 'rouge'"
+      },
+      "step3": {
+        "title": "pgvector semantic search",
+        "detail": "Cosine similarity on tasting note embeddings",
+        "code": "cosine_similarity(query_vec, note_vec) → top 8"
+      },
+      "step4": {
+        "title": "MMR diversification",
+        "detail": "Maximal Marginal Relevance — so you don't end up with 5 identical Côtes-du-Rhône",
+        "code": "mmr_rerank(λ=0.7) → 3 diversified candidates"
+      },
+      "step5": {
+        "title": "Claude Haiku curation",
+        "detail": "The LLM picks the best match, writes the note, and explains the pairing",
+        "code": ""
+      },
+      "step6": {
+        "title": "Structured response",
+        "detail": "The wine, tasting note, and pairing explanation",
+        "code": "stream(wine_card + tasting_note + pairing)"
+      }
+    },
+    "changelog": {
+      "title": { "before": "Shipping", "bold": "constantly" },
+      "subtitle": "Every release is tagged, documented, and ships automatically.",
+      "v152": "Bilingual web app — French and English",
+      "v151": "Prometheus metrics, facets 3.5× faster, CD pipeline",
+      "v150": "Chat UI, session history, intent routing, automated deploys",
+      "v140": "React frontend, search with filters, wine cards",
+      "seeAll": "Full changelog"
+    },
+    "dev": {
+      "title": { "before": "Built in", "bold": "public" },
+      "subtitle": "Two repos. All the code, all the decisions.",
+      "deployed": "In production",
+      "viewRepo": "View repo"
+    },
+    "footer": {
+      "legal": "18+ only · Drink responsibly · Data from the public saq.com catalog · Not affiliated with SAQ"
+    }
+  },
   "login": {
-    "tagline": "Wine discovery for the curious.",
-    "invited": "You've been invited",
+    "invited": "Invitation accepted",
     "authFailed": "Authentication failed",
-    "madeWith": "Made with ❤️",
-    "sourceOnGithub": "Source on GitHub"
+    "backToLanding": "Home",
+    "legal": "18+ only · Drink responsibly"
   },
   "chat": {
     "welcome": "What are you drinking tonight?",

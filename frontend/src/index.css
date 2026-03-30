@@ -134,6 +134,67 @@
   --spacing-sidebar-x: 1.125rem; /* 18px */
 }
 
+/* RAG pipeline — animated gradient border cards */
+@keyframes border-rotate {
+  from {
+    --border-angle: 0deg;
+  }
+  to {
+    --border-angle: 360deg;
+  }
+}
+
+@property --border-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.rag-card {
+  position: relative;
+  border-radius: var(--radius-2xl);
+  background: oklch(0.15 0.005 280);
+  isolation: isolate;
+}
+
+.rag-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--border-angle),
+    oklch(1 0 0 / 4%) 0%,
+    oklch(0.7 0.13 65 / 30%) 25%,
+    oklch(1 0 0 / 4%) 50%,
+    oklch(0.7 0.13 65 / 12%) 75%,
+    oklch(1 0 0 / 4%) 100%
+  );
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: border-rotate 6s linear infinite;
+}
+
+.rag-card:hover::before {
+  background: conic-gradient(
+    from var(--border-angle),
+    oklch(1 0 0 / 6%) 0%,
+    oklch(0.7 0.13 65 / 50%) 25%,
+    oklch(1 0 0 / 6%) 50%,
+    oklch(0.7 0.13 65 / 25%) 75%,
+    oklch(1 0 0 / 6%) 100%
+  );
+}
+
+/* RAG pipeline — SVG flow arrows */
+.rag-arrow {
+  color: oklch(0.7 0.13 65 / 70%);
+  filter: drop-shadow(0 0 6px oklch(0.7 0.13 65 / 35%));
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

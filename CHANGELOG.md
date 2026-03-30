@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Public landing page — bilingual hero, RAG pipeline walkthrough, changelog timeline, open source section with live GitHub commits
+
+### Changed
+
+- Login route moved to `/login`; `/` now serves the public landing page
+- "Watchlist" renamed to "Favoris" throughout the French UI
+
 ## [1.5.2] - 2026-03-24
 
 ### Added
