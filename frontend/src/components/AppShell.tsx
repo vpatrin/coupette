@@ -289,7 +289,9 @@ function AppShell() {
               {user?.first_name?.charAt(0) ?? '?'}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-[length:var(--text-sidebar)] font-medium truncate">{user?.first_name}</div>
+              <div className="text-[length:var(--text-sidebar)] font-medium truncate">
+                {user?.first_name}
+              </div>
               <a
                 href={`https://t.me/${BOT_USERNAME}`}
                 target="_blank"
