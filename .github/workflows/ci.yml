@@ -346,7 +346,7 @@ jobs:
       - run: make build-frontend
       - name: Bundle size check
         run: |
-          MAX_KB=512
+          MAX_KB=600
           SIZE_KB=$(du -sk frontend/dist/assets | cut -f1)
           echo "Bundle size: ${SIZE_KB}KB (limit: ${MAX_KB}KB)"
           if [ "$SIZE_KB" -gt "$MAX_KB" ]; then

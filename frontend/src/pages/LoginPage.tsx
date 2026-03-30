@@ -49,12 +49,12 @@ function LoginPage() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center gap-8 p-8">
       <div className="flex flex-col items-center gap-2">
-        <h1 className="text-5xl font-mono font-bold">{t('brand')} 🥂</h1>
+        <h1 className="text-5xl font-bold">{t('brand')}</h1>
         <p className="text-muted-foreground">{t('login.tagline')}</p>
       </div>
 
       {code && (
-        <p className="text-sm text-primary font-mono border border-primary px-4 py-2">
+        <p className="text-sm text-primary border border-primary px-4 py-2 rounded-lg">
           {t('login.invited')}
         </p>
       )}
@@ -62,9 +62,7 @@ function LoginPage() {
       <div className="flex flex-col items-center gap-4">
         <TelegramLoginButton botUsername={BOT_USERNAME} onAuth={handleAuth} />
 
-        {error && (
-          <p className="text-destructive text-sm font-mono max-w-xs text-center">{error}</p>
-        )}
+        {error && <p className="text-destructive text-sm max-w-xs text-center">{error}</p>}
       </div>
 
       <footer className="text-xs text-muted-foreground flex flex-col items-center gap-1 mt-4">
