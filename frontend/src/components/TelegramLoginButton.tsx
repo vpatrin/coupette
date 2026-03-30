@@ -12,9 +12,10 @@ export interface TelegramLoginData {
 interface TelegramLoginButtonProps {
   botUsername: string
   onAuth: (data: TelegramLoginData) => void
+  lang?: string
 }
 
-export function TelegramLoginButton({ botUsername, onAuth }: TelegramLoginButtonProps) {
+export function TelegramLoginButton({ botUsername, onAuth, lang }: TelegramLoginButtonProps) {
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -31,6 +32,7 @@ export function TelegramLoginButton({ botUsername, onAuth }: TelegramLoginButton
     script.setAttribute('data-size', 'large')
     script.setAttribute('data-onauth', `${callbackName}(user)`)
     script.setAttribute('data-request-access', 'write')
+    if (lang) script.setAttribute('data-lang', lang)
 
     const container = containerRef.current
     container?.appendChild(script)
@@ -41,7 +43,7 @@ export function TelegramLoginButton({ botUsername, onAuth }: TelegramLoginButton
         container.innerHTML = ''
       }
     }
-  }, [botUsername, onAuth])
+  }, [botUsername, onAuth, lang])
 
   return <div ref={containerRef} />
 }

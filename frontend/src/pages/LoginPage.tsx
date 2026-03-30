@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react'
-import { useNavigate, useParams, Navigate } from 'react-router'
+import { useState } from 'react'
+import { useNavigate, useParams, Navigate, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/contexts/AuthContext'
 import { TelegramLoginButton, type TelegramLoginData } from '@/components/TelegramLoginButton'
@@ -13,69 +13,109 @@ interface TokenResponse {
 }
 
 function LoginPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { token, login } = useAuth()
   const navigate = useNavigate()
   const { code } = useParams<{ code: string }>()
   const [error, setError] = useState<string | null>(null)
 
-  const handleAuth = useCallback(
-    async (telegramData: TelegramLoginData) => {
-      setError(null)
-      try {
-        const body = {
-          ...telegramData,
-          ...(code ? { invite_code: code } : {}),
-        }
-        const { access_token } = await api<TokenResponse>('/auth/telegram', {
-          method: 'POST',
-          body: JSON.stringify(body),
-        })
-        login(access_token)
-        navigate('/dashboard', { replace: true })
-      } catch (err) {
-        if (err instanceof ApiError) {
-          setError(err.detail)
-        } else {
-          setError(t('login.authFailed'))
-        }
+  const handleAuth = async (telegramData: TelegramLoginData) => {
+    setError(null)
+    try {
+      const body = {
+        ...telegramData,
+        ...(code ? { invite_code: code } : {}),
       }
-    },
-    [code, login, navigate, t],
-  )
+      const { access_token } = await api<TokenResponse>('/auth/telegram', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      })
+      login(access_token)
+      navigate('/dashboard', { replace: true })
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(err.detail)
+      } else {
+        setError(t('login.authFailed'))
+      }
+    }
+  }
 
-  if (token) return <Navigate to="/dashboard" replace />
+  if (token) return <Navigate to="/chat" replace />
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center gap-8 p-8">
-      <div className="flex flex-col items-center gap-2">
-        <h1 className="text-5xl font-bold">{t('brand')}</h1>
-        <p className="text-muted-foreground">{t('login.tagline')}</p>
+    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-8 relative overflow-hidden">
+      {/* Ambient orbs */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full bg-primary/[0.06] blur-[120px]" />
+        <div className="absolute -bottom-32 -left-32 w-[400px] h-[400px] rounded-full bg-primary/[0.03] blur-[100px]" />
       </div>
 
-      {code && (
-        <p className="text-sm text-primary border border-primary px-4 py-2 rounded-lg">
-          {t('login.invited')}
-        </p>
-      )}
+      {/* Lang toggle */}
+      <button
+        type="button"
+        onClick={() => i18n.changeLanguage(i18n.resolvedLanguage === 'fr' ? 'en' : 'fr')}
+        className="absolute top-4 right-6 w-8 text-center text-xs text-muted-foreground hover:text-foreground transition-colors"
+      >
+        {i18n.resolvedLanguage === 'fr' ? 'EN' : 'FR'}
+      </button>
 
-      <div className="flex flex-col items-center gap-4">
-        <TelegramLoginButton botUsername={BOT_USERNAME} onAuth={handleAuth} />
+      <div className="relative flex flex-col items-center gap-6 w-full max-w-sm">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/35 to-primary/15 flex items-center justify-center text-2xl font-semibold text-primary shadow-[0_8px_32px_oklch(0.7_0.13_65_/_10%)]">
+            C
+          </div>
+          <h1 className="text-2xl font-semibold">{t('brand')}</h1>
+        </div>
 
-        {error && <p className="text-destructive text-sm max-w-xs text-center">{error}</p>}
+        {/* Invite badge */}
+        {code && (
+          <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500/8 border border-green-500/15 text-green-500 text-sm">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            {t('login.invited')}
+          </div>
+        )}
+
+        <div className="flex flex-col items-center gap-3 w-full">
+          <div className="w-[320px] max-w-full flex justify-center overflow-hidden">
+            <TelegramLoginButton
+              botUsername={BOT_USERNAME}
+              onAuth={handleAuth}
+              lang={i18n.resolvedLanguage}
+            />
+          </div>
+          {error && <p className="text-destructive text-sm text-center">{error}</p>}
+        </div>
+
+        <div className="flex flex-col items-center gap-1.5 mt-2">
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <Link to="/" className="hover:text-foreground transition-colors">
+              {t('login.backToLanding')}
+            </Link>
+            <span className="w-px h-3 bg-border" />
+            <a
+              href="https://www.educalcool.qc.ca/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-foreground transition-colors"
+            >
+              Éduc'alcool
+            </a>
+          </div>
+          <p className="text-xs text-muted-foreground text-center">{t('login.legal')}</p>
+        </div>
       </div>
-
-      <footer className="text-xs text-muted-foreground flex flex-col items-center gap-1 mt-4">
-        <p>{t('login.madeWith')}</p>
-        <a
-          href="https://github.com/vpatrin/coupette"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-primary underline underline-offset-2"
-        >
-          {t('login.sourceOnGithub')}
-        </a>
-      </footer>
     </div>
   )
 }

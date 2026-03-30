@@ -1,11 +1,117 @@
 {
   "brand": "Coupette",
+  "landing": {
+    "mailto": {
+      "subject": "Coupette — Demande d'accès",
+      "body": "Salut !\n\nJ'aimerais essayer Coupette.\n\nMerci !"
+    },
+    "nav": {
+      "login": "Se connecter",
+      "requestAccess": "Demander un accès"
+    },
+    "hero": {
+      "title": {
+        "before": "Ton",
+        "accent": "sommelier personnel",
+        "afterBefore": "pour la",
+        "afterBold": "SAQ",
+        "afterEnd": "."
+      },
+      "subtitle": "Dis-lui ce que tu manges, ton budget, l'envie du moment — il passe au crible 14 000+ vins de la SAQ et te sort le bon.",
+      "cta": "Demander un accès",
+      "signin": "Déjà un accès ? Connecte-toi",
+      "betaNote": "Bêta fermée — accès sur invitation"
+    },
+    "preview": {
+      "userMsg": "Un rouge pour les pâtes ce soir, max 25 $, j'aimerais ça un peu épicé",
+      "botIntro": "Un assemblage du Rhône avec de la Syrah poivrée — assez de caractère pour accompagner le plat sans le dominer.",
+      "tastingNote": "Cerise noire et garrigue au nez. Corps moyen, tanins souples, belle acidité et une finale poivrée.",
+      "placeholder": "Qu'est-ce qu'on boit ce soir ?"
+    },
+    "stats": {
+      "wines": "produits SAQ indexés",
+      "stores": "succursales couvertes",
+      "llm": "curation LLM",
+      "sync": "synchronisation catalogue"
+    },
+    "features": {
+      "title": "Curieux. Méthodique. Passionné.",
+      "subtitle": "Le catalogue pour explorer. Le journal pour se souvenir.\nLe reste pour aller plus loin.",
+      "catalog": {
+        "title": "Catalogue",
+        "desc": "Explore les 14 000+ vins de la SAQ. Filtre par type, prix, région, cépage."
+      },
+      "watchlist": {
+        "title": "Favoris",
+        "desc": "Garde tes bouteilles de côté. Alertes de disponibilité dans tes succursales."
+      },
+      "journal": {
+        "title": "Journal",
+        "desc": "Tes notes de dégustation. Le sommelier s'ajuste à ton palais."
+      },
+      "cellar": {
+        "title": "Cellier",
+        "desc": "Ta cave numérisée. Par région, millésime ou envie du moment."
+      }
+    },
+    "rag": {
+      "title": { "before": "Sous le", "bold": "capot." },
+      "subtitle": "Ton sommelier a fait ses devoirs.",
+      "step1": {
+        "title": "Analyse de l'intention",
+        "detail": "Claude classifie la requête : accord mets-vin, découverte, budget, région…",
+        "code": "intent_route: pairing"
+      },
+      "step2": {
+        "title": "Filtres SQL sur le catalogue",
+        "detail": "Prix, couleur, cépage, région — réduit 14 000 produits à ~200 candidats",
+        "code": "WHERE price ≤ 25 AND color = 'rouge'"
+      },
+      "step3": {
+        "title": "Recherche vectorielle pgvector",
+        "detail": "Similarité cosinus sur les embeddings de notes de dégustation",
+        "code": "cosine_similarity(query_vec, note_vec) → top 8"
+      },
+      "step4": {
+        "title": "Diversification MMR",
+        "detail": "Maximal Marginal Relevance — pour ne pas finir avec 5 Côtes-du-Rhône identiques",
+        "code": "mmr_rerank(λ=0.7) → 3 candidats diversifiés"
+      },
+      "step5": {
+        "title": "Curation Claude Haiku",
+        "detail": "Le LLM choisit le meilleur match, rédige la note et explique l'accord",
+        "code": ""
+      },
+      "step6": {
+        "title": "Réponse structurée",
+        "detail": "Le vin, la note de dégustation et l'explication de l'accord",
+        "code": "stream(wine_card + tasting_note + pairing)"
+      }
+    },
+    "changelog": {
+      "title": { "before": "Livré", "bold": "en continu" },
+      "subtitle": "Chaque version est taguée, documentée et déployée en continu.",
+      "v152": "App web bilingue — français et anglais",
+      "v151": "Métriques Prometheus, facettes 3.5× plus rapides, pipeline CD",
+      "v150": "Chat UI, historique de sessions, routage d'intention, déploiements automatisés",
+      "v140": "Frontend React, recherche avec filtres, cartes de vin",
+      "seeAll": "Changelog complet"
+    },
+    "dev": {
+      "title": { "before": "Construit en", "bold": "public" },
+      "subtitle": "Deux repos. Tout le code, toutes les décisions.",
+      "deployed": "En production",
+      "viewRepo": "Voir le repo"
+    },
+    "footer": {
+      "legal": "Réservé aux 18 ans et plus · La modération a bien meilleur goût · Données du catalogue public saq.com · Non affilié à la SAQ"
+    }
+  },
   "login": {
-    "tagline": "La découverte du vin pour les curieux.",
-    "invited": "Vous avez été invité",
+    "invited": "Invitation validée",
     "authFailed": "Échec de l'authentification",
-    "madeWith": "Fait avec ❤️",
-    "sourceOnGithub": "Code source sur GitHub"
+    "backToLanding": "Accueil",
+    "legal": "Réservé aux 18 ans et plus · La modération a bien meilleur goût"
   },
   "chat": {
     "welcome": "Qu'est-ce qu'on boit ce soir ?",
@@ -44,28 +150,28 @@
     "sortPriceDesc": "Prix : décroissant",
     "sortAlpha": "Alphabétique",
     "noResults": "Aucun vin ne correspond à vos filtres.",
-    "watch": "Suivre",
-    "watching": "Suivi",
+    "watch": "Favoris",
+    "watching": "En favoris",
     "first": "Début",
     "prev": "Préc.",
     "next": "Suiv.",
     "last": "Fin",
     "failedToSearch": "Impossible de rechercher des produits",
-    "failedToAddWatch": "Impossible d'ajouter le suivi",
-    "failedToRemoveWatch": "Impossible de retirer le suivi",
+    "failedToAddWatch": "Impossible d'ajouter aux favoris",
+    "failedToRemoveWatch": "Impossible de retirer des favoris",
     "minPrice": "Prix minimum",
     "maxPrice": "Prix maximum",
     "retry": "réessayer"
   },
   "watches": {
-    "title": "Mes suivis",
-    "loading": "Chargement des suivis...",
-    "empty": "Aucun suivi pour l'instant. Recherchez des vins et ajoutez-les à votre liste.",
+    "title": "Mes favoris",
+    "loading": "Chargement des favoris...",
+    "empty": "Aucun favori pour l'instant. Recherchez des vins et ajoutez-les à vos favoris.",
     "remove": "Retirer",
     "removing": "Retrait...",
     "delisted": "Produit retiré (SKU : {{sku}})",
-    "failedToLoad": "Impossible de charger les suivis",
-    "failedToRemove": "Impossible de retirer le suivi"
+    "failedToLoad": "Impossible de charger les favoris",
+    "failedToRemove": "Impossible de retirer le favori"
   },
   "stores": {
     "title": "Mes succursales",
@@ -94,7 +200,7 @@
   "nav": {
     "chat": "Discussion",
     "search": "Recherche",
-    "myWatches": "Mes suivis",
+    "myWatches": "Mes favoris",
     "myStores": "Mes succursales",
     "newChat": "+ Nouvelle discussion",
     "history": "Historique",
