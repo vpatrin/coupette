@@ -206,6 +206,7 @@
     "history": "Historique",
     "noConversations": "Aucune conversation",
     "untitled": "Sans titre",
+    "rename": "Renommer",
     "deleteSession": "Supprimer la session",
     "deleteConfirm": "Supprimer ?",
     "yes": "oui",
@@ -219,6 +220,10 @@
     "inStores_one": "En succursale ({{count}})",
     "inStores_other": "En succursale ({{count}})",
     "unavailable": "Non disponible — vous serez notifié"
+  },
+  "wineCard": {
+    "more": "de plus",
+    "less": "réduire"
   },
   "time": {
     "justNow": "à l'instant",

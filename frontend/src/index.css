@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
+@plugin '@tailwindcss/typography';
 @import 'shadcn/tailwind.css';
 @import '@fontsource-variable/outfit';
 @import '@fontsource-variable/jetbrains-mono';
@@ -193,6 +194,24 @@
 .rag-arrow {
   color: oklch(0.7 0.13 65 / 70%);
   filter: drop-shadow(0 0 6px oklch(0.7 0.13 65 / 35%));
+}
+
+/* Chat — typing indicator dots */
+@keyframes typing-pulse {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-typing-dot {
+  animation: typing-pulse 1.4s ease-in-out infinite;
 }
 
 @layer base {

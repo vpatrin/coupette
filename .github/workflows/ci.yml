@@ -345,14 +345,7 @@ jobs:
       - run: cd frontend && yarn --frozen-lockfile
       - run: make build-frontend
       - name: Bundle size check
-        run: |
-          MAX_KB=600
-          SIZE_KB=$(du -sk frontend/dist/assets | cut -f1)
-          echo "Bundle size: ${SIZE_KB}KB (limit: ${MAX_KB}KB)"
-          if [ "$SIZE_KB" -gt "$MAX_KB" ]; then
-            echo "::error::Bundle size ${SIZE_KB}KB exceeds ${MAX_KB}KB limit"
-            exit 1
-          fi
+        run: cd frontend && yarn size
 
   # ── Summary gates ─────────────────────────────────────────────
 
