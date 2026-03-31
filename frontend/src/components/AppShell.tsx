@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, Outlet, useLocation, useMatch, useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/contexts/AuthContext'
@@ -26,6 +26,9 @@ const NAV_ITEMS = [
 
 export interface ChatOutletContext {
   refreshSessions: () => void
+  sessions: ChatSessionOut[]
+  renameSession: (id: number, title: string) => Promise<void>
+  deleteSession: (id: number) => Promise<void>
 }
 
 function AppShell() {
@@ -83,11 +86,7 @@ function AppShell() {
       return
     }
     try {
-      const updated = await apiClient<ChatSessionOut>(`/chat/sessions/${id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ title: trimmed }),
-      })
-      setSessions((prev) => prev.map((s) => (s.id === id ? updated : s)))
+      await renameSession(id, trimmed)
     } catch {
       // Silently fail
     }
@@ -97,21 +96,39 @@ function AppShell() {
 
   const handleDelete = async (id: number) => {
     try {
-      await apiClient(`/chat/sessions/${id}`, { method: 'DELETE' })
-      setSessions((prev) => prev.filter((s) => s.id !== id))
+      await deleteSession(id)
       setConfirmDeleteId(null)
-      if (activeSessionId === String(id)) {
-        navigate('/chat', { replace: true })
-      }
     } catch {
       // Silently fail
     }
   }
 
-  const outletContext = useMemo<ChatOutletContext>(
-    () => ({ refreshSessions: fetchSessions }),
-    [fetchSessions],
+  const renameSession = useCallback(
+    async (id: number, title: string) => {
+      const updated = await apiClient<ChatSessionOut>(`/chat/sessions/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ title }),
+      })
+      setSessions((prev) => prev.map((s) => (s.id === id ? updated : s)))
+    },
+    [apiClient],
   )
+
+  const deleteSession = useCallback(
+    async (id: number) => {
+      await apiClient(`/chat/sessions/${id}`, { method: 'DELETE' })
+      setSessions((prev) => prev.filter((s) => s.id !== id))
+      if (activeSessionId === String(id)) navigate('/chat', { replace: true })
+    },
+    [apiClient, activeSessionId, navigate],
+  )
+
+  const outletContext: ChatOutletContext = {
+    refreshSessions: fetchSessions,
+    sessions,
+    renameSession,
+    deleteSession,
+  }
 
   return (
     <div className="h-screen bg-background text-foreground flex">

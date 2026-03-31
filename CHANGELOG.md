@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Login route moved to `/login`; `/` now serves the public landing page
 - "Watchlist" renamed to "Favoris" throughout the French UI
+- Chat UI restyle — Claude-style message bubbles, inline message actions (copy, thumbs, regenerate), session title bar with rename/delete, scroll-to-bottom button
+- Wine cards restyled — dot-color category indicator, grapes list with expand/collapse, cleaner availability display
 
 ## [1.5.2] - 2026-03-24
 

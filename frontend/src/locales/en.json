@@ -206,6 +206,7 @@
     "history": "History",
     "noConversations": "No conversations yet",
     "untitled": "Untitled",
+    "rename": "Rename",
     "deleteSession": "Delete session",
     "deleteConfirm": "Delete?",
     "yes": "yes",
@@ -219,6 +220,10 @@
     "inStores_one": "In {{count}} store",
     "inStores_other": "In {{count}} stores",
     "unavailable": "Unavailable — you'll be notified"
+  },
+  "wineCard": {
+    "more": "more",
+    "less": "less"
   },
   "time": {
     "justNow": "just now",
