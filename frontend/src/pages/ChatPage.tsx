@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
+import { useState, useRef, useEffect, useCallback, useMemo, lazy, Suspense } from 'react'
 import { useParams, useNavigate, useOutletContext } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import ReactMarkdown from 'react-markdown'
+
+const ReactMarkdown = lazy(() => import('react-markdown'))
 import {
   ArrowClockwise,
   ArrowDown,
@@ -213,37 +214,44 @@ function AssistantMessage({
   expandedStores: Set<string>
   onToggleStores: (sku: string) => void
 }) {
+  const proseClass =
+    'prose prose-sm prose-invert max-w-none text-foreground/80 font-light [&_p]:leading-relaxed [&_ul]:mt-1 [&_ol]:mt-1 [&_li]:my-0.5 [&_strong]:text-foreground [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-sm'
+
   if (!isRecommendation(content)) {
     return (
-      <div className="prose prose-sm prose-invert max-w-none text-foreground/80 font-light [&_p]:leading-relaxed [&_ul]:mt-1 [&_ol]:mt-1 [&_li]:my-0.5 [&_strong]:text-foreground [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-sm">
-        <ReactMarkdown>{content}</ReactMarkdown>
-      </div>
+      <Suspense>
+        <div className={proseClass}>
+          <ReactMarkdown>{content}</ReactMarkdown>
+        </div>
+      </Suspense>
     )
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="prose prose-sm prose-invert max-w-none text-foreground/80 font-light [&_p]:leading-relaxed [&_ul]:mt-1 [&_ol]:mt-1 [&_li]:my-0.5 [&_strong]:text-foreground [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-sm">
-        <ReactMarkdown>{content.summary}</ReactMarkdown>
+    <Suspense>
+      <div className="flex flex-col gap-3">
+        <div className={proseClass}>
+          <ReactMarkdown>{content.summary}</ReactMarkdown>
+        </div>
+        <div
+          className="grid gap-2.5"
+          style={{
+            gridTemplateColumns: content.products.length > 1 ? 'repeat(2, minmax(0, 1fr))' : '1fr',
+          }}
+        >
+          {content.products.map(({ product, reason }) => (
+            <WineCard
+              key={product.sku}
+              product={product}
+              reason={reason}
+              storeNames={storeNames}
+              storesExpanded={expandedStores.has(product.sku)}
+              onToggleStores={() => onToggleStores(product.sku)}
+            />
+          ))}
+        </div>
       </div>
-      <div
-        className="grid gap-2.5"
-        style={{
-          gridTemplateColumns: content.products.length > 1 ? 'repeat(2, minmax(0, 1fr))' : '1fr',
-        }}
-      >
-        {content.products.map(({ product, reason }) => (
-          <WineCard
-            key={product.sku}
-            product={product}
-            reason={reason}
-            storeNames={storeNames}
-            storesExpanded={expandedStores.has(product.sku)}
-            onToggleStores={() => onToggleStores(product.sku)}
-          />
-        ))}
-      </div>
-    </div>
+    </Suspense>
   )
 }
 

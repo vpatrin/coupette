@@ -94,6 +94,7 @@ function SearchPage() {
   const [storesLoaded, setStoresLoaded] = useState(false)
   // Stable reference: only changes when the actual IDs change, not on every render
   const storeIdsKey = savedStoreIdsRaw.join(',')
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const savedStoreIds = useMemo(() => savedStoreIdsRaw, [storeIdsKey])
 
   // Stable ref for grouped categories — avoids circular dependency in facets effect
