@@ -240,7 +240,19 @@
     "hide": "Hide",
     "show": "Show",
     "delete": "Delete",
-    "allChats": "All chats"
+    "allChats": "All chats",
+    "collapseSidebar": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar",
+    "journal": "Tasting Journal",
+    "cellar": "Cellar"
+  },
+  "userMenu": {
+    "connectedViaTelegram": "Connected via Telegram",
+    "monPalais": "My Palate",
+    "settings": "Settings",
+    "language": "Language",
+    "logout": "Sign out",
+    "soon": "Soon"
   },
   "availability": {
     "online": "Online",

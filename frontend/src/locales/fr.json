@@ -240,7 +240,19 @@
     "hide": "Masquer",
     "show": "Afficher",
     "delete": "Supprimer",
-    "allChats": "Toutes les discussions"
+    "allChats": "Toutes les discussions",
+    "collapseSidebar": "Réduire la barre latérale",
+    "expandSidebar": "Agrandir la barre latérale",
+    "journal": "Journal de dégustation",
+    "cellar": "Cellier"
+  },
+  "userMenu": {
+    "connectedViaTelegram": "Connecté via Telegram",
+    "monPalais": "Mon palais",
+    "settings": "Paramètres",
+    "language": "Langue",
+    "logout": "Se déconnecter",
+    "soon": "Bientôt"
   },
   "availability": {
     "online": "En ligne",
