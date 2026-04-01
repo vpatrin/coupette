@@ -4,6 +4,7 @@ from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     BigInteger,
     Boolean,
+    CheckConstraint,
     Column,
     Date,
     DateTime,
@@ -469,21 +470,15 @@ class TastingNote(Base):
     user_id = Column(
         String,
         nullable=False,
-        index=True,
         comment="Channel-prefixed user ID (e.g. tg:123456)",
     )
     sku = Column(
         String,
         ForeignKey("products.sku"),
         nullable=False,
-        index=True,
         comment="Tasted product SKU",
     )
-    rating = Column(
-        Integer,
-        nullable=False,
-        comment="User rating 0-100",
-    )
+    rating = Column(Integer, nullable=False, comment="Parker-style rating 0-100")
     notes = Column(Text, nullable=True, comment="Free-text tasting notes")
     pairing = Column(Text, nullable=True, comment="Free-text food pairing")
     tasted_at = Column(
@@ -509,4 +504,5 @@ class TastingNote(Base):
     __table_args__ = (
         Index("ix_tasting_notes_user_id", "user_id"),
         Index("ix_tasting_notes_sku", "sku"),
+        CheckConstraint("rating >= 0 AND rating <= 100", name="ck_tasting_notes_rating"),
     )

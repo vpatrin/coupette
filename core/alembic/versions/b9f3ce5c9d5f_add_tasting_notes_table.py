@@ -32,7 +32,7 @@ def upgrade() -> None:
             comment="Channel-prefixed user ID (e.g. tg:123456)",
         ),
         sa.Column("sku", sa.String(), nullable=False, comment="Tasted product SKU"),
-        sa.Column("rating", sa.Integer(), nullable=False, comment="User rating 0-100"),
+        sa.Column("rating", sa.Integer(), nullable=False, comment="Parker-style rating 0-100"),
         sa.Column("notes", sa.Text(), nullable=True, comment="Free-text tasting notes"),
         sa.Column("pairing", sa.Text(), nullable=True, comment="Free-text food pairing"),
         sa.Column("tasted_at", sa.Date(), nullable=False, comment="Date the wine was tasted"),
@@ -48,11 +48,9 @@ def upgrade() -> None:
             nullable=False,
             comment="When note was last updated",
         ),
-        sa.ForeignKeyConstraint(
-            ["sku"],
-            ["products.sku"],
-        ),
+        sa.ForeignKeyConstraint(["sku"], ["products.sku"]),
         sa.PrimaryKeyConstraint("id"),
+        sa.CheckConstraint("rating >= 0 AND rating <= 100", name="ck_tasting_notes_rating"),
     )
     op.create_index(op.f("ix_tasting_notes_sku"), "tasting_notes", ["sku"], unique=False)
     op.create_index(op.f("ix_tasting_notes_user_id"), "tasting_notes", ["user_id"], unique=False)
