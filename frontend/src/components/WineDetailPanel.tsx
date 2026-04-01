@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import {
@@ -41,9 +41,18 @@ function WineDetailPanel({ sku, onClose }: WineDetailPanelProps) {
   // loadedSku tracks what's currently shown; when sku differs, show skeleton
   const isLoading = sku !== null && loadedSku !== sku
 
-  // Fetch watches + store prefs when panel first opens (sku goes from null → value)
+  // Tracks whether we've already fetched watches+stores for this open session.
+  // Resets to false when the panel closes (sku → null), so the next open re-fetches.
+  const hasFetchedOnOpen = useRef(false)
+
   useEffect(() => {
-    if (!sku) return
+    if (!sku) {
+      hasFetchedOnOpen.current = false
+      return
+    }
+    if (hasFetchedOnOpen.current) return
+    hasFetchedOnOpen.current = true
+
     let cancelled = false
 
     async function fetchWatches() {
@@ -74,9 +83,7 @@ function WineDetailPanel({ sku, onClose }: WineDetailPanelProps) {
     return () => {
       cancelled = true
     }
-    // Only re-fetch when panel opens (sku goes null → value), not on every sku change
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [!!sku])
+  }, [sku, apiClient, userId])
 
   const fetchProduct = useCallback(
     (targetSku: string) => {

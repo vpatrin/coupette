@@ -208,11 +208,14 @@ function UserMessageActions({
 function AssistantMessage({
   content,
   storeNames,
+  selectedSku,
+  setSelectedSku,
 }: {
   content: string | RecommendationOut
   storeNames: Map<string, string>
+  selectedSku: string | null
+  setSelectedSku: (sku: string | null) => void
 }) {
-  const { selectedSku, setSelectedSku } = useWineDetail()
   const proseClass =
     'prose prose-sm prose-invert max-w-none text-foreground/80 font-light [&_p]:leading-relaxed [&_ul]:mt-1 [&_ol]:mt-1 [&_li]:my-0.5 [&_strong]:text-foreground [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-sm'
 
@@ -243,7 +246,7 @@ function AssistantMessage({
               key={product.sku}
               type="button"
               onClick={() => setSelectedSku(selectedSku === product.sku ? null : product.sku)}
-              className="text-left w-full"
+              className={`text-left w-full rounded-xl ${selectedSku === product.sku ? 'ring-1 ring-primary/60' : ''}`}
             >
               <WineCard product={product} reason={reason} storeNames={storeNames} />
             </button>
@@ -348,7 +351,7 @@ function ChatPage() {
   const apiClient = useApiClient()
   const navigate = useNavigate()
   const { sessionId: urlSessionId } = useParams<{ sessionId: string }>()
-  const { selectedSku } = useWineDetail()
+  const { selectedSku, setSelectedSku } = useWineDetail()
   const { refreshSessions, sessions, renameSession, deleteSession } =
     useOutletContext<ChatOutletContext>()
 
@@ -648,7 +651,12 @@ function ChatPage() {
               ) : (
                 <>
                   <div className="w-full bg-white/[0.025] border border-border rounded-2xl px-5 py-[18px]">
-                    <AssistantMessage content={msg.content} storeNames={storeNames} />
+                    <AssistantMessage
+                      content={msg.content}
+                      storeNames={storeNames}
+                      selectedSku={selectedSku}
+                      setSelectedSku={setSelectedSku}
+                    />
                   </div>
                   <AssistantMessageActions
                     content={msg.content}

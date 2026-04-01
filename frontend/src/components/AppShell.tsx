@@ -544,9 +544,8 @@ function MainArea({ outletContext }: { outletContext: ChatOutletContext }) {
   const { selectedSku, setSelectedSku } = useWineDetail()
   const handleClosePanel = useCallback(() => setSelectedSku(null), [setSelectedSku])
 
-  // Close panel on navigation
   useEffect(() => {
-    setSelectedSku(null)
+    if (selectedSku !== null) setSelectedSku(null)
   }, [location.pathname, setSelectedSku])
 
   return (

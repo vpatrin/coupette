@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useState } from 'react'
+import { createContext, useContext, useState } from 'react'
 import type { ReactNode } from 'react'
 
 interface WineDetailContextType {
@@ -9,8 +9,7 @@ interface WineDetailContextType {
 const WineDetailContext = createContext<WineDetailContextType | null>(null)
 
 export function WineDetailProvider({ children }: { children: ReactNode }) {
-  const [selectedSku, setSelectedSkuRaw] = useState<string | null>(null)
-  const setSelectedSku = useCallback((sku: string | null) => setSelectedSkuRaw(sku), [])
+  const [selectedSku, setSelectedSku] = useState<string | null>(null)
 
   return (
     <WineDetailContext.Provider value={{ selectedSku, setSelectedSku }}>
