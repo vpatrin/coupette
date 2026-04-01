@@ -207,13 +207,9 @@ function UserMessageActions({
 function AssistantMessage({
   content,
   storeNames,
-  expandedStores,
-  onToggleStores,
 }: {
   content: string | RecommendationOut
   storeNames: Map<string, string>
-  expandedStores: Set<string>
-  onToggleStores: (sku: string) => void
 }) {
   const proseClass =
     'prose prose-sm prose-invert max-w-none text-foreground/80 font-light [&_p]:leading-relaxed [&_ul]:mt-1 [&_ol]:mt-1 [&_li]:my-0.5 [&_strong]:text-foreground [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-sm'
@@ -241,14 +237,7 @@ function AssistantMessage({
           }}
         >
           {content.products.map(({ product, reason }) => (
-            <WineCard
-              key={product.sku}
-              product={product}
-              reason={reason}
-              storeNames={storeNames}
-              storesExpanded={expandedStores.has(product.sku)}
-              onToggleStores={() => onToggleStores(product.sku)}
-            />
+            <WineCard key={product.sku} product={product} reason={reason} storeNames={storeNames} />
           ))}
         </div>
       </div>
@@ -364,15 +353,6 @@ function ChatPage() {
   const [error, setError] = useState<string | null>(null)
   const [lastFailedInput, setLastFailedInput] = useState<string | null>(null)
   const [storeNames, setStoreNames] = useState<Map<string, string>>(new Map())
-  const [expandedStores, setExpandedStores] = useState<Set<string>>(new Set())
-  const toggleStoreExpand = useCallback((sku: string) => {
-    setExpandedStores((prev) => {
-      const next = new Set(prev)
-      if (next.has(sku)) next.delete(sku)
-      else next.add(sku)
-      return next
-    })
-  }, [])
   const { lastAssistantIdx, lastUserIdx, lastUserMsg } = useMemo(() => {
     let lastAssistantIdx = -1
     let lastUserIdx = -1
@@ -655,12 +635,7 @@ function ChatPage() {
               ) : (
                 <>
                   <div className="w-full bg-white/[0.025] border border-border rounded-2xl px-5 py-[18px]">
-                    <AssistantMessage
-                      content={msg.content}
-                      storeNames={storeNames}
-                      expandedStores={expandedStores}
-                      onToggleStores={toggleStoreExpand}
-                    />
+                    <AssistantMessage content={msg.content} storeNames={storeNames} />
                   </div>
                   <AssistantMessageActions
                     content={msg.content}
