@@ -1,10 +1,12 @@
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     BigInteger,
     Boolean,
+    CheckConstraint,
     Column,
+    Date,
     DateTime,
     Float,
     ForeignKey,
@@ -457,3 +459,50 @@ class ChatMessage(Base):
     )
 
     __table_args__ = (Index("ix_chat_messages_session_created", "session_id", "created_at"),)
+
+
+class TastingNote(Base):
+    """User tasting note for a wine — one or more per SKU (Untappd model)."""
+
+    __tablename__ = "tasting_notes"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(
+        String,
+        nullable=False,
+        comment="Channel-prefixed user ID (e.g. tg:123456)",
+    )
+    sku = Column(
+        String,
+        ForeignKey("products.sku"),
+        nullable=False,
+        comment="Tasted product SKU",
+    )
+    rating = Column(Integer, nullable=False, comment="Parker-style rating 0-100")
+    notes = Column(Text, nullable=True, comment="Free-text tasting notes")
+    pairing = Column(Text, nullable=True, comment="Free-text food pairing")
+    tasted_at = Column(
+        Date,
+        nullable=False,
+        default=lambda: date.today(),
+        comment="Date the wine was tasted",
+    )
+    created_at = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        nullable=False,
+        comment="When note was created",
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+        nullable=False,
+        comment="When note was last updated",
+    )
+
+    __table_args__ = (
+        Index("ix_tasting_notes_user_id", "user_id"),
+        Index("ix_tasting_notes_sku", "sku"),
+        CheckConstraint("rating >= 0 AND rating <= 100", name="ck_tasting_notes_rating"),
+    )
