@@ -345,6 +345,8 @@ function SearchPage() {
     [apiClient, userId, t],
   )
 
+  const handleClosePanel = useCallback(() => setSelectedSku(null), [])
+
   const displayProducts = results?.products ?? []
   const pages = results ? Math.ceil(results.total / results.limit) : 0
 
@@ -720,7 +722,7 @@ function SearchPage() {
         watchingInProgress={watchingInProgress}
         onWatch={handleWatch}
         onUnwatch={handleUnwatch}
-        onClose={() => setSelectedSku(null)}
+        onClose={handleClosePanel}
       />
     </div>
   )
