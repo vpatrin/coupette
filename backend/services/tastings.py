@@ -6,14 +6,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.exceptions import ForbiddenError, NotFoundError
 from backend.repositories import tastings as repo
 from backend.schemas.tasting import TastingOut
-from core.db.models import Product, TastingNote
+from core.db.models import TastingNote
 
 
-def _with_product(note: TastingNote, product: Product | None) -> TastingOut:
-    out = TastingOut.model_validate(note)
-    out.product_name = product.name if product else None
-    out.product_image_url = product.image if product else None
-    return out
+async def _get_owned_note(db: AsyncSession, user_id: str | None, note_id: int) -> TastingNote:
+    note = await repo.find_one(db, note_id)
+    if note is None:
+        raise NotFoundError("TastingNote", str(note_id))
+    if note.user_id != user_id:
+        raise ForbiddenError
+    return note
 
 
 async def create_tasting(
@@ -25,7 +27,7 @@ async def create_tasting(
     pairing: str | None,
     tasted_at: date | None,
 ) -> TastingOut:
-    effective_date = tasted_at or date.today()
+    effective_date = tasted_at if tasted_at is not None else date.today()
     try:
         note = await repo.create(db, user_id, sku, rating, notes, pairing, effective_date)
     except IntegrityError as exc:
@@ -41,7 +43,15 @@ async def list_tastings(
     offset: int,
 ) -> list[TastingOut]:
     rows = await repo.find_by_user(db, user_id, limit, offset)
-    return [_with_product(note, product) for note, product in rows]
+    return [
+        TastingOut.model_validate(note).model_copy(
+            update={
+                "product_name": product.name if product else None,
+                "product_image_url": product.image if product else None,
+            }
+        )
+        for note, product in rows
+    ]
 
 
 async def update_tasting(
@@ -53,19 +63,11 @@ async def update_tasting(
     pairing: str | None,
     tasted_at: date | None,
 ) -> TastingOut:
-    note = await repo.find_one(db, note_id)
-    if note is None:
-        raise NotFoundError("TastingNote", str(note_id))
-    if note.user_id != user_id:
-        raise ForbiddenError
+    note = await _get_owned_note(db, user_id, note_id)
     updated = await repo.update(db, note, rating, notes, pairing, tasted_at)
     return TastingOut.model_validate(updated)
 
 
 async def delete_tasting(db: AsyncSession, user_id: str | None, note_id: int) -> None:
-    note = await repo.find_one(db, note_id)
-    if note is None:
-        raise NotFoundError("TastingNote", str(note_id))
-    if note.user_id != user_id:
-        raise ForbiddenError
+    note = await _get_owned_note(db, user_id, note_id)
     await repo.delete(db, note)

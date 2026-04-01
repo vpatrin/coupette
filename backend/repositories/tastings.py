@@ -25,7 +25,6 @@ async def create(
     )
     db.add(note)
     await db.flush()
-    await db.refresh(note)
     return note
 
 
@@ -70,7 +69,6 @@ async def update(
     if tasted_at is not None:
         note.tasted_at = tasted_at
     await db.flush()
-    await db.refresh(note)
     return note
 
 
