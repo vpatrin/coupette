@@ -31,11 +31,7 @@ function KbdHint({ keys, label }: { keys: string[]; label: string }) {
 
 function ChatSearchModal({ sessions, activeSessionId, onNavigate, onClose }: ChatSearchModalProps) {
   const { t } = useTranslation()
-  const isMac = (
-    (navigator.userAgentData as { platform?: string } | undefined)?.platform ?? navigator.platform
-  )
-    .toUpperCase()
-    .includes('MAC')
+  const isMac = /mac/i.test(navigator.userAgent) && !/iphone|ipad/i.test(navigator.userAgent)
   const [query, setQuery] = useState('')
   const [highlightedIndex, setHighlightedIndex] = useState(0)
 
