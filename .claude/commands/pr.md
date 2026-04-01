@@ -10,12 +10,12 @@ Create a PR for the current branch. Follow the Pre-PR Checklist from CLAUDE.md.
 6. Run frontend lint and build checks (only if frontend files changed):
    - `cd frontend && yarn lint` — must pass with 0 errors (warnings are OK if pre-existing on main)
    - `cd frontend && yarn build` — must succeed. If either fails, stop and fix before creating the PR.
-8. Create the PR using `gh pr create` with:
+7. Create the PR using `gh pr create` with:
    - Title in conventional commits format: `type: description (#issue)`
    - Body following `.github/pull_request_template.md` (Summary, Related issue(s), Changes, How to test if applicable)
    - Use `Closes #XX` in the Related issue(s) section for each issue
    - If "How to test" includes curl commands, use port 8001 (backend runs on 8001, not 8000)
-7. Return the PR URL.
+8. Return the PR URL.
 
 ## Rules
 
