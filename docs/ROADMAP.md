@@ -33,7 +33,7 @@ Log wines you've tasted with 100-point ratings and tasting notes. SAQ catalog wi
 - [x] Tasting CRUD endpoints (#443)
 - [x] "Log tasting" inline form on product cards (#444)
 - [x] My Tastings page (#445)
-- [ ] Surface "You rated: 92" on product cards in search results (#446)
+- [x] Surface "You rated: 92" on product cards in search results (#446)
 
 Design reference: `ui/journal/journal.html`, `ui/journal/notif-noteview.html`
 
