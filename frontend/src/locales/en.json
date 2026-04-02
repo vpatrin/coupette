@@ -324,7 +324,7 @@
   "wineCard": {
     "more": "more",
     "less": "less",
-    "yourRating": "You: {{rating}}"
+    "yourRating": "My rating: {{rating}}"
   },
   "wineDetail": {
     "failedToLoad": "Couldn't load wine details",

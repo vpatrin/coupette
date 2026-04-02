@@ -324,7 +324,7 @@
   "wineCard": {
     "more": "de plus",
     "less": "réduire",
-    "yourRating": "Vous : {{rating}}"
+    "yourRating": "Ma note : {{rating}}"
   },
   "wineDetail": {
     "failedToLoad": "Impossible de charger les détails",

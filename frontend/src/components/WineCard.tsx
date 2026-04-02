@@ -77,7 +77,7 @@ function WineCard({ product, reason, storeNames, watchSlot, userRating }: WineCa
           </div>
         </div>
 
-        {/* Middle: region + grapes */}
+        {/* Middle: region + grapes + user rating */}
         <div className="ml-[18px] flex flex-col gap-1 min-w-0">
           {origin && (
             <span
@@ -93,6 +93,11 @@ function WineCard({ product, reason, storeNames, watchSlot, userRating }: WineCa
               title={product.grape}
             >
               {product.grape}
+            </p>
+          )}
+          {userRating && (
+            <p className="font-mono text-[11px] text-primary/70">
+              {t('wineCard.yourRating', { rating: userRating.rating })}
             </p>
           )}
         </div>
@@ -115,14 +120,7 @@ function WineCard({ product, reason, storeNames, watchSlot, userRating }: WineCa
             )}
             {storeNode}
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {userRating && (
-              <span className="font-mono text-[10px] text-muted-foreground/60">
-                {t('wineCard.yourRating', { rating: userRating.rating })}
-              </span>
-            )}
-            {watchSlot}
-          </div>
+          {watchSlot}
         </div>
       </div>
     </div>
