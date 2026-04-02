@@ -323,7 +323,8 @@
   },
   "wineCard": {
     "more": "more",
-    "less": "less"
+    "less": "less",
+    "yourRating": "My rating: {{rating}}"
   },
   "wineDetail": {
     "failedToLoad": "Couldn't load wine details",

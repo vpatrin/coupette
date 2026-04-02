@@ -1,16 +1,17 @@
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { formatOrigin, CATEGORY_DOT } from '@/lib/utils'
-import type { ProductOut } from '@/lib/types'
+import type { ProductOut, TastingRatingOut } from '@/lib/types'
 
 interface WineCardProps {
   product: ProductOut
   reason?: string
   storeNames?: Map<string, string>
   watchSlot?: ReactNode
+  userRating?: TastingRatingOut | null
 }
 
-function WineCard({ product, reason, storeNames, watchSlot }: WineCardProps) {
+function WineCard({ product, reason, storeNames, watchSlot, userRating }: WineCardProps) {
   const { t } = useTranslation()
   const origin = formatOrigin(product)
   const hasOnline = product.online_availability === true
@@ -76,7 +77,7 @@ function WineCard({ product, reason, storeNames, watchSlot }: WineCardProps) {
           </div>
         </div>
 
-        {/* Middle: region + grapes */}
+        {/* Middle: region + grapes + user rating */}
         <div className="ml-[18px] flex flex-col gap-1 min-w-0">
           {origin && (
             <span
@@ -94,6 +95,11 @@ function WineCard({ product, reason, storeNames, watchSlot }: WineCardProps) {
               {product.grape}
             </p>
           )}
+          {userRating && (
+            <p className="font-mono text-[11px] text-primary/70">
+              {t('wineCard.yourRating', { rating: userRating.rating })}
+            </p>
+          )}
         </div>
 
         {/* Reason / tasting note */}
@@ -103,7 +109,7 @@ function WineCard({ product, reason, storeNames, watchSlot }: WineCardProps) {
           </p>
         )}
 
-        {/* Bottom row: availability left, watch right */}
+        {/* Bottom row: availability left, user rating + watch right */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
             {hasOnline && (

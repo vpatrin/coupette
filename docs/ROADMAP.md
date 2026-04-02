@@ -15,7 +15,8 @@ Scaffolding, scraping, data layer, API, Telegram bot, AI layer (RAG + Claude), a
 Premium warm theme replacing the brutalist/terminal aesthetic. Cross-cutting UX effort before Phase 11.
 
 - [x] Theme foundation — tokens, fonts, sidebar (#534)
-- [x] Landing page + login restyle (#536, #535)
+- [x] Landing page + login restyle (#536)
+- [ ] Age gate (18+) on first visit (#535)
 - [x] Chat page + wine card restyle (#537)
 - [x] Search, watchlist, stores restyle + empty states (#538)
 - [x] Wine detail slide panel (#539)
@@ -32,7 +33,7 @@ Log wines you've tasted with 100-point ratings and tasting notes. SAQ catalog wi
 - [x] Tasting CRUD endpoints (#443)
 - [x] "Log tasting" inline form on product cards (#444)
 - [x] My Tastings page (#445)
-- [ ] Surface "You rated: 92" on product cards in search results (#446)
+- [x] Surface "You rated: 92" on product cards in search results (#446)
 
 Design reference: `ui/journal/journal.html`, `ui/journal/notif-noteview.html`
 
