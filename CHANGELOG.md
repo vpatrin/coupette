@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Waitlist submission — visitors can request early access by email; admins can approve or reject requests via the API
 - Search results show your rating ("You: 92") on wines you've previously tasted
 - Log tasting flow — search the SAQ catalog, select a wine, and log a rating (0–100 with live MW scale description), notes, pairing, and date inline on the Journal page
 - Tasting journal page — date-grouped list of tasting notes with ratings, notes, pairing, optimistic delete, and load-more pagination

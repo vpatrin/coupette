@@ -1,36 +1,12 @@
 from datetime import UTC, datetime
 from types import SimpleNamespace
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
-import pytest
 from fastapi import status
-from fastapi.testclient import TestClient
 
-from backend.app import app
-from backend.auth import verify_admin, verify_auth
-from backend.config import ROLE_ADMIN, ROLE_USER
-from backend.db import get_db
-from core.db.models import User
+from tests.conftest import _mock_admin, _mock_regular_user
 
 NOW = datetime(2025, 1, 1, tzinfo=UTC)
-
-
-def _mock_admin() -> MagicMock:
-    user = MagicMock(spec=User)
-    user.id = 1
-    user.telegram_id = 12345
-    user.role = ROLE_ADMIN
-    user.is_active = True
-    return user
-
-
-def _mock_regular_user() -> MagicMock:
-    user = MagicMock(spec=User)
-    user.id = 2
-    user.telegram_id = 99999
-    user.role = ROLE_USER
-    user.is_active = True
-    return user
 
 
 def _fake_invite(**overrides):
@@ -39,30 +15,6 @@ def _fake_invite(**overrides):
     )
     defaults.update(overrides)
     return SimpleNamespace(**defaults)
-
-
-@pytest.fixture()
-def admin_client():
-    """Client authenticated as admin."""
-    admin = _mock_admin()
-    app.dependency_overrides[verify_auth] = lambda: admin
-    app.dependency_overrides[verify_admin] = lambda: admin
-    session = AsyncMock()
-    app.dependency_overrides[get_db] = lambda: session
-    yield TestClient(app)
-    app.dependency_overrides.clear()
-
-
-@pytest.fixture()
-def user_client():
-    """Client authenticated as regular user (non-admin)."""
-    user = _mock_regular_user()
-    app.dependency_overrides[verify_auth] = lambda: user
-    # Don't override verify_admin — let it run and reject
-    session = AsyncMock()
-    app.dependency_overrides[get_db] = lambda: session
-    yield TestClient(app)
-    app.dependency_overrides.clear()
 
 
 # ── POST /api/admin/invites ──────────────────────────────────
