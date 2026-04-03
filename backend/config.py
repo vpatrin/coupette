@@ -22,6 +22,10 @@ CONTEXT_WINDOW_TURNS = 5
 ROLE_USER = "user"
 ROLE_ADMIN = "admin"
 
+WAITLIST_PENDING = "pending"
+WAITLIST_APPROVED = "approved"
+WAITLIST_REJECTED = "rejected"
+
 NON_WINE_MESSAGE = (
     "Je suis un assistant spécialisé en vin — je ne peux pas vous aider avec ça. "
     "Essayez de me poser une question sur le vin! / "
