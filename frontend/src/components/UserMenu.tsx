@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import type { UserRole } from '@/lib/types'
 import {
   HeartIcon as Heart,
   GearIcon as Gear,
@@ -10,7 +11,7 @@ import {
 
 interface UserMenuProps {
   firstName: string
-  role?: 'user' | 'admin'
+  role?: UserRole
   onLogout: () => void
   onNavigate?: (to: string) => void
   currentLanguage: string

@@ -190,7 +190,7 @@ export interface UserOut {
   telegram_id: number
   username: string | null
   first_name: string
-  role: 'user' | 'admin'
+  role: UserRole
   is_active: boolean
   created_at: string
   last_login_at: string | null
