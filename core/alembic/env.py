@@ -4,6 +4,7 @@
 
 from logging.config import fileConfig
 
+from alembic.operations import ops as alembic_ops
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
@@ -37,6 +38,31 @@ config.set_main_option("sqlalchemy.url", database_url.replace("%", "%%"))
 target_metadata = Base.metadata
 
 
+def _is_comment_only_alter(op: object) -> bool:
+    return (
+        isinstance(op, alembic_ops.AlterColumnOp)
+        and op.modify_comment is not False
+        and op.modify_nullable is None
+        and op.modify_type is None
+        and op.modify_server_default is False
+        and op.modify_name is None
+    )
+
+
+def _strip_comment_only_alters(directives, _context, _heads, _run_args):
+    # Alembic has no compare_comments=False option (silently ignored in 1.x).
+    # Use process_revision_directives to drop alter_column ops that only
+    # change a column comment — these re-appear on every autogenerate from
+    # a fresh DB because column comments aren't tracked in alembic_version.
+    for script in directives:
+        for upgrade_ops in (script.upgrade_ops, script.downgrade_ops):
+            for migrate_ops in upgrade_ops.ops:
+                if isinstance(migrate_ops, alembic_ops.ModifyTableOps):
+                    migrate_ops.ops[:] = [
+                        op for op in migrate_ops.ops if not _is_comment_only_alter(op)
+                    ]
+
+
 # ============================================================================
 # SECTION 3: MIGRATION EXECUTION LOGIC
 # ============================================================================
@@ -60,7 +86,7 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
-        compare_comments=False,
+        process_revision_directives=_strip_comment_only_alters,
     )
 
     with context.begin_transaction():
@@ -84,7 +110,7 @@ def run_migrations_online() -> None:
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
-            compare_comments=False,
+            process_revision_directives=_strip_comment_only_alters,
         )
 
         with context.begin_transaction():
