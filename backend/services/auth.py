@@ -61,7 +61,7 @@ async def authenticate_telegram(db: AsyncSession, data: TelegramLoginIn) -> Toke
     if existing and not existing.is_active:
         raise ForbiddenError("Account is deactivated")
 
-    user = await users_repo.upsert_telegram(db, data.id, data.username)
+    user = await users_repo.upsert_telegram(db, data.id)
 
     logger.info("Telegram auth: telegram_id={} user_id={}", data.id, user.id)
 

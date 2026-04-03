@@ -42,21 +42,12 @@ async def list_all(db: AsyncSession) -> list[User]:
 async def upsert_telegram(
     db: AsyncSession,
     telegram_id: int,
-    username: str | None,
 ) -> User:
-    """Create or update user from Telegram data. Returns the user."""
+    """Update last_login_at for an existing Telegram user. Returns the user."""
     user = await find_by_telegram_id(db, telegram_id)
-    now = datetime.now(UTC)
-    if user:
-        user.username = username
-        user.last_login_at = now
-    else:
-        user = User(
-            telegram_id=telegram_id,
-            username=username,
-            last_login_at=now,
-        )
-        db.add(user)
+    if user is None:
+        raise ValueError(f"No user found for telegram_id={telegram_id}")
+    user.last_login_at = datetime.now(UTC)
     await db.flush()
     return user
 

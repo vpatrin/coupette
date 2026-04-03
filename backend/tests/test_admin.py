@@ -19,7 +19,6 @@ def test_list_users_success(admin_client):
         u.display_name = f"User{i}"
         u.created_at = NOW
         u.last_login_at = NOW
-        u.username = None
     with patch("backend.repositories.users.list_all", new_callable=AsyncMock) as mock:
         mock.return_value = users
         resp = admin_client.get("/api/admin/users")

@@ -43,7 +43,6 @@ class User(Base):
         index=True,
         comment="Telegram user ID — notification channel only, not an auth credential",
     )
-    username = Column(String, nullable=True, comment="Telegram @handle (may change)")
     role = Column(
         String(20),
         nullable=False,

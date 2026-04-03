@@ -12,7 +12,6 @@ class UserOut(BaseModel):
     email: str
     display_name: str | None
     telegram_id: int | None
-    username: str | None
     role: str
     is_active: bool
     created_at: datetime
