@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/contexts/AuthContext'
 import { Navigate } from 'react-router'
 import { Fragment, useEffect, useRef, useState } from 'react'
+import { api } from '@/lib/api'
 import {
   MagnifyingGlassIcon,
   EyeIcon,
@@ -181,14 +182,14 @@ function useGitHubData() {
 /* Content width — matches nav container for alignment */
 const SECTION = 'max-w-6xl mx-auto w-full px-8'
 
+// null = form not yet opened; 'idle' | 'loading' | 'success' | 'error' = form visible
 type FormState = 'idle' | 'loading' | 'success' | 'error'
 
 function LandingPage() {
   const { t, i18n } = useTranslation()
   const { token } = useAuth()
   const { repos, deploy } = useGitHubData()
-  const [showForm, setShowForm] = useState(false)
-  const [formState, setFormState] = useState<FormState>('idle')
+  const [formState, setFormState] = useState<FormState | null>(null)
   const [email, setEmail] = useState('')
   const heroRef = useRef<HTMLElement>(null)
 
@@ -197,25 +198,18 @@ function LandingPage() {
   }
 
   const openForm = () => {
-    setShowForm(true)
-    // Scroll hero into view if it's above the fold — then focus the input
+    setFormState('idle')
     heroRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (formState === 'loading') return
     setFormState('loading')
     try {
-      const res = await fetch('/api/waitlist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      })
-      if (res.ok) {
-        setFormState('success')
-      } else {
-        setFormState('error')
-      }
+      await api('/waitlist', { method: 'POST', body: JSON.stringify({ email }) })
+      setEmail('')
+      setFormState('success')
     } catch {
       setFormState('error')
     }
@@ -278,7 +272,7 @@ function LandingPage() {
           </p>
 
           {/* CTA */}
-          {!showForm && (
+          {formState === null && (
             <div className="flex items-center gap-6 mb-3">
               <button
                 type="button"
@@ -295,12 +289,13 @@ function LandingPage() {
               </Link>
             </div>
           )}
-          {showForm && formState !== 'success' && (
+          {formState !== null && formState !== 'success' && (
             <form onSubmit={handleSubmit} className="flex items-center gap-3 mb-3">
               <input
                 type="email"
                 required
                 autoFocus
+                aria-label={t('landing.hero.formPlaceholder')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={t('landing.hero.formPlaceholder')}
@@ -321,12 +316,12 @@ function LandingPage() {
               )}
             </form>
           )}
-          {showForm && formState === 'success' && (
+          {formState === 'success' && (
             <p className="text-sm text-primary mb-3">{t('landing.hero.formSuccess')}</p>
           )}
-          {!showForm && (
-            <p className="text-xs text-muted-foreground mb-12">{t('landing.hero.betaNote')}</p>
-          )}
+          <p className="text-xs text-muted-foreground mb-12">
+            {formState !== 'success' && t('landing.hero.betaNote')}
+          </p>
         </div>
 
         {/* Chat preview — flush with content, bottom fade */}
