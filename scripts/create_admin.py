@@ -30,6 +30,11 @@ def main() -> None:
         print("ADMIN_TELEGRAM_ID is not set — skipping admin bootstrap.")
         sys.exit(1)
 
+    email = os.environ.get("ADMIN_EMAIL", "").strip().lower()
+    if not email:
+        print("ADMIN_EMAIL is not set — skipping admin bootstrap.")
+        sys.exit(1)
+
     telegram_id = int(raw)
     engine = create_engine(_database_url())
 
@@ -52,12 +57,12 @@ def main() -> None:
         else:
             conn.execute(
                 text(
-                    "INSERT INTO users (telegram_id, first_name, role, is_active, created_at)"
-                    " VALUES (:tid, 'Admin', 'admin', true, now())"
+                    "INSERT INTO users (telegram_id, email, role, is_active, created_at)"
+                    " VALUES (:tid, :email, 'admin', true, now())"
                 ),
-                {"tid": telegram_id},
+                {"tid": telegram_id, "email": email},
             )
-            print(f"Created admin user: telegram_id={telegram_id}")
+            print(f"Created admin user: telegram_id={telegram_id}, email={email}")
 
 
 if __name__ == "__main__":

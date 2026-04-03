@@ -13,6 +13,12 @@ async def find_by_id(db: AsyncSession, user_id: int) -> User | None:
     return result.scalar_one_or_none()
 
 
+async def find_by_email(db: AsyncSession, email: str) -> User | None:
+    stmt = select(User).where(User.email == email)
+    result = await db.execute(stmt)
+    return result.scalar_one_or_none()
+
+
 async def find_by_telegram_id(db: AsyncSession, telegram_id: int) -> User | None:
     stmt = select(User).where(User.telegram_id == telegram_id)
     result = await db.execute(stmt)
@@ -33,27 +39,15 @@ async def list_all(db: AsyncSession) -> list[User]:
     return list(result.scalars().all())
 
 
-async def upsert(
+async def upsert_telegram(
     db: AsyncSession,
     telegram_id: int,
-    first_name: str,
-    username: str | None,
 ) -> User:
-    """Create or update user from Telegram OAuth data. Returns the user."""
+    """Update last_login_at for an existing Telegram user. Returns the user."""
     user = await find_by_telegram_id(db, telegram_id)
-    now = datetime.now(UTC)
-    if user:
-        user.first_name = first_name
-        user.username = username
-        user.last_login_at = now
-    else:
-        user = User(
-            telegram_id=telegram_id,
-            first_name=first_name,
-            username=username,
-            last_login_at=now,
-        )
-        db.add(user)
+    if user is None:
+        raise ValueError(f"No user found for telegram_id={telegram_id}")
+    user.last_login_at = datetime.now(UTC)
     await db.flush()
     return user
 

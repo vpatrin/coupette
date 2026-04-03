@@ -9,9 +9,9 @@ class UserUpdateIn(BaseModel):
 
 class UserOut(BaseModel):
     id: int
-    telegram_id: int
-    username: str | None
-    first_name: str
+    email: str
+    display_name: str | None
+    telegram_id: int | None
     role: str
     is_active: bool
     created_at: datetime

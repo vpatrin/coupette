@@ -29,15 +29,20 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+    email = Column(
+        String(254),
+        unique=True,
+        nullable=False,
+        comment="Primary email from OAuth provider (lowercased)",
+    )
+    display_name = Column(String, nullable=True, comment="User-set display name")
     telegram_id = Column(
         BigInteger,
         unique=True,
-        nullable=False,
+        nullable=True,
         index=True,
-        comment="Telegram user ID (64-bit)",
+        comment="Telegram user ID — notification channel only, not an auth credential",
     )
-    username = Column(String, nullable=True, comment="Telegram @handle (may change)")
-    first_name = Column(String, nullable=False, comment="Telegram first name")
     role = Column(
         String(20),
         nullable=False,
@@ -63,7 +68,45 @@ class User(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<User(id={self.id!r}, telegram_id={self.telegram_id!r}, role={self.role!r})>"
+        return f"<User(id={self.id!r}, email={self.email!r}, role={self.role!r})>"
+
+
+class OAuthAccount(Base):
+    """OAuth provider account linked to a user — supports multiple providers per user."""
+
+    __tablename__ = "oauth_accounts"
+    __table_args__ = (
+        UniqueConstraint("provider", "provider_user_id", name="uq_oauth_accounts_provider_uid"),
+        CheckConstraint("provider IN ('github', 'google')", name="ck_oauth_accounts_provider"),
+    )
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+        comment="Owning user",
+    )
+    provider = Column(String(20), nullable=False, comment="OAuth provider: github or google")
+    provider_user_id = Column(String, nullable=False, comment="Provider's stable user identifier")
+    email = Column(
+        String(254),
+        nullable=False,
+        comment="Email from provider at time of linking (may differ from users.email)",
+    )
+    created_at = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        nullable=False,
+        comment="When this provider account was linked",
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<OAuthAccount(user_id={self.user_id!r}, provider={self.provider!r}, "
+            f"provider_user_id={self.provider_user_id!r})>"
+        )
 
 
 class WaitlistRequest(Base):
