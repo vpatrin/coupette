@@ -63,3 +63,10 @@ async def set_active(db: AsyncSession, user: User, *, active: bool) -> User:
     user.is_active = active
     await db.flush()
     return user
+
+
+async def find_by_email(db: AsyncSession, email: str) -> User | None:
+    # email column added in feat/extended-auth (A-PR1)
+    stmt = select(User).where(User.email == email)  # type: ignore[attr-defined]
+    result = await db.execute(stmt)
+    return result.scalar_one_or_none()
