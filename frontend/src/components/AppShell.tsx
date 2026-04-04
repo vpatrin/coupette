@@ -302,7 +302,6 @@ function AppShell() {
               <button
                 type="button"
                 onClick={() => setUserMenuOpen((v) => !v)}
-                title={user?.display_name}
                 className="w-8 h-8 rounded-full bg-primary/15 border border-primary/20 flex items-center justify-center text-[13px] font-medium text-primary hover:opacity-80 transition-opacity"
               >
                 {user?.display_name?.charAt(0) ?? '?'}
