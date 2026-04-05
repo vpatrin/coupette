@@ -79,5 +79,12 @@ class BackendSettings(BaseSettings):
     # Redis URL — used for OAuth exchange code storage.
     REDIS_URL: str = "redis://coupette-redis:6379/0"
 
+    # GitHub OAuth credentials — create at https://github.com/settings/developers
+    GITHUB_CLIENT_ID: str = ""
+    GITHUB_CLIENT_SECRET: str = ""
+
+    # Frontend base URL — used to build OAuth redirect URIs.
+    FRONTEND_URL: str = ""
+
 
 backend_settings = BackendSettings()
