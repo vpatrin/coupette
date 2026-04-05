@@ -14,6 +14,12 @@ async def find_by_id(db: AsyncSession, request_id: int) -> WaitlistRequest | Non
     return result.scalar_one_or_none()
 
 
+async def find_by_email(db: AsyncSession, email: str) -> WaitlistRequest | None:
+    stmt = select(WaitlistRequest).where(WaitlistRequest.email == email)
+    result = await db.execute(stmt)
+    return result.scalar_one_or_none()
+
+
 async def create(db: AsyncSession, email: str) -> WaitlistRequest | None:
     """Create a pending waitlist request. Returns None if email already exists."""
     try:
@@ -50,7 +56,6 @@ async def reject(db: AsyncSession, request: WaitlistRequest) -> WaitlistRequest:
 
 
 async def mark_email_sent(db: AsyncSession, request: WaitlistRequest) -> WaitlistRequest:
-    # TODO(W-PR2): called after Resend sends approval email
     request.email_sent_at = datetime.now(UTC)
     await db.flush()
     return request

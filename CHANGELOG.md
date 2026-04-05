@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Admin panel — waitlist queue with approve/reject/resend actions, user list with activate/deactivate toggles; accessible only to admin role
+- GitHub OAuth login — users can sign in with their GitHub account
 
 ### Fixed
 
