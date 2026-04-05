@@ -39,8 +39,13 @@ COPY backend/ backend/
 COPY core/alembic.ini core/alembic.ini
 COPY core/alembic/ core/alembic/
 
+# Prometheus multiprocess mode — each worker writes metrics here; /metrics aggregates all.
+ENV PROMETHEUS_MULTIPROC_DIR=/tmp/prometheus_multiproc
+RUN mkdir -p /tmp/prometheus_multiproc
+
 # Run as non-root user
 RUN useradd --no-create-home --uid 1000 appuser
+RUN chown 1000:1000 /tmp/prometheus_multiproc
 USER appuser
 
 EXPOSE 8001

@@ -13,6 +13,8 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     container_name: coupette-backend
+    tmpfs:
+      - /tmp/prometheus_multiproc:uid=1000,gid=1000
     networks:
       - internal
     healthcheck:

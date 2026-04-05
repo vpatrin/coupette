@@ -1,9 +1,10 @@
+import os
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from loguru import logger
 from prometheus_fastapi_instrumentator import Instrumentator
 from slowapi.errors import RateLimitExceeded
@@ -95,7 +96,31 @@ async def rate_limit_handler(request: Request, exc: RateLimitExceeded) -> JSONRe
 
 
 register_exception_handlers(app)
-Instrumentator().instrument(app).expose(app, endpoint="/metrics", include_in_schema=False)
+Instrumentator().instrument(app)
+
+
+@app.get("/metrics", include_in_schema=False)
+def metrics() -> Response:
+    # When PROMETHEUS_MULTIPROC_DIR is set (Docker + gunicorn), aggregate all workers.
+    # Otherwise (bare-metal dev, single process) fall back to the default registry.
+    from prometheus_client import (
+        CONTENT_TYPE_LATEST,
+        REGISTRY,
+        CollectorRegistry,
+        generate_latest,
+        multiprocess,
+    )
+
+    # Supports multip
+    if "PROMETHEUS_MULTIPROC_DIR" in os.environ:
+        registry = CollectorRegistry()
+        multiprocess.MultiProcessCollector(registry)
+        data = generate_latest(registry)
+    else:
+        data = generate_latest(REGISTRY)
+    return Response(content=data, media_type=CONTENT_TYPE_LATEST)
+
+
 app.include_router(health_router)
 app.include_router(auth_router, prefix="/api")
 app.include_router(waitlist_router, prefix="/api")  # public — no auth
