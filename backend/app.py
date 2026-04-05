@@ -42,8 +42,14 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             raise RuntimeError("GITHUB_CLIENT_ID must be set in production")
         if not backend_settings.GITHUB_CLIENT_SECRET:
             raise RuntimeError("GITHUB_CLIENT_SECRET must be set in production")
+        if not backend_settings.GOOGLE_CLIENT_ID:
+            raise RuntimeError("GOOGLE_CLIENT_ID must be set in production")
+        if not backend_settings.GOOGLE_CLIENT_SECRET:
+            raise RuntimeError("GOOGLE_CLIENT_SECRET must be set in production")
         if not backend_settings.FRONTEND_URL:
             raise RuntimeError("FRONTEND_URL must be set in production")
+        if not backend_settings.BACKEND_URL:
+            raise RuntimeError("BACKEND_URL must be set in production")
     await verify_db_connection()
     logger.info("Database connection verified")
 
