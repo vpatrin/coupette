@@ -39,10 +39,21 @@ COPY backend/ backend/
 COPY core/alembic.ini core/alembic.ini
 COPY core/alembic/ core/alembic/
 
+# Prometheus multiprocess mode — each worker writes metrics here; /metrics aggregates all.
+ENV PROMETHEUS_MULTIPROC_DIR=/tmp/prometheus_multiproc
+
 # Run as non-root user
-RUN useradd --no-create-home --uid 1000 appuser
+RUN useradd --no-create-home --uid 1000 appuser \
+    && mkdir -p /tmp/prometheus_multiproc \
+    && chown 1000:1000 /tmp/prometheus_multiproc
 USER appuser
 
 EXPOSE 8001
 
-CMD ["uvicorn", "backend.app:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["gunicorn", "backend.app:app", \
+     "--worker-class", "uvicorn.workers.UvicornWorker", \
+     "--workers", "2", \
+     "--bind", "0.0.0.0:8001", \
+     "--timeout", "120", \
+     "--graceful-timeout", "30", \
+     "--access-logfile", "-"]

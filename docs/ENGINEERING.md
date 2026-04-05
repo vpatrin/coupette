@@ -289,6 +289,27 @@ Five actionables identified from a full frontend audit (2026-04-02). In priority
 - [ ] Load testing baseline — k6 tier runners, baseline snapshots, regression diffs (#502–#507)
 - `/health/detailed` endpoint — Postgres reachability, data freshness, disk space
 - Define SLOs — API p95 < 500ms, 99% uptime; scraper completes weekly, data < 8 days stale; bot ack < 2s
+- **Future:** migrate IP-based limits (global, auth, waitlist) to Caddy — proxy layer handles these better (no app code, survives Python refactors, faster). App already has this today via slowapi as a stepping stone. Per-user LLM limits stay in the app — the proxy can't see JWT claims. When scaling to multiple Caddy instances, `caddy-ratelimit` needs a shared Redis backend (same Redis already in use). See [ADR 0009](decisions/0009-rate-limiting-tiered-strategy.md).
+
+  Target architecture at scale:
+
+  ```text
+                      ┌──────────────────────────┐
+                      │    Load Balancer (L4/L7)  │
+                      └────────┬─────────┬────────┘
+                               │         │
+                        ┌──────▼──┐ ┌────▼─────┐
+                        │ Caddy 1 │ │ Caddy 2  │  ← IP limits (auth, waitlist, global)
+                        └──────┬──┘ └────┬─────┘
+                               │         │
+                        ┌──────▼─────────▼──────┐
+                        │      Shared Redis       │  ← rate limit state for both layers
+                        └───────────┬────────────┘
+                                    │         ▲
+                        ┌───────────▼────────────┐
+                        │  Backend (N workers)    │  ← per-user LLM limits (slowapi)
+                        └────────────────────────┘
+  ```
 
 **Platform:**
 
@@ -395,10 +416,6 @@ Complements Loguru, doesn't replace it. Loguru is verbose structured logs — Se
 ### Prompt versioning
 
 Today a prompt change is invisible in `recommendation_logs` — no way to know which prompt version produced a given recommendation. Prompt versioning stores each prompt with a version hash and logs it alongside every LLM call. Enables: before/after quality comparison when prompts change, rollback to a known-good version, and audit trail for why a recommendation looked different last week. Natural prerequisite for A/B testing prompts. Can start simple — a constant in code with a short hash, logged to `recommendation_logs`.
-
-### Rate limiting per user
-
-No per-user rate limiting today on chat or recommendation endpoints. `slowapi` (FastAPI wrapper around `limits`) adds this in ~20 lines, backed by Redis (already in infra). Critical before opening to more users — a single user hammering the chat endpoint runs up Claude API costs with no ceiling. Start with: 20 chat messages/minute per user, 100 recommendations/hour per user.
 
 ### Background task queue — procrastinate / pgqueuer
 

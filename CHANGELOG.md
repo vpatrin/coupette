@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Google OAuth login — users can sign in with their Google account
 - Onboarding — new users set their display name before entering the app
 - Settings page — edit display name, manage linked accounts (connect/disconnect GitHub and Google), language toggle, delete account with type-to-confirm
+- Rate limiting — tiered limits on all API endpoints: 100/min per IP globally, 10/min on auth, 3/min on waitlist, 20/min per user on LLM endpoints (chat, recommendations)
 
 ### Fixed
 
