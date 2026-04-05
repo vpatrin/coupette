@@ -79,7 +79,6 @@ async def create_oauth_session(
             user.last_login_at = datetime.now(UTC)
             await db.flush()
         else:
-            # New user — must have an approved waitlist entry
             waitlist_entry = await waitlist_repo.find_by_email(db, email)
             if not waitlist_entry or waitlist_entry.status != WAITLIST_APPROVED:
                 raise ForbiddenError("This email has not been approved for access")
@@ -89,10 +88,11 @@ async def create_oauth_session(
         )
 
     logger.info(
-        "OAuth auth: provider={} provider_user_id={} user_id={}",
+        "OAuth auth: provider={} provider_user_id={} user_id={} email={}",
         provider,
         provider_user_id,
         user.id,
+        email,
     )
 
     token = _create_jwt(user.id, user.role, user.display_name)

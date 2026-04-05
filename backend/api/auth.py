@@ -55,6 +55,7 @@ async def github_callback(
     redis: Redis = Depends(get_redis),
 ) -> RedirectResponse:
     """GitHub OAuth callback — validate state, exchange code, upsert user, redirect to frontend."""
+    # For CSRF protection
     if not await consume_oauth_state(redis, state):
         raise ForbiddenError("Invalid or expired OAuth state")
     access_token = await fetch_github_access_token(code)
