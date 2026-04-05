@@ -32,10 +32,10 @@ function AuthCallbackPage() {
 
   if (token) return <Navigate to="/chat" replace />
 
-  if (error) {
+  if (error || !code) {
     return (
       <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center gap-4">
-        <p className="text-destructive text-sm">{error}</p>
+        <p className="text-destructive text-sm">{error ?? t('authCallback.failed')}</p>
         <a href="/login" className="text-sm text-primary hover:underline">
           {t('authCallback.backToLogin')}
         </a>
