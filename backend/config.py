@@ -83,8 +83,13 @@ class BackendSettings(BaseSettings):
     GITHUB_CLIENT_ID: str = ""
     GITHUB_CLIENT_SECRET: str = ""
 
-    # Frontend base URL — used to build OAuth redirect URIs.
+    # Google OAuth credentials — create at https://console.cloud.google.com/apis/credentials
+    GOOGLE_CLIENT_ID: str = ""
+    GOOGLE_CLIENT_SECRET: str = ""
+
+    # Base URLs — used to build OAuth redirect URIs.
     FRONTEND_URL: str = ""
+    BACKEND_URL: str = ""
 
 
 backend_settings = BackendSettings()
