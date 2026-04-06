@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import type { TFunction } from 'i18next'
 import type { ProductOut } from '@/lib/types'
 import { formatOrigin, CATEGORY_DOT, timeAgoPrecise, timeAgo } from './utils'
 
@@ -52,7 +53,9 @@ describe('CATEGORY_DOT', () => {
 
 describe('timeAgoPrecise', () => {
   const NOW = new Date('2026-01-15T12:00:00Z').getTime()
-  const t = vi.fn((key: string, opts?: { count: number }) => `${key}:${opts?.count}`)
+  const t = vi.fn(
+    (key: string, opts?: { count: number }) => `${key}:${opts?.count}`,
+  ) as unknown as TFunction & ReturnType<typeof vi.fn>
 
   beforeEach(() => {
     t.mockClear()
@@ -94,7 +97,7 @@ describe('timeAgoPrecise', () => {
 
 describe('timeAgo', () => {
   const NOW = new Date('2026-01-15T12:00:00Z').getTime()
-  const t = vi.fn((key: string) => key)
+  const t = vi.fn((key: string) => key) as unknown as TFunction & ReturnType<typeof vi.fn>
 
   beforeEach(() => {
     t.mockClear()
