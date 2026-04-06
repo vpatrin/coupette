@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import type { ProductOut } from '@/lib/types'
 import { formatOrigin, CATEGORY_DOT, timeAgoPrecise, timeAgo } from './utils'
 
-// Minimal ProductOut with only the fields formatOrigin needs
 function product(overrides: Partial<ProductOut> = {}): ProductOut {
   return { country: null, region: null, ...overrides } as ProductOut
 }
@@ -51,12 +50,12 @@ describe('CATEGORY_DOT', () => {
   })
 })
 
-// Fix time to 2026-01-15T12:00:00Z for deterministic tests
 describe('timeAgoPrecise', () => {
   const NOW = new Date('2026-01-15T12:00:00Z').getTime()
   const t = vi.fn((key: string, opts?: { count: number }) => `${key}:${opts?.count}`)
 
   beforeEach(() => {
+    t.mockClear()
     vi.useFakeTimers()
     vi.setSystemTime(NOW)
   })
@@ -98,6 +97,7 @@ describe('timeAgo', () => {
   const t = vi.fn((key: string) => key)
 
   beforeEach(() => {
+    t.mockClear()
     vi.useFakeTimers()
     vi.setSystemTime(NOW)
   })

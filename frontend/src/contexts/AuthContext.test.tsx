@@ -3,11 +3,10 @@ import { renderHook, act, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { AuthProvider, useAuth } from './AuthContext'
 
-// Stable fetch mock — AuthProvider fires /users/me on mount when token exists
+// AuthProvider fires /users/me on mount when a stored token exists
 const fetchMock = vi.fn()
 vi.stubGlobal('fetch', fetchMock)
 
-// Build a fake JWT with the given payload (header.payload.signature)
 function fakeJwt(payload: Record<string, unknown>): string {
   const header = btoa(JSON.stringify({ alg: 'HS256' }))
   const body = btoa(JSON.stringify(payload))
@@ -20,7 +19,6 @@ function wrapper({ children }: { children: ReactNode }) {
   return <AuthProvider>{children}</AuthProvider>
 }
 
-// Suppress /users/me hydration by default — returns 401
 function stubHydration() {
   fetchMock.mockResolvedValue({
     ok: false,

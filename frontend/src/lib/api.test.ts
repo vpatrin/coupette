@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { api, ApiError, fetchAllPages, API_PAGE_SIZE } from './api'
 
-// Global fetch mock — reset before each test
 const fetchMock = vi.fn()
 vi.stubGlobal('fetch', fetchMock)
 
@@ -13,7 +12,7 @@ function jsonResponse(body: unknown, status = 200): Response {
   return {
     ok: status >= 200 && status < 300,
     status,
-    statusText: 'OK',
+    statusText: status === 200 ? 'OK' : 'Error',
     json: () => Promise.resolve(body),
   } as Response
 }

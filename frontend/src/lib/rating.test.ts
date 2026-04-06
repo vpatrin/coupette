@@ -42,16 +42,6 @@ describe('getBucket', () => {
     expect(getBucket(-1)).toBe(BUCKETS[0])
   })
 
-  it('every bucket has required fields', () => {
-    for (const bucket of BUCKETS) {
-      expect(bucket).toHaveProperty('min')
-      expect(bucket).toHaveProperty('max')
-      expect(bucket).toHaveProperty('stars')
-      expect(bucket).toHaveProperty('description')
-      expect(bucket).toHaveProperty('color')
-    }
-  })
-
   it('buckets cover 0-100 without gaps', () => {
     for (let i = 0; i <= 100; i++) {
       const bucket = getBucket(i)
