@@ -334,7 +334,7 @@ function AppShell() {
                   type="button"
                   onClick={toggleCollapsed}
                   title={t('nav.collapseSidebar')}
-                  className="text-muted-foreground/30 hover:text-muted-foreground hover:bg-surface-hover flex h-7 w-7 items-center justify-center rounded-lg transition-colors"
+                  className="text-muted-foreground/50 hover:text-muted-foreground hover:bg-surface-hover flex h-7 w-7 items-center justify-center rounded-lg transition-colors"
                 >
                   <SidebarSimpleIcon size={15} />
                 </button>
