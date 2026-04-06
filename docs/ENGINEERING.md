@@ -235,7 +235,7 @@ Five actionables identified from a full frontend audit (2026-04-02). In priority
 
 **Testing — Frontend:**
 
-- [ ] Test infrastructure setup — add Vitest + React Testing Library + jsdom, wire `yarn test` script, configure CI step
+- [x] Test infrastructure setup — add Vitest + React Testing Library + jsdom, wire `yarn test` script, configure CI step (#639)
 - [ ] Shared components — `WineCard`, `EmptyState`, `FilterChips` (render + props variants)
 - [ ] Auth components — `ProtectedRoute` (redirects unauthenticated), `TelegramLoginButton` (renders in Settings, calls link callback)
 - [ ] `UserMenu` — open/close, logout action
@@ -248,9 +248,9 @@ Five actionables identified from a full frontend audit (2026-04-02). In priority
 
 **Testing — Python:**
 
-- [ ] Alembic migration smoke test — `upgrade head && check` against test DB (#316)
-- [ ] Migrate backend tests from `TestClient` to `httpx.AsyncClient` (#430)
-- [ ] Remove tests that test third-party library behavior (scraper, api, bot) (#318)
+- [x] Alembic migration smoke test — `upgrade head && check` against test DB (#316)
+- [x] Migrate backend tests from `TestClient` to `httpx.AsyncClient` (#430)
+- [x] Remove tests that test third-party library behavior (scraper, api, bot) (#318)
 - Product test factory (`make_red()`, `make_white()`, `make_wines(n)`) — eliminates repeated fixture setup
 - Integration tests with seeded PostgreSQL (repository layer: search, filter, pagination, upsert idempotency)
 - Contract tests — snapshot API response shapes so bot's assumptions are validated on every PR
