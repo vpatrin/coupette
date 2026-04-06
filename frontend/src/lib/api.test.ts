@@ -71,10 +71,10 @@ describe('api', () => {
   it('throws ApiError with status and detail from response body', async () => {
     fetchMock.mockResolvedValueOnce(jsonResponse({ detail: 'SKU not found' }, 404))
 
-    const err = await api('/wines/invalid').catch((e: ApiError) => e)
-    expect(err).toBeInstanceOf(ApiError)
-    expect(err.status).toBe(404)
-    expect(err.detail).toBe('SKU not found')
+    await expect(api('/wines/invalid')).rejects.toMatchObject({
+      status: 404,
+      detail: 'SKU not found',
+    })
   })
 
   it('falls back to statusText when response body has no detail', async () => {
@@ -85,9 +85,9 @@ describe('api', () => {
       json: () => Promise.reject(new Error('no body')),
     } as Response)
 
-    const err = await api('/explode').catch((e: ApiError) => e)
-    expect(err).toBeInstanceOf(ApiError)
-    expect(err.detail).toBe('Internal Server Error')
+    await expect(api('/explode')).rejects.toMatchObject({
+      detail: 'Internal Server Error',
+    })
   })
 
   it('calls onUnauthorized on 401', async () => {
