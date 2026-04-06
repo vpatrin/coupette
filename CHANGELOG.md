@@ -11,11 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Language persistence — locale preference saved to user profile; synced on login via `GET /users/me`
 - SEO: meta description, robots.txt, sitemap.xml, Open Graph tags for social sharing
-- Tailwind class sorting via `prettier-plugin-tailwindcss`
 
 ### Fixed
 
-- Sidebar contrast — bumped low-opacity text from `/40` to `/60` for WCAG AA compliance
+- Sidebar contrast — bumped low-opacity text from `/40` to `/60`
 
 ## [1.6.0] - 2026-04-05
 
