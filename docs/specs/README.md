@@ -4,7 +4,7 @@ Implementation design of shipped features — architecture, data flow, schemas. 
 
 | Spec | Description |
 | --- | --- |
-| [AUTH_SYSTEM](AUTH_SYSTEM.md) | Telegram OAuth, JWT, invite codes, dual auth paths |
+| [AUTH_SYSTEM](AUTH_SYSTEM.md) | OAuth (Google, GitHub), JWT, Telegram notifications, dual auth paths |
 | [CHAT_SYSTEM](CHAT_SYSTEM.md) | Multi-turn chat, intent routing, context windowing |
 | [DATA_PIPELINE](DATA_PIPELINE.md) | Adobe Live Search API, HTML scrape, sitemap sync |
 | [RECOMMENDATIONS](RECOMMENDATIONS.md) | RAG pipeline, hybrid search, curation |

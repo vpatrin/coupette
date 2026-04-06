@@ -141,7 +141,7 @@ scraper/src/products.py       core/db/models.py         backend/schemas/product.
 
 ### Auth model
 
-JWT tokens issued via Telegram OAuth login. All API routes (except `/health`) require a valid JWT. The bot authenticates via a shared `BOT_SECRET` header. Invite codes gate new user registration. See [SECURITY.md](SECURITY.md) for the full auth model.
+JWT tokens issued via OAuth login (Google, GitHub). All API routes (except `/health` and auth endpoints) require a valid JWT. The bot authenticates via a shared `BOT_SECRET` header. Waitlist gate controls new user registration. Telegram is a linked notification channel, not a login provider. See [SECURITY.md](SECURITY.md) for the full auth model.
 
 ### Offset-based pagination
 

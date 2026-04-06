@@ -169,7 +169,6 @@
   "login": {
     "google": "Sign in with Google",
     "github": "Sign in with GitHub",
-    "or": "or",
     "authFailed": "Authentication failed",
     "backToLanding": "Home",
     "legal": "18+ only · Drink responsibly"
@@ -184,6 +183,8 @@
     "lastAccount": "last account",
     "preferences": "Preferences",
     "language": "Language",
+    "notifications": "Notifications",
+    "telegramDesc": "Alerts and bot access via Telegram",
     "dangerZone": "Danger zone",
     "deleteAccount": "Delete my account",
     "deleteDesc": "Permanently delete all your data",

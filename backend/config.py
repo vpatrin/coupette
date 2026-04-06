@@ -72,8 +72,8 @@ class BackendSettings(BaseSettings):
     # Override in production .env: CORS_ORIGINS=["https://coupette.club"]
     CORS_ORIGINS: list[str] = ["http://localhost:5173"]
 
-    # Telegram ID of the admin user — verified at startup.
-    ADMIN_TELEGRAM_ID: int = 0
+    # Admin email — verified at startup to ensure an active admin exists.
+    ADMIN_EMAIL: str = ""
 
     # Resend API key — required in production. Leave empty to skip email (dev mode).
     RESEND_API_KEY: str = ""

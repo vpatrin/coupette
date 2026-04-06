@@ -1,41 +1,11 @@
-import { useState } from 'react'
-import { useNavigate, Navigate, Link } from 'react-router'
+import { Navigate, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { WineIcon } from '@phosphor-icons/react'
 import { useAuth } from '@/contexts/AuthContext'
-import { TelegramLoginButton, type TelegramLoginData } from '@/components/TelegramLoginButton'
-import { api, ApiError } from '@/lib/api'
-
-const BOT_USERNAME = import.meta.env.VITE_TELEGRAM_BOT_USERNAME as string
-
-interface TokenResponse {
-  access_token: string
-  token_type: string
-}
 
 function LoginPage() {
   const { t, i18n } = useTranslation()
-  const { token, login } = useAuth()
-  const navigate = useNavigate()
-  const [error, setError] = useState<string | null>(null)
-
-  const handleAuth = async (telegramData: TelegramLoginData) => {
-    setError(null)
-    try {
-      const { access_token } = await api<TokenResponse>('/auth/telegram', {
-        method: 'POST',
-        body: JSON.stringify(telegramData),
-      })
-      login(access_token)
-      navigate('/dashboard', { replace: true })
-    } catch (err) {
-      if (err instanceof ApiError) {
-        setError(err.detail)
-      } else {
-        setError(t('login.authFailed'))
-      }
-    }
-  }
+  const { token } = useAuth()
 
   if (token) return <Navigate to="/chat" replace />
 
@@ -99,21 +69,6 @@ function LoginPage() {
             </svg>
             {t('login.github')}
           </a>
-
-          <div className="flex items-center gap-3 w-[320px] max-w-full">
-            <div className="flex-1 h-px bg-border" />
-            <span className="text-xs text-muted-foreground">{t('login.or')}</span>
-            <div className="flex-1 h-px bg-border" />
-          </div>
-
-          <div className="w-[320px] max-w-full flex justify-center overflow-hidden">
-            <TelegramLoginButton
-              botUsername={BOT_USERNAME}
-              onAuth={handleAuth}
-              lang={i18n.resolvedLanguage}
-            />
-          </div>
-          {error && <p className="text-destructive text-sm text-center">{error}</p>}
         </div>
 
         <div className="flex flex-col items-center gap-1.5 mt-2">

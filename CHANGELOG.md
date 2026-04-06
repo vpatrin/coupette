@@ -14,7 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Google OAuth login — users can sign in with their Google account
 - Onboarding — new users set their display name before entering the app
 - Settings page — edit display name, manage linked accounts (connect/disconnect GitHub and Google), language toggle, delete account with type-to-confirm
+- Telegram notifications — link/unlink Telegram account in Settings for bot alerts and access
 - Rate limiting — tiered limits on all API endpoints: 100/min per IP globally, 10/min on auth, 3/min on waitlist, 20/min per user on LLM endpoints (chat, recommendations)
+
+### Changed
+
+- Admin bootstrap uses `ADMIN_EMAIL` instead of `ADMIN_TELEGRAM_ID`
+- Telegram removed from login page — login is Google/GitHub only
 
 ### Fixed
 
@@ -150,7 +156,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Telegram Login Widget authentication — `POST /api/auth/telegram` verifies HMAC, upserts user, returns JWT (#353)
 - JWT route guards — all API routes require authentication except `/health` and `/api/auth` (#356)
 - Invite code access gate — new users must present a single-use invite code at first login (#357)
-- Admin bootstrap — `make create-admin` seeds admin user from `ADMIN_TELEGRAM_ID`, backend startup verifies admin exists
+- Admin bootstrap — `make create-admin` seeds admin user from `ADMIN_EMAIL`, backend startup verifies admin exists
 - Admin user management — `GET /api/admin/users` lists all users, `POST /api/admin/users/{id}/deactivate` deactivates non-admin users
 
 ### Fixed
