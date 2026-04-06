@@ -26,11 +26,11 @@ Users authenticate via third-party OAuth providers. The backend handles the full
 
 **Code:** `backend/api/auth.py` (endpoints), `backend/services/auth.py` → `create_oauth_session()`, `backend/services/github_oauth.py`, `backend/services/google_oauth.py`
 
-### Telegram OAuth (legacy)
+### Telegram HMAC (notification linking)
 
-The Telegram Login Widget uses HMAC-SHA-256 verification per Telegram's spec. Payloads older than 24 hours are rejected to prevent replay attacks.
+The Telegram Login Widget uses HMAC-SHA-256 verification per Telegram's spec. Used in Settings to link a Telegram account for notifications and bot access (not as a login provider). Payloads older than 24 hours are rejected to prevent replay attacks.
 
-**Code:** `backend/services/auth.py` → `_verify_telegram_hash()`
+**Code:** `backend/services/auth.py` → `verify_telegram_data()`, `_verify_telegram_hash()`
 
 ### JWT (sessions)
 
@@ -73,11 +73,13 @@ Bot secret takes priority — if the header is present and valid, JWT validation
 8. Redirects to `FRONTEND_URL/auth/callback?code=...` (or `?error=not_approved` / `?error=invalid_state`)
 9. Frontend calls `GET /api/auth/exchange?code=...` → receives JWT, stores in localStorage
 
-### Telegram login (legacy)
+### Telegram account linking
 
-1. Telegram Login Widget signs payload
-2. `POST /api/auth/telegram` — verify HMAC, check `is_active`, update `last_login_at`
-3. Returns JWT directly
+1. Authenticated user clicks "Connect" in Settings → Telegram Login Widget
+2. `POST /users/me/telegram` — verify HMAC, check for conflicts, set `telegram_id` on user
+3. Unlinking: `DELETE /users/me/telegram` — clears `telegram_id`
+
+Legacy `POST /api/auth/telegram` endpoint still exists for bot middleware compatibility.
 
 ### Authenticated API request
 
@@ -115,7 +117,7 @@ Telegram user sends message
 
 ### Admin bootstrap
 
-Idempotent `make create-admin` command — creates or promotes the admin user from `ADMIN_TELEGRAM_ID` env var. Safe to run on every deploy.
+Idempotent `make create-admin` command — creates or promotes the admin user from `ADMIN_EMAIL` env var. Safe to run on every deploy.
 
 ---
 
@@ -126,7 +128,6 @@ Idempotent `make create-admin` command — creates or promotes the admin user fr
 All API routes require authentication except:
 
 - `GET /health` — health check
-- `POST /api/auth/telegram` — login endpoint
 - `GET /api/auth/telegram/check` — user existence check (`require_bot_secret` guard)
 - `GET /api/auth/github/login` — OAuth redirect (generates state, no user data)
 - `GET /api/auth/github/callback` — OAuth callback (validates state + code)
@@ -164,17 +165,17 @@ The Telegram bot checks user registration before handling any message:
 
 - `is_active` boolean on the `users` table replaces the old `ALLOWED_USER_IDS` env var
 - Deactivation is instant: checked at JWT decode, at bot middleware, and at the `/check` endpoint
-- No self-service admin promotion — first admin is set manually via `UPDATE users SET role='admin'`
+- Admin bootstrap via `ADMIN_EMAIL` env var + `make create-admin` (idempotent, verified at startup)
 
 ---
 
 ## Rate Limiting
 
-Per-user sliding window rate limiter on the bot side. Silently drops updates from users exceeding the threshold.
+**Backend (SlowAPI):** Tiered per-user rate limits via `slowapi`. Keyed by user ID (JWT) or IP (unauthenticated). Limits: 100/min global, 10/min auth, 3/min waitlist, 20/min LLM. ADR: [0009-rate-limiting-tiered-strategy](decisions/0009-rate-limiting-tiered-strategy.md).
 
-**Code:** `bot/bot/middleware.py` → `RateLimiter`, `rate_limit_gate()`
+**Bot:** Per-user sliding window rate limiter. Silently drops updates from users exceeding the threshold.
 
-No rate limiting on the login endpoint yet (tech debt — Telegram's HMAC makes brute-force pointless, but defense-in-depth would be better).
+**Code:** `backend/rate_limit.py`, `bot/bot/middleware.py` → `RateLimiter`, `rate_limit_gate()`
 
 ---
 
@@ -215,15 +216,14 @@ No rate limiting on the login endpoint yet (tech debt — Telegram's HMAC makes 
 | Backend down            | Bot fails open with cached auth                                | Unauthenticated access during outage (bounded by cache TTL)     |
 | XSS -> token theft      | React JSX auto-escaping, no `dangerouslySetInnerHTML`          | localStorage accessible to XSS (mitigate with CSP — planned)   |
 | LLM API key leak        | Env vars only, never in frontend or logs, sops-encrypted prod  | Billing exposure if VPS compromised                             |
-| OAuth endpoint abuse    | Waitlist gate, state validation                                | No rate limiting yet (planned — #599)                           |
+| OAuth endpoint abuse    | Waitlist gate, state validation, SlowAPI rate limits            | Rate-limited but public endpoints                               |
 
 ---
 
 ## Known Limitations
 
 - **No JWT revocation** — can't invalidate a token before its 7-day expiry. Mitigated by `is_active` flag checked on every API call.
-- **No rate limiting on OAuth endpoints** — `/auth/*/login`, `/auth/*/callback`, `/auth/exchange` are public. Planned (#599).
-- **Single admin** — only one admin supported via `ADMIN_TELEGRAM_ID`. Multi-admin would need a promotion endpoint.
+- **Single admin** — only one admin supported via `ADMIN_EMAIL`. Multi-admin would need a promotion endpoint.
 - **Docker secrets not adopted** — credentials live in `.env` on disk. Planned migration to Docker secrets.
 - **Bot auth cache** — up to 1 hour stale. A deactivated user can keep using the bot for up to 1 hour after deactivation.
 - **JWT in localStorage** — accessible to XSS. HttpOnly cookie migration planned in ENGINEERING.md backlog.
@@ -265,4 +265,9 @@ No rate limiting on the login endpoint yet (tech debt — Telegram's HMAC makes 
 ### 2026-04-05 — GitHub + Google OAuth (#595, #591)
 
 **Context:** Replacing invite codes with OAuth for user registration. Waitlist gate controls access instead.
-**Decision:** OAuth 2.0 with CSRF state tokens (Redis), single-use exchange codes. GitHub + Google as providers. Telegram login retained as legacy. OIDC `id_token` decoding deferred — `/userinfo` approach is simpler and consistent across providers.
+**Decision:** OAuth 2.0 with CSRF state tokens (Redis), single-use exchange codes. GitHub + Google as providers. OIDC `id_token` decoding deferred — `/userinfo` approach is simpler and consistent across providers.
+
+### 2026-04-05 — Email-based admin + Telegram as notification channel
+
+**Context:** Admin bootstrap relied on `ADMIN_TELEGRAM_ID`, coupling admin identity to Telegram. Telegram login on the web app was redundant with Google/GitHub OAuth.
+**Action:** Admin identified by `ADMIN_EMAIL`. Telegram removed from login page, moved to Settings as a linked notification channel (`POST /users/me/telegram`). Telegram Login Widget HMAC verification reused for linking.

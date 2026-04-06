@@ -1,4 +1,4 @@
-"""Create or promote the admin user from ADMIN_TELEGRAM_ID. Idempotent.
+"""Create or promote the admin user from ADMIN_EMAIL. Idempotent.
 
 Standalone script — no backend imports. Reads DB connection from env vars
 (same ones used by core/config/settings.py).
@@ -25,44 +25,38 @@ def _database_url() -> str:
 
 
 def main() -> None:
-    raw = os.environ.get("ADMIN_TELEGRAM_ID", "").strip()
-    if not raw:
-        print("ADMIN_TELEGRAM_ID is not set — skipping admin bootstrap.")
-        sys.exit(1)
-
     email = os.environ.get("ADMIN_EMAIL", "").strip().lower()
     if not email:
         print("ADMIN_EMAIL is not set — skipping admin bootstrap.")
         sys.exit(1)
 
-    telegram_id = int(raw)
     engine = create_engine(_database_url())
 
     with engine.begin() as conn:
         row = conn.execute(
-            text("SELECT id, role, is_active FROM users WHERE telegram_id = :tid"),
-            {"tid": telegram_id},
+            text("SELECT id, role, is_active FROM users WHERE email = :email"),
+            {"email": email},
         ).fetchone()
 
         if row:
             user_id, role, is_active = row
             if role == "admin" and is_active:
-                print(f"Admin already exists: telegram_id={telegram_id}, id={user_id}")
+                print(f"Admin already exists: email={email}, id={user_id}")
                 return
             conn.execute(
                 text("UPDATE users SET role = 'admin', is_active = true WHERE id = :id"),
                 {"id": user_id},
             )
-            print(f"Promoted existing user to admin: telegram_id={telegram_id}, id={user_id}")
+            print(f"Promoted existing user to admin: email={email}, id={user_id}")
         else:
             conn.execute(
                 text(
-                    "INSERT INTO users (telegram_id, email, role, is_active, created_at)"
-                    " VALUES (:tid, :email, 'admin', true, now())"
+                    "INSERT INTO users (email, role, is_active, created_at)"
+                    " VALUES (:email, 'admin', true, now())"
                 ),
-                {"tid": telegram_id, "email": email},
+                {"email": email},
             )
-            print(f"Created admin user: telegram_id={telegram_id}, email={email}")
+            print(f"Created admin user: email={email}")
 
 
 if __name__ == "__main__":

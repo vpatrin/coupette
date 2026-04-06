@@ -17,8 +17,8 @@ from backend.redis_client import (
     store_oauth_state,
 )
 from backend.repositories import users as users_repo
-from backend.schemas.auth import TelegramLoginIn, TokenOut
-from backend.services.auth import authenticate_telegram, create_oauth_session
+from backend.schemas.auth import TokenOut
+from backend.services.auth import create_oauth_session
 from backend.services.github_oauth import fetch_github_access_token, fetch_github_user
 from backend.services.google_oauth import fetch_google_access_token, fetch_google_user
 
@@ -26,16 +26,6 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 _GITHUB_AUTHORIZE_URL = "https://github.com/login/oauth/authorize"
 _GOOGLE_AUTHORIZE_URL = "https://accounts.google.com/o/oauth2/v2/auth"
-
-
-@router.post("/telegram", response_model=TokenOut)
-@limiter.limit(RATE_LIMIT_AUTH)
-async def login_telegram(
-    request: Request,
-    body: TelegramLoginIn,
-    db: AsyncSession = Depends(get_db),
-) -> TokenOut:
-    return await authenticate_telegram(db, body)
 
 
 @router.get("/github/login")
