@@ -11,13 +11,13 @@ _OAUTH_STATE_TTL = 600  # seconds — 10 min to complete the OAuth round-trip
 _EXCHANGE_KEY = "oauth:exchange:{}"
 _STATE_KEY = "oauth:state:{}"
 
+# Module-level singleton — mirrors db.py's engine pattern.
+# Created once at import, shared across all requests via get_redis().
+redis_client: Redis = Redis.from_url(backend_settings.REDIS_URL, decode_responses=True)
 
-async def get_redis():
-    client: Redis = Redis.from_url(backend_settings.REDIS_URL, decode_responses=True)
-    try:
-        yield client
-    finally:
-        await client.aclose()
+
+async def get_redis() -> Redis:
+    return redis_client
 
 
 async def store_exchange_code(redis: Redis, jwt: str) -> str:
