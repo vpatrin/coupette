@@ -61,7 +61,7 @@ services:
     cap_add: [SETUID, SETGID, DAC_READ_SEARCH, CHOWN, FOWNER]
 
   redis:
-    image: redis:7-bookworm
+    image: redis:8-bookworm
     container_name: coupette-redis
     command: redis-server --save "" --appendonly no --bind 0.0.0.0
     ports:

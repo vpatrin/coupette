@@ -39,12 +39,16 @@ Design reference: `ui/journal/journal.html`, `ui/journal/notif-noteview.html`
 
 ### Taste Profile *(milestone: Taste Profile)*
 
-Build a user taste profile from watches, recommendation feedback, and tasting journal scores. MVP signals — no cellar data needed yet. Inject into recommendation prompts for personalization. Displayed as a sidebar widget, not a standalone page.
+Longitudinal user model built from watches, recommendation feedback, and tasting journal scores. Reflection-based memory architecture: SQL aggregation for structured signals, Haiku extraction for prose, Sonnet synthesis for a living profile document. See `docs/decisions/0007-sommelier-memory-architecture.md`. Injected into recommendation prompts for personalization. Displayed as a sidebar widget.
 
-- [ ] Taste profile computation — aggregate signals into structured preferences (regions, grapes, price range, style)
-- [ ] Adventure temperature — controls how exploratory vs conservative recommendations are
-- [ ] Profile context injection — pass taste profile + adventure setting to Claude for personalized recommendations
+- [ ] Schema — `user_signals`, `user_profiles`, `profile_update_jobs` tables + migrations
+- [ ] SQL signal aggregation — compute from ratings, watches, and recommendations
+- [ ] Haiku extraction — extract prose signals from closed chat sessions and tasting notes
+- [ ] Sonnet overseer — nightly synthesis with debounce queue; writes four profile documents (palate, context, intent, behavior)
+- [ ] Profile context injection — inject `<user_profile>` as synthetic first message for prompt cache stability
 - [ ] Sidebar taste profile card — only shown after threshold (5+ tastings or 3+ watches)
+
+Adventure temperature and cold start onboarding planned separately after core profile pipeline is live.
 
 Design reference: `ui/taste-profile/palais.html`
 
@@ -115,10 +119,10 @@ OAuth-only login (no email/password, no Telegram login). Clean multi-provider id
 - [x] Google OAuth — `/api/auth/google` + callback, same pattern (#591)
 - [x] Frontend — GitHub + Google login buttons, `/auth/callback` route (#595, #612)
 - [x] Admin user deletion — hard delete with cascade (#597, #613)
-- [ ] Display name collection on first login (#592)
+- [x] Display name collection on first login (#592, #616)
 - [x] Linked Accounts API — list, disconnect (last-provider guard) (#594)
 - [x] Frontend — Settings page: linked accounts, display name, language, delete account (#596)
-- [ ] CSP headers + rate limiting on OAuth + waitlist endpoints (#599)
+- [x] CSP headers + rate limiting on OAuth + waitlist endpoints (#599, #618, #619)
 - [ ] Language persistence — save locale preference to user profile, add language toggle to onboarding step 1
 
 #### Passkeys (WebAuthn)

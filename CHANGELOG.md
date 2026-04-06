@@ -7,41 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-04-05
+
 ### Added
 
 - Admin panel — waitlist queue with approve/reject/resend actions, user list with activate/deactivate toggles; accessible only to admin role
+- Waitlist — public submission form on landing page; admins approve or reject requests via API
+- Approval email via Resend — admin approval sends a confirmation email with a login link; admin can resend if delivery failed
 - GitHub OAuth login — users can sign in with their GitHub account
 - Google OAuth login — users can sign in with their Google account
 - Onboarding — new users set their display name before entering the app
 - Settings page — edit display name, manage linked accounts (connect/disconnect GitHub and Google), language toggle, delete account with type-to-confirm
 - Telegram notifications — link/unlink Telegram account in Settings for bot alerts and access
 - Rate limiting — tiered limits on all API endpoints: 100/min per IP globally, 10/min on auth, 3/min on waitlist, 20/min per user on LLM endpoints (chat, recommendations)
-
-### Changed
-
-- Admin bootstrap uses `ADMIN_EMAIL` instead of `ADMIN_TELEGRAM_ID`
-- Telegram removed from login page — login is Google/GitHub only
-
-### Fixed
-
-- User display name now shows correctly in the sidebar and user menu (previously showed "?" for Telegram users)
-
-### Removed
-
-- Invite codes — new users no longer need an invite code to register; waitlist flow replaces the closed beta gate
-- Approval email via Resend — admin approval sends a confirmation email with a login link; admin can resend if delivery failed
-- Waitlist form on landing page — visitors enter their email to request early access; replaces the mailto CTA
-- Waitlist submission — visitors can request early access by email; admins can approve or reject requests via the API
-- Search results show your rating ("You: 92") on wines you've previously tasted
-- Log tasting flow — search the SAQ catalog, select a wine, and log a rating (0–100 with live MW scale description), notes, pairing, and date inline on the Journal page
-- Tasting journal page — date-grouped list of tasting notes with ratings, notes, pairing, optimistic delete, and load-more pagination
-- Wine detail panel — click any wine in search results to open a side panel with full details: region, alcohol, sugar, grapes, store availability, SAQ link
-- Wine detail panel accessible from chat recommendations and watchlist, not just search
+- Tasting journal — search-to-log flow, rating (0–100 with live MW scale description), notes, pairing, and date; date-grouped page with sort/filter, optimistic delete, load-more pagination
+- Wine detail panel — slide panel with full product details (region, alcohol, sugar, grapes, store availability, SAQ link); accessible from search, chat, and watchlist
 - Public landing page — bilingual hero, RAG pipeline walkthrough, changelog timeline, open source section with live GitHub commits
 - Chat history search modal (Cmd+K / Ctrl+K) — search across all sessions with keyboard navigation, default view shows 20 most recent
+- Search results show your rating ("You: 92") on wines you've previously tasted
 
 ### Changed
 
+- Backend process model — uvicorn replaced by gunicorn with 2 workers for better concurrency and process management
+- Auth model — identity is now email-based via OAuth providers; Telegram ID is a notification channel only
+- Admin bootstrap uses `ADMIN_EMAIL` instead of `ADMIN_TELEGRAM_ID`
+- Telegram removed from login page — login is Google/GitHub only
 - Chats page redesigned — load-more pagination, bulk select/delete toolbar, new chat button
 - Sidebar is now collapsible — icon-only 60px mode with tooltips, persisted across sessions
 - User menu dropdown — language toggle, Mon palais / Paramètres placeholders (coming soon), sign out
@@ -51,6 +41,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - "Watchlist" renamed to "Favoris" throughout the French UI
 - Chat UI restyle — Claude-style message bubbles, inline message actions (copy, thumbs, regenerate), session title bar with rename/delete, scroll-to-bottom button
 - Wine cards restyled — dot-color category indicator, grapes list with expand/collapse, cleaner availability display
+
+### Fixed
+
+- User display name now shows correctly in the sidebar and user menu (previously showed "?" for Telegram users)
+
+### Removed
+
+- Invite codes — new users no longer need an invite code to register; waitlist flow replaces the closed beta gate
 
 ## [1.5.2] - 2026-03-24
 
@@ -258,7 +256,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Docker Compose deployment with Caddy reverse proxy
 - CI pipeline with per-service linting, testing, and coverage thresholds
 
-[Unreleased]: https://github.com/vpatrin/coupette/compare/v1.5.2...HEAD
+[Unreleased]: https://github.com/vpatrin/coupette/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/vpatrin/coupette/compare/v1.5.2...v1.6.0
 [1.5.2]: https://github.com/vpatrin/coupette/compare/v1.5.1...v1.5.2
 [1.5.1]: https://github.com/vpatrin/coupette/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/vpatrin/coupette/compare/v1.4.0...v1.5.0
