@@ -1,28 +1,34 @@
 # Auth System
 
-Telegram OAuth + JWT tokens + invite code gating. ADR: [0004-telegram-first-auth](../decisions/0004-telegram-first-auth.md).
+OAuth 2.0 (Google + GitHub) + JWT sessions + waitlist gate. ADRs: [0004-telegram-first-auth](../decisions/0004-telegram-first-auth.md) (original), [0008-oauth2-security-design](../decisions/0008-oauth2-security-design.md) (current).
 
 ---
 
 ## Flow
 
+```text
+User → "Sign in with Google/GitHub" → OAuth redirect → Provider authorizes
+Provider → callback with code + state → Backend exchanges code → fetch user info
+Backend → upsert user, mint JWT, store as exchange code → redirect to frontend
+Frontend → GET /api/auth/exchange?code=... → receives JWT → stores in localStorage
 ```
-User → Telegram Login Widget → Telegram OAuth → signed payload → Browser
-Browser → POST /api/auth/telegram (payload + invite_code) → Backend
-Backend → verify HMAC → upsert user → redeem invite → issue JWT → 200
-Frontend → stores JWT in localStorage → Authorization: Bearer <token> on all calls
-```
 
-## Telegram HMAC Verification
+## OAuth Providers
 
-Telegram signs the OAuth payload with the bot token. Backend recomputes the signature to verify integrity.
+| Provider | Scopes                   | User info                                |
+|----------|--------------------------|------------------------------------------|
+| GitHub   | `user:email`             | `/user` + `/user/emails` (parallel)      |
+| Google   | `openid email profile`   | `/oauth2/v3/userinfo` (single call)      |
 
-1. Build `check_string`: sorted `key=value` pairs joined by `\n`, excluding `hash` and `invite_code`
-2. Derive key: `SHA-256(bot_token)` → 32-byte digest
-3. Compute: `HMAC-SHA-256(key, check_string)`
-4. Compare: `hmac.compare_digest(computed, payload.hash)` (timing-safe)
+**CSRF protection:** Random state token stored in Redis (`oauth:state:<token>`, 10 min TTL), consumed atomically on callback.
 
-Payload must be < 24h old (`auth_date` check).
+**Exchange code pattern:** After OAuth, the JWT is stored in Redis under a single-use code (60s TTL). The frontend swaps it via `GET /api/auth/exchange`. This avoids putting JWTs in URLs.
+
+**Waitlist gate:** New users (no existing account or email match) must have an approved waitlist entry. Unapproved users are redirected with `?error=not_approved`.
+
+**Account linking:** If a user logs in with a new provider but their email matches an existing account, the new provider is linked automatically.
+
+**Code:** `backend/api/auth.py`, `backend/services/auth.py` → `create_oauth_session()`, `backend/services/github_oauth.py`, `backend/services/google_oauth.py`
 
 ## JWT Token
 
@@ -30,45 +36,68 @@ Payload must be < 24h old (`auth_date` check).
 
 Claims:
 
-| Claim | Type | Example |
-|---|---|---|
-| `sub` | str | `"1"` (user ID) |
-| `telegram_id` | int | `12345` |
-| `role` | str | `"user"` or `"admin"` |
-| `first_name` | str | `"Alice"` |
-| `exp` | datetime | now + 7 days |
-| `iat` | datetime | now |
+| Claim          | Type     | Example           |
+|----------------|----------|-------------------|
+| `sub`          | str      | `"1"` (user ID)   |
+| `role`         | str      | `"user"`, `"admin"` |
+| `display_name` | str/null | `"Victor"`        |
+| `exp`          | datetime | now + 7 days      |
+| `iat`          | datetime | now               |
 
 Frontend decodes the payload (base64, no verification) to extract user info. Checks `exp` on load to clear expired tokens.
 
 ## Dual Auth Paths
 
 | Path | Header | Returns | Used by |
-|---|---|---|---|
+|------|--------|---------|---------|
 | Web (JWT) | `Authorization: Bearer <token>` | `User` object | React frontend |
 | Bot (shared secret) | `X-Bot-Secret: <secret>` | `None` (no user context) | Telegram bot |
 
 Bot secret checked first. If present and valid, JWT is skipped. Bot callers must pass `user_id` explicitly on endpoints that need it.
 
-## Invite Code Lifecycle
+## Telegram (Notifications + Bot Access)
 
-1. **Generate**: Admin calls `POST /api/admin/invites` → `secrets.token_urlsafe(16)` → ~22-char code
-2. **Distribute**: Admin shares code out-of-band (message, link)
-3. **Redeem**: New user includes `invite_code` in login payload → backend validates (`used_by_id IS NULL`) → marks as used
-4. **Single-use**: Query filters on `used_by_id IS NULL`. Once redeemed, code is permanently consumed.
+Telegram is **not a login provider** — it's linked in Settings for two purposes:
 
-Existing users skip the invite check entirely.
+1. **Notifications** — watch alerts, availability updates via `@CoupetteBot`
+2. **Bot access** — the bot's `access_gate()` middleware checks the user exists and is active by `telegram_id`
+
+| Endpoint | Purpose |
+|----------|---------|
+| `GET /users/me/telegram` | Check if Telegram is linked |
+| `POST /users/me/telegram` | Link Telegram account (HMAC-verified widget payload) |
+| `DELETE /users/me/telegram` | Unlink Telegram account |
+| `GET /api/auth/telegram/check` | Bot checks if a Telegram user is registered |
+
+Linking uses the Telegram Login Widget with HMAC-SHA-256 verification (same as the original login flow). The `telegram_id` is stored on the `users` table, not in `oauth_accounts`.
+
+**Code:** `backend/api/users.py` (link/unlink), `backend/services/auth.py` → `verify_telegram_data()`
 
 ## User Model
 
-| Field | Type | Notes |
-|---|---|---|
-| `telegram_id` | BigInteger | Unique, indexed |
-| `username` | String, nullable | Telegram @handle |
-| `first_name` | String | Display name |
-| `role` | String | `"user"` (default) or `"admin"` |
-| `is_active` | Boolean | Deactivation flag |
-| `last_login_at` | DateTime | Updated on each auth |
+| Field          | Type           | Notes                                          |
+|----------------|----------------|-------------------------------------------------|
+| `id`           | Integer (PK)   | Auto-increment                                  |
+| `email`        | String(254)    | Unique, not null — primary identity              |
+| `display_name` | String, null   | User-set display name                            |
+| `telegram_id`  | BigInteger, null | Unique, optional — notification channel          |
+| `role`         | String(20)     | `"user"` (default) or `"admin"`                  |
+| `is_active`    | Boolean        | Admin kill-switch — blocks all access when false |
+| `created_at`   | DateTime       | When user first registered                       |
+| `last_login_at`| DateTime, null | Updated on each auth                             |
+
+## OAuthAccount Model
+
+| Field              | Type        | Notes                                     |
+|--------------------|-------------|-------------------------------------------|
+| `id`               | Integer (PK)| Auto-increment                             |
+| `user_id`          | Integer (FK)| References `users.id` (CASCADE delete)     |
+| `provider`         | String(20)  | `'github'` or `'google'` (check constraint)|
+| `provider_user_id` | String      | Provider's stable user identifier           |
+| `email`            | String(254) | Email from provider at time of linking      |
+| `created_at`       | DateTime    | When account was linked                     |
+
+Unique constraint on `(provider, provider_user_id)`.
 
 ## Role Enforcement
 
@@ -76,23 +105,33 @@ Existing users skip the invite check entirely.
 - **Admin routes**: `verify_admin()` → requires JWT with `role=admin`. Bot callers rejected.
 - **Deactivation**: Admin PATCHes `/api/admin/users/{id}` with `is_active=false`. Cannot deactivate other admins.
 
+## Admin Bootstrap
+
+Idempotent `make create-admin` — creates or promotes the admin user from `ADMIN_EMAIL` env var. Backend startup verifies an active admin exists or refuses to boot.
+
 ## Error Cases
 
-| Scenario | Status |
-|---|---|
-| Payload > 24h old | 401 |
-| HMAC signature invalid | 401 |
-| User deactivated | 403 |
-| New user, no invite code | 403 |
-| New user, invalid/used invite | 401 |
-| JWT missing/expired/malformed | 401 |
-| User not found (JWT sub) | 401 |
+| Scenario                         | Status |
+|----------------------------------|--------|
+| OAuth state invalid/expired      | redirect with `?error=invalid_state` |
+| New user, email not on waitlist  | redirect with `?error=not_approved` |
+| User deactivated                 | 403    |
+| JWT missing/expired/malformed    | 401    |
+| User not found (JWT sub)        | 401    |
+| Telegram HMAC invalid           | 401    |
+| Telegram payload > 24h old      | 401    |
 
 ## Environment Variables
 
-| Variable | Purpose |
-|---|---|
-| `JWT_SECRET_KEY` | Signs/verifies JWTs |
-| `TELEGRAM_BOT_TOKEN` | Verifies Telegram OAuth signatures |
-| `BOT_SECRET` | Shared secret for bot → backend calls |
-| `ADMIN_TELEGRAM_ID` | Bootstrap admin user (verified at startup) |
+| Variable              | Purpose                                    |
+|-----------------------|--------------------------------------------|
+| `JWT_SECRET_KEY`      | Signs/verifies JWTs                        |
+| `TELEGRAM_BOT_TOKEN`  | Verifies Telegram Login Widget HMAC        |
+| `BOT_SECRET`          | Shared secret for bot → backend calls      |
+| `ADMIN_EMAIL`         | Bootstrap admin user (verified at startup)  |
+| `GITHUB_CLIENT_ID`    | GitHub OAuth app ID                        |
+| `GITHUB_CLIENT_SECRET`| GitHub OAuth app secret                    |
+| `GOOGLE_CLIENT_ID`    | Google OAuth app ID                        |
+| `GOOGLE_CLIENT_SECRET`| Google OAuth app secret                    |
+| `FRONTEND_URL`        | OAuth redirect target                      |
+| `BACKEND_URL`         | OAuth callback base URL                    |

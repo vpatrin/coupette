@@ -263,7 +263,7 @@ Current:
 - Infra: Hetzner CX22, Debian 13, Docker Compose, Caddy
 - LLM: Claude API (claude-haiku-4-5-20251001 — intent parsing + recommendations)
 - RAG: pgvector (hybrid similarity search)
-- Auth: JWT tokens + Telegram OAuth + invite codes
+- Auth: JWT tokens + OAuth (Google, GitHub) + waitlist gate
 
 - Frontend: React + Vite + Tailwind CSS + shadcn/ui
 

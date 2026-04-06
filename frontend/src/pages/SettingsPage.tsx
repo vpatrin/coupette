@@ -7,12 +7,15 @@ import {
   GoogleLogoIcon,
   GlobeIcon,
   TrashIcon,
+  TelegramLogoIcon,
 } from '@phosphor-icons/react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useApiClient } from '@/lib/api'
 import type { OAuthAccountOut } from '@/lib/types'
+import { TelegramLoginButton, type TelegramLoginData } from '@/components/TelegramLoginButton'
 
 const PROVIDERS = ['github', 'google'] as const
+const BOT_USERNAME = import.meta.env.VITE_TELEGRAM_BOT_USERNAME as string
 
 function SettingsPage() {
   const { t, i18n } = useTranslation()
@@ -24,6 +27,7 @@ function SettingsPage() {
   const [editingName, setEditingName] = useState(false)
   const [nameValue, setNameValue] = useState(user?.display_name ?? '')
   const [savingName, setSavingName] = useState(false)
+  const [telegramLinked, setTelegramLinked] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleteInput, setDeleteInput] = useState('')
   const [deleting, setDeleting] = useState(false)
@@ -44,6 +48,9 @@ function SettingsPage() {
     const controller = new AbortController()
     apiClient<OAuthAccountOut[]>('/users/me/accounts', { signal: controller.signal })
       .then(setAccounts)
+      .catch(() => {})
+    apiClient<{ linked: boolean }>('/users/me/telegram', { signal: controller.signal })
+      .then((r) => setTelegramLinked(r.linked))
       .catch(() => {})
     return () => controller.abort()
   }, [apiClient])
@@ -76,6 +83,27 @@ function SettingsPage() {
       setAccounts((prev) => prev.filter((a) => a.provider !== provider))
     } catch {
       // 409 = last account — silently ignore
+    }
+  }
+
+  const handleLinkTelegram = async (data: TelegramLoginData) => {
+    try {
+      await apiClient('/users/me/telegram', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      })
+      setTelegramLinked(true)
+    } catch {
+      // Conflict (409) = already linked to another user
+    }
+  }
+
+  const handleUnlinkTelegram = async () => {
+    try {
+      await apiClient('/users/me/telegram', { method: 'DELETE' })
+      setTelegramLinked(false)
+    } catch {
+      // silently ignore
     }
   }
 
@@ -232,6 +260,48 @@ function SettingsPage() {
           </div>
         </div>
 
+        {/* Notifications */}
+        <div className="mb-8">
+          <p className="text-[10px] font-normal text-muted-foreground/40 uppercase tracking-wider mb-3.5 pl-0.5">
+            {t('settings.notifications')}
+          </p>
+          <div className="rounded-xl border border-border bg-white/[0.025] overflow-hidden">
+            <div className="flex items-center justify-between px-4.5 py-3.5 group">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-white/[0.03] border border-white/[0.04] flex items-center justify-center">
+                  <TelegramLogoIcon size={16} className="text-muted-foreground" />
+                </div>
+                <div>
+                  <p className="text-sm">Telegram</p>
+                  <p className="text-xs text-muted-foreground/40">
+                    {telegramLinked ? `@${BOT_USERNAME}` : t('settings.telegramDesc')}
+                  </p>
+                </div>
+              </div>
+              {telegramLinked ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] px-2.5 py-0.5 rounded-md bg-green-500/[0.08] border border-green-500/[0.12] text-green-400">
+                    {t('settings.connected')}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleUnlinkTelegram}
+                    className="text-[11px] text-muted-foreground/30 hover:text-destructive opacity-0 group-hover:opacity-100 transition-all"
+                  >
+                    {t('settings.disconnect')}
+                  </button>
+                </div>
+              ) : (
+                <TelegramLoginButton
+                  botUsername={BOT_USERNAME}
+                  onAuth={handleLinkTelegram}
+                  lang={i18n.resolvedLanguage}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+
         {/* Zone dangereuse */}
         <div className="mb-8">
           <p className="text-[10px] font-normal text-muted-foreground/40 uppercase tracking-wider mb-3.5 pl-0.5">
@@ -256,7 +326,7 @@ function SettingsPage() {
 
         {/* Footer */}
         <p className="text-center font-mono text-[10px] text-muted-foreground/30 pb-8">
-          Coupette v1.6.0-beta · Montréal, QC
+          Coupette · Montréal, QC
         </p>
       </div>
 

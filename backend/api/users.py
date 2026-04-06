@@ -6,7 +6,9 @@ from backend.db import get_db
 from backend.exceptions import ConflictError, NotFoundError
 from backend.repositories import oauth_accounts as oauth_accounts_repo
 from backend.repositories import users as users_repo
+from backend.schemas.auth import TelegramLoginIn
 from backend.schemas.user import OAuthAccountOut, UserUpdateSelfIn
+from backend.services.auth import verify_telegram_data
 from core.db.models import User
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -44,6 +46,36 @@ async def disconnect_account(
     deleted = await oauth_accounts_repo.delete_by_user_and_provider(db, user.id, provider)
     if not deleted:
         raise NotFoundError("OAuthAccount", provider)
+
+
+@router.get("/me/telegram")
+async def get_telegram_status(
+    user: User = Depends(get_current_active_user),
+) -> dict[str, bool]:
+    return {"linked": user.telegram_id is not None}
+
+
+@router.post("/me/telegram", status_code=status.HTTP_204_NO_CONTENT)
+async def link_telegram(
+    body: TelegramLoginIn,
+    user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+) -> None:
+    """Link a Telegram account for notifications."""
+    verify_telegram_data(body)
+    existing = await users_repo.find_by_telegram_id(db, body.id)
+    if existing and existing.id != user.id:
+        raise ConflictError("Telegram", "this Telegram account is linked to another user")
+    await users_repo.link_telegram(db, user, body.id)
+
+
+@router.delete("/me/telegram", status_code=status.HTTP_204_NO_CONTENT)
+async def unlink_telegram(
+    user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+) -> None:
+    """Unlink Telegram account — stops notifications."""
+    await users_repo.unlink_telegram(db, user)
 
 
 @router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)

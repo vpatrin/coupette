@@ -14,9 +14,9 @@ from backend.redis_client import store_exchange_code
 from backend.repositories import oauth_accounts as oauth_accounts_repo
 from backend.repositories import users as users_repo
 from backend.repositories import waitlist as waitlist_repo
-from backend.schemas.auth import TelegramLoginIn, TokenOut
+from backend.schemas.auth import TelegramLoginIn
 
-# Telegram login data expires after 1 day
+# Telegram widget payloads expire after 1 day
 _TELEGRAM_AUTH_MAX_AGE_SECONDS = 86400
 
 _JWT_EXPIRY_DAYS = 7
@@ -103,21 +103,9 @@ async def create_oauth_session(
     return code, is_new
 
 
-async def authenticate_telegram(db: AsyncSession, data: TelegramLoginIn) -> TokenOut:
-    """Verify Telegram OAuth, upsert user, return JWT."""
+def verify_telegram_data(data: TelegramLoginIn) -> None:
+    """Verify Telegram Login Widget payload: expiry + HMAC. Raises on failure."""
     if time.time() - data.auth_date > _TELEGRAM_AUTH_MAX_AGE_SECONDS:
         raise InvalidCredentialsError("Telegram authentication data has expired")
-
     if not _verify_telegram_hash(data, backend_settings.TELEGRAM_BOT_TOKEN):
         raise InvalidCredentialsError("Invalid Telegram authentication hash")
-
-    existing = await users_repo.find_by_telegram_id(db, data.id)
-    if existing and not existing.is_active:
-        raise ForbiddenError("Account is deactivated")
-
-    user = await users_repo.upsert_telegram(db, data.id)
-
-    logger.info("Telegram auth: telegram_id={} user_id={}", data.id, user.id)
-
-    token = _create_jwt(user.id, user.role, user.display_name)
-    return TokenOut(access_token=token)

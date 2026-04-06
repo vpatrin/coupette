@@ -169,7 +169,6 @@
   "login": {
     "google": "Se connecter avec Google",
     "github": "Se connecter avec GitHub",
-    "or": "ou",
     "authFailed": "Échec de l'authentification",
     "backToLanding": "Accueil",
     "legal": "Réservé aux 18 ans et plus · La modération a bien meilleur goût"
@@ -184,6 +183,8 @@
     "lastAccount": "dernier compte",
     "preferences": "Préférences",
     "language": "Langue",
+    "notifications": "Notifications",
+    "telegramDesc": "Alertes et accès au bot via Telegram",
     "dangerZone": "Zone dangereuse",
     "deleteAccount": "Supprimer mon compte",
     "deleteDesc": "Supprime toutes tes données définitivement",

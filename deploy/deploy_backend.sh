@@ -28,7 +28,7 @@ if [[ ! -s .env.prod ]]; then
     exit 1
 fi
 
-# Load .env.prod so $DB_USER, $DB_NAME, $ADMIN_TELEGRAM_ID etc. are available
+# Load .env.prod so $DB_USER, $DB_NAME, $ADMIN_EMAIL etc. are available
 set -a; source .env.prod; set +a
 
 # Persist IMAGE_TAG so systemd timers (scraper, availability) use the deployed version
@@ -71,9 +71,9 @@ echo "==> Running migrations..."
 
 echo "==> Bootstrapping admin user..."
 docker exec "$DB_HOST" psql -U "$DB_USER" -d "$DB_NAME" -c \
-  "INSERT INTO users (telegram_id, first_name, role, is_active, created_at)
-   VALUES ($ADMIN_TELEGRAM_ID, 'Admin', 'admin', true, now())
-   ON CONFLICT (telegram_id) DO UPDATE SET role = 'admin', is_active = true;"
+  "INSERT INTO users (email, display_name, role, is_active, created_at)
+   VALUES ('$ADMIN_EMAIL', 'Admin', 'admin', true, now())
+   ON CONFLICT (email) DO UPDATE SET role = 'admin', is_active = true;"
 
 echo "==> Restarting services..."
 "${COMPOSE[@]}" up -d backend bot
