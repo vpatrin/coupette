@@ -26,6 +26,7 @@ from backend.config import SERVICE_NAME, backend_settings
 from backend.db import SessionLocal, engine, verify_db_connection
 from backend.errors import register_exception_handlers
 from backend.rate_limit import limiter
+from backend.redis_client import redis_client
 from backend.repositories import users as users_repo
 from core.config.settings import settings
 from core.logging import setup_logging
@@ -69,9 +70,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         )
     logger.info("Admin user verified")
 
-    yield  # When uvicorn shuts down, it runs the code after yield
+    yield
+    await redis_client.aclose()
     await engine.dispose()
-    logger.info("Database engine disposed")
+    logger.info("Shutdown complete")
 
 
 app = FastAPI(title="Coupette", version="1.0.0", debug=settings.DEBUG, lifespan=lifespan)
