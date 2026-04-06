@@ -2,13 +2,14 @@ from datetime import UTC, datetime
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
-import httpx
 from fastapi import status
 from sqlalchemy.exc import IntegrityError
 
 from backend.app import app
 from backend.auth import get_caller_user_id
 from backend.db import get_db
+
+from .conftest import make_test_client
 
 NOW = datetime(2025, 1, 1, tzinfo=UTC)
 
@@ -55,10 +56,6 @@ def _fake_product(**overrides):
     )
     defaults.update(overrides)
     return SimpleNamespace(**defaults)
-
-
-def make_test_client():
-    return httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test")
 
 
 # ── POST /watches ─────────────────────────────────────────────
