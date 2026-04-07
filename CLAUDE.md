@@ -90,6 +90,7 @@ Assert what a user or caller observes. Never assert internal state, intermediate
 | Backend  | ≥ 83%            | pytest-cov |
 | Bot      | ≥ 85%            | pytest-cov |
 | Scraper  | ≥ 78%            | pytest-cov |
+| Core     | none             | pytest-cov |
 | Frontend | no threshold yet | Vitest     |
 
 Frontend threshold will be set at ~60% once component extraction is complete (tracked in `docs/ENGINEERING.md`).

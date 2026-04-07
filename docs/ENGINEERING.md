@@ -10,22 +10,7 @@ This file describes **how we build** — tools, patterns, and decisions in place
 
 Unit tests across all services: scraper (products, stores, sitemap, robots), backend (endpoints, services, repositories), bot (handlers, filters, formatters, keyboards), frontend (Vitest + React Testing Library). Alignment tests verify dataclass ↔ model column sync.
 
-Coverage thresholds enforced in CI:
-
-| Service | Threshold | Tool |
-|---------|-----------|------|
-| Backend | ≥83% | pytest-cov |
-| Bot | ≥85% | pytest-cov |
-| Scraper | ≥78% | pytest-cov |
-| Core | — | pytest (no threshold) |
-| Frontend | — | Vitest (no threshold yet) |
-
-Test patterns:
-
-- Python: `pytest` + `pytest-asyncio` + `unittest.mock` (AsyncMock for async services)
-- Frontend: Vitest + React Testing Library
-- Tests co-located with source (`Component.test.tsx`) in frontend, `tests/` directory in Python services
-- Mocked external calls (Anthropic, OpenAI, httpx) — no live API calls in tests
+Standards (naming rules, patterns, coverage thresholds): see `CLAUDE.md` → Testing Standards.
 
 ---
 
