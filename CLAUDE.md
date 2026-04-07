@@ -43,33 +43,56 @@ and rollback plan. See #347 as the template.
 
 ## Testing Standards
 
-These rules apply to all services (Python `pytest` and frontend Vitest).
+Apply to all services — Python (`pytest`) and frontend (Vitest + RTL).
 
-### Test naming
+### 1. Names are the spec
 
-`describe` + `it` (or `class` + `def test_`) must read as a complete behavioral sentence without opening the body. The test suite is living documentation — someone new should skim the names and understand the contract.
+`describe` + `it` (JS) or `class` + `def test_` (Python) must read as a complete behavioral sentence. Someone new should skim the names and understand the contract without opening any body.
 
-- `describe('FilterChips')` + `it('renders no buttons when options array is empty')` ✅
-- `describe('FilterChips')` + `it('renders empty')` ❌ — empty what?
-- `describe('ProtectedRoute')` + `it('redirects to /onboarding when authenticated but not onboarded')` ✅
-- `describe('ProtectedRoute')` + `it('does not render children when not onboarded')` ❌ — says what doesn't happen, not what does
+- `describe` / `class` = the thing under test: component name, function name, or logical group (`'ProtectedRoute'`, `'formatOrigin'`, `'login / logout'`)
+- `it` / `def test_` = what it does in a specific scenario
 
-Rules:
+**Naming rules:**
 
-- Present tense, active voice: "returns X", "calls Y", "renders Z", "throws when"
-- Name the outcome, not the absence — "redirects to /onboarding" not "does not render children"
-- Be specific: "renders colored dot for Vin rouge category" not "renders dot for known category"
-- When the subject is ambiguous, include the scenario: "when lang prop is provided", "when unauthenticated"
+- Active voice, present tense: "returns X", "renders Z", "calls Y", "throws when", "redirects to"
+- Name the outcome, not the absence — use active verbs even for negative cases:
+  - ✅ `'omits description when prop is not provided'`
+  - ✅ `'skips onUnauthorized callback for non-401 errors'`
+  - ❌ `'does not render description when omitted'`
+  - ❌ `'does not call onUnauthorized on non-401 errors'`
+- Be specific — no vague stubs:
+  - ✅ `'renders colored dot for Vin rouge category'`
+  - ✅ `'redirects to /onboarding when authenticated but not onboarded'`
+  - ❌ `'renders dot for known category'` — "known" means nothing
+  - ❌ `'happy_path'`, `'clean_run'`, `'valid_input'`, `'successful_call'` — always vague
+- Include the scenario when it disambiguates: "when lang prop is provided", "when unauthenticated", "when options array is empty"
 
-### Test behavior, not implementation
+### 2. Test behavior, not implementation
 
-Assert what a user or caller observes — never assert internal state, prop values, or private methods. RTL: prefer `getByRole` > `getByText` > `getByTestId` (last resort). Python: assert return values and side effects, not intermediate variables.
+Assert what a user or caller observes. Never assert internal state, intermediate variables, or private methods.
 
-### Test anatomy
+- **Frontend (RTL):** prefer `getByRole` → `getByText` → `getByTestId` (last resort, only when no semantic query works)
+- **Python:** assert return values and observable side effects (DB writes, events emitted, HTTP calls made) — not what happened inside the function
+- Never test that a mock was called with specific internal arguments unless that call IS the contract (e.g. an HTTP request body)
+- Don't test third-party library behavior — test your code's response to it
 
-- One scenario per test (one `it` = one behavior)
-- Arrange at the top, act in the middle, assert at the bottom — no interleaving
-- Use factory helpers (`product()`, `make_red()`) instead of repeating fixture setup inline
+### 3. Test anatomy
+
+- One scenario per test — one `it` or `def test_` = one behavior
+- Arrange → Act → Assert, top to bottom, no interleaving
+- Use factory helpers for fixtures (`product()`, `make_red()`) — never repeat raw object literals across tests
+- Mock at the boundary: external APIs, DB, context providers — not internal helpers
+
+### 4. Coverage targets
+
+| Service  | Line threshold   | Tool       |
+| -------- | ---------------- | ---------- |
+| Backend  | ≥ 83%            | pytest-cov |
+| Bot      | ≥ 85%            | pytest-cov |
+| Scraper  | ≥ 78%            | pytest-cov |
+| Frontend | no threshold yet | Vitest     |
+
+Frontend threshold will be set at ~60% once component extraction is complete (tracked in `docs/ENGINEERING.md`).
 
 ## Definition of Done
 

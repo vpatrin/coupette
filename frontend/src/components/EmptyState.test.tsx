@@ -15,7 +15,7 @@ describe('EmptyState', () => {
     expect(screen.getByText('Try adding one')).toBeInTheDocument()
   })
 
-  it('does not render description when omitted', () => {
+  it('omits description when prop is not provided', () => {
     render(<EmptyState icon={<span>X</span>} title="Empty" />)
     expect(screen.queryByText('Try adding one')).not.toBeInTheDocument()
   })
