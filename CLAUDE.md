@@ -41,6 +41,36 @@ pre-deploy checks, env var changes, infra prerequisites (e.g. image swaps, exten
 migration order, post-deploy bootstrap commands, systemd unit updates, verification steps,
 and rollback plan. See #347 as the template.
 
+## Testing Standards
+
+These rules apply to all services (Python `pytest` and frontend Vitest).
+
+### Test naming
+
+`describe` + `it` (or `class` + `def test_`) must read as a complete behavioral sentence without opening the body. The test suite is living documentation — someone new should skim the names and understand the contract.
+
+- `describe('FilterChips')` + `it('renders no buttons when options array is empty')` ✅
+- `describe('FilterChips')` + `it('renders empty')` ❌ — empty what?
+- `describe('ProtectedRoute')` + `it('redirects to /onboarding when authenticated but not onboarded')` ✅
+- `describe('ProtectedRoute')` + `it('does not render children when not onboarded')` ❌ — says what doesn't happen, not what does
+
+Rules:
+
+- Present tense, active voice: "returns X", "calls Y", "renders Z", "throws when"
+- Name the outcome, not the absence — "redirects to /onboarding" not "does not render children"
+- Be specific: "renders colored dot for Vin rouge category" not "renders dot for known category"
+- When the subject is ambiguous, include the scenario: "when lang prop is provided", "when unauthenticated"
+
+### Test behavior, not implementation
+
+Assert what a user or caller observes — never assert internal state, prop values, or private methods. RTL: prefer `getByRole` > `getByText` > `getByTestId` (last resort). Python: assert return values and side effects, not intermediate variables.
+
+### Test anatomy
+
+- One scenario per test (one `it` = one behavior)
+- Arrange at the top, act in the middle, assert at the bottom — no interleaving
+- Use factory helpers (`product()`, `make_red()`) instead of repeating fixture setup inline
+
 ## Definition of Done
 
 A task/PR is "done" when all of the following are true:
