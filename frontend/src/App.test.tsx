@@ -1,8 +1,7 @@
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { describe, it, expect } from 'vitest'
 import { AuthProvider } from '@/contexts/AuthContext'
-import './i18n'
 import App from './App'
 
 function renderApp(route = '/') {
@@ -16,8 +15,8 @@ function renderApp(route = '/') {
 }
 
 describe('App', () => {
-  it('renders the root route', () => {
-    const { container } = renderApp('/')
-    expect(container.firstChild).toBeTruthy()
+  it('renders LandingPage at root route', () => {
+    renderApp('/')
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
   })
 })

@@ -14,7 +14,7 @@ describe('useWineDetail', () => {
     )
   })
 
-  it('starts with null selectedSku', () => {
+  it('initializes selectedSku as null', () => {
     const { result } = renderHook(() => useWineDetail(), { wrapper })
     expect(result.current.selectedSku).toBeNull()
   })
