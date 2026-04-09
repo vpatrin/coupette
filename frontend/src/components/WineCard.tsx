@@ -48,7 +48,10 @@ function WineCard({ product, reason, storeNames, watchSlot, userRating }: WineCa
         {/* Top: dot + name + price */}
         <div className="flex items-start gap-2.5">
           {dotColor && (
-            <span className={`mt-[5px] h-2 w-2 flex-shrink-0 rounded-full ${dotColor}`} />
+            <span
+              data-testid="category-dot"
+              className={`mt-[5px] h-2 w-2 flex-shrink-0 rounded-full ${dotColor}`}
+            />
           )}
           <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
             <p className="line-clamp-2 min-w-0 flex-1 text-[14px] leading-snug font-medium">
