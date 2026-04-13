@@ -17,10 +17,10 @@ coupette-core = {path = "../core", develop = true}
 
 [tool.poetry.group.dev.dependencies]
 pip-audit = ">=2.7"
-pytest = ">=8.0"
+pytest = ">=9.0.3"
 pytest-asyncio = ">=0.25"
 pytest-cov = ">=6.0"
-ruff = "^0.15.9"
+ruff = "^0.15.10"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
