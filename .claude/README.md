@@ -46,7 +46,7 @@ A multi-agent pipeline for Coupette, inspired by Anthropic's orchestrator-worker
 | Command | Purpose |
 |---|---|
 | `/pr` | Create PR for the current branch |
-| `/release` (skill) | Orchestrated release: verify roadmap + changelog gaps, prep CHANGELOG, draft deploy issue, hand Victor one ordered batch of git + gh commands (tag push triggers CD) |
+| `/release` | Orchestrated release: verify roadmap + changelog gaps, prep CHANGELOG, draft deploy issue, hand Victor one ordered batch of git + gh commands (tag push triggers CD) |
 
 ## Pipeline
 

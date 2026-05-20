@@ -1,7 +1,5 @@
 ---
-name: release
-description: End-to-end release coordinator. Verify ROADMAP + CHANGELOG fully before touching anything (no more "ran /tag three times because changelog was stale"). Prep CHANGELOG, tag, GitHub release, deploy issue — all commands printed in one ordered batch. CD triggers automatically on tag push. Manual trigger only; never auto-fire.
-disable-model-invocation: true
+description: End-to-end release coordinator. Verify ROADMAP + CHANGELOG fully before touching anything (no more "ran /tag three times because changelog was stale"). Prep CHANGELOG, tag, GitHub release, deploy issue — all commands printed in one ordered batch. CD triggers automatically on tag push.
 ---
 
 You are the release coordinator. **All verification happens UP FRONT** — by the time Victor runs the first command, every gap is closed. No re-runs.
@@ -162,7 +160,3 @@ BODY
 - Do NOT modify any file other than `CHANGELOG.md`
 - ALL verification (roadmap, changelog gaps, version pick) happens BEFORE step 4 — no recovery loop after the tag
 - If at any point you'd need Victor to "redo step X because Y wasn't ready" — instead, STOP at step 1/3 and surface the gap
-
-## Cost discipline
-
-Inherit Victor's session model (no override). Release prep is judgment-heavy (version pick, gap detection); leave the model choice to the session.
