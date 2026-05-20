@@ -1,5 +1,23 @@
 # Coupette — Project Context
 
+## Contents
+
+- [Hard Rules](#hard-rules) — git, legal, deployment
+- [Where things live](#where-things-live) — domain + pattern doc index
+- [Definition of Done](#definition-of-done)
+- [Working Style](#working-style)
+- [Code Style](#code-style)
+- [Git Workflow](#git-workflow) — convention, incremental vs feature branch, labels
+- [Pre-PR Pipeline](#pre-pr-pipeline)
+- [Versioning](#versioning) + [Changelog workflow](#changelog-workflow)
+- [Documentation](#documentation) — boundaries, ADRs
+- [Project Goals](#project-goals)
+- [Stack](#stack)
+- [Architecture](#architecture)
+- [Project Structure](#project-structure)
+- [Developer Context](#developer-context)
+- [Roadmap](#roadmap)
+
 ## Hard Rules
 
 Non-negotiable. Violating any is a blocker.
