@@ -49,6 +49,7 @@ dist/
 !.claude/agents/
 !.claude/domains/
 !.claude/patterns/
+!.claude/rules/
 !.claude/skills/
 !.claude/README.md
 # Benchmark results (generated, not versioned)
