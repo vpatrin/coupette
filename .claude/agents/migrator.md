@@ -37,7 +37,7 @@ If the model change would break existing migrations (e.g. column rename collides
 
 ## Result
 
-Print the block below and append it to `./.scratchpad.md`. Keep under 80 lines.
+Print the block below and append it via `cat >> .scratchpad.md <<'EOF' ... EOF` (atomic, safe in the parallel stage). Keep under 80 lines.
 
 ```markdown
 ### <UTC ISO timestamp> migrator

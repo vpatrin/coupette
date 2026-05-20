@@ -46,7 +46,7 @@ If the diff is so large you can't review it confidently, return Status: BLOCKED 
 
 ## Result
 
-Print your full review and append the summary block to `./.scratchpad.md`. Keep total under 300 lines.
+Print your full review and append it via `cat >> .scratchpad.md <<'EOF' ... EOF` (atomic, safe in the parallel stage). Keep total under 300 lines.
 
 ```markdown
 ### <UTC ISO timestamp> reviewer

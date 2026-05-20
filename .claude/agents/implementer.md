@@ -54,7 +54,7 @@ If the spec is implementable but you hit a real blocker (test fixture missing, l
 
 ## Result
 
-Print the block below and append it to `./.scratchpad.md`. Keep total response under 150 lines.
+Print the block below and append it via `cat >> .scratchpad.md <<'EOF' ... EOF` (atomic, safe in the parallel stage). Keep total response under 150 lines.
 
 ```markdown
 ### <UTC ISO timestamp> implementer

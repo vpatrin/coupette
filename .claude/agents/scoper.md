@@ -116,7 +116,7 @@ If the request is too ambiguous to scope safely (multiple plausible interpretati
 
 ## Result
 
-Print the block below and append the same block to `./.scratchpad.md` if you're in a worktree. Keep total response under 30 lines.
+Print the block below and append it via `cat >> .scratchpad.md <<'EOF' ... EOF` (atomic, safe in the parallel test-writer ∥ reviewer stage) if you're in a worktree. Keep total response under 30 lines.
 
 ```markdown
 ### <UTC ISO timestamp> scoper

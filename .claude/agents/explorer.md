@@ -59,7 +59,7 @@ If the spec touches a surface you can't access (missing repo state, files don't 
 
 ## Result
 
-Write the full brief to the response. Also append the summary block below to `./.scratchpad.md` if you're in a worktree. Keep total response under 200 lines.
+Write the full brief to the response. Also append the summary block below to `./.scratchpad.md` via `cat >> .scratchpad.md <<'EOF' ... EOF` (atomic, safe in the parallel stage). Keep total response under 200 lines.
 
 ```markdown
 ### <UTC ISO timestamp> explorer

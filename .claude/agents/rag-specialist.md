@@ -48,7 +48,7 @@ If the change requires an embedding model swap, a major prompt restructure, or a
 
 ## Result
 
-Print the block below and append it to `./.scratchpad.md`. Keep under 150 lines.
+Print the block below and append it via `cat >> .scratchpad.md <<'EOF' ... EOF` (atomic, safe in the parallel stage). Keep under 150 lines.
 
 ```markdown
 ### <UTC ISO timestamp> rag-specialist
