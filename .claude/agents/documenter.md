@@ -40,16 +40,35 @@ If the change completes a capability tracked in `docs/ROADMAP.md`, mark it `[x]`
 
 If the change made a `.claude/domains/*.md` or `.claude/patterns/*.md` stale (new contract, new convention, deprecated rule), update the doc.
 
-### 5. Session log (always for non-trivial work)
+### 5. Session log
 
-Write `docs/session-logs/YYYY-MM-DD-<slug>.md` using the template at `docs/session-logs/_template.md`. Capture:
+**Mandatory when invoked from the pipeline** (`/feature`, `/fix`). Anything that went through the pipeline is non-trivial by definition — every run gets a session log.
+
+**Judgment-based when invoked standalone** (`/document`). Skip for: routine bug fixes, dependabot bumps, single-commit chores, docs-only PRs.
+
+Write `docs/session-logs/YYYY-MM-DD-<slug>.md` using the template at `docs/session-logs/_template.md`. Pull material from `.scratchpad.md` in the worktree — it has the timestamped block from every prior subagent and is your primary source. Capture:
 
 - Decisions made (with context, rejected alternatives, ADR ref if any)
 - Obstacles hit (failed approach, env quirk, library bug)
 - Final state (files modified, tests, coverage delta, links)
 
-Skip the session log only for: routine bug fixes, dependabot bumps, single-commit chores, docs-only PRs.
+## If stuck
 
-## Return
+If `.scratchpad.md` is missing in a pipeline run, return Status: BLOCKED — the orchestrator forgot to initialize it. If a domain or pattern doc needs an update but you can't tell which fact is now wrong, flag NEEDS-REVIEW with the file and the suspected stale claim.
 
-A list of docs touched, ADRs created (if any), session log path (if any), and whether changelog was updated. Orchestrator gates pr-creator on this report.
+## Result
+
+Print the block below and append it to `./.scratchpad.md`. Keep under 80 lines.
+
+```markdown
+### <UTC ISO timestamp> documenter
+**Status:** OK | NEEDS-REVIEW | BLOCKED
+**Summary:** one line
+**Changelog updated:** yes | no (with reason if no)
+**ADRs created:** <list, or "none">
+**Roadmap items marked:** <list, or "none">
+**Domain/pattern docs updated:** <list, or "none">
+**Session log:** <path, or "skipped (standalone, trivial)">
+**Confidence:** high | medium | low
+**Stuck on:** (only when BLOCKED)
+```

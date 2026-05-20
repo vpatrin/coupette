@@ -47,10 +47,27 @@ If your self-audit surfaces a Critical or High, do NOT declare done — return t
 make lint-backend && make test-backend
 ```
 
-## Return
+## If stuck
 
-- Files changed
-- New tests added (with the named scenarios above ticked off)
-- `/security` advisor verdict
-- Any new secret added + the lifespan check confirmation
-- Whether the threat model in `docs/SECURITY.md` needs updating
+If the change touches a flow you don't fully understand (OAuth state validation, JWT refresh edge case, waitlist transition state), do NOT guess — return Status: BLOCKED with what you don't know. Auth mistakes ship to production.
+
+## Result
+
+Print the block below and append it to `./.scratchpad.md`. Keep under 150 lines.
+
+```markdown
+### <UTC ISO timestamp> auth-specialist
+**Status:** OK | NEEDS-REVIEW | BLOCKED
+**Summary:** one line
+**Files changed:** <list>
+**Security self-audit:** clear | warnings (with details) | critical (BLOCK)
+**Mandatory test scenarios covered:** <met>/6 (happy / expiry / tampered / unauth / authorized / waitlist)
+**New secrets added:** <list, or "none"> (lifespan check confirmed: yes | n/a)
+**Threat model update needed:** yes (with note) | no
+**Lint:** pass | fail
+**Tests:** pass | fail
+**Acceptance criteria:** <met>/<total>
+**Recommend Victor run:** /security (always for non-trivial auth diffs)
+**Confidence:** high | medium | low
+**Stuck on:** (only when BLOCKED)
+```

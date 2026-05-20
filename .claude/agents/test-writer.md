@@ -33,6 +33,24 @@ You write tests. You assume the implementation is correct; if you find it isn't,
 
 Stop. Do not patch the implementation. Return a list of failing acceptance criteria and what behavior the implementation actually exhibits. The orchestrator will route back to the implementer.
 
-## Return
+## If stuck
 
-Test files added/modified, coverage delta, list of acceptance criteria covered, anything not covered with reason.
+If the implementation has a real bug that prevents writing a passing test for an acceptance criterion, return Status: BLOCKED with the failing criterion and the observed (wrong) behavior. The orchestrator routes back to the implementer.
+
+If you cannot reach the required coverage threshold without testing the type system or framework internals, flag the gap as NEEDS-REVIEW and explain — don't pad the suite with vacuous tests.
+
+## Result
+
+Print the block below and append it to `./.scratchpad.md`. Keep under 100 lines.
+
+```markdown
+### <UTC ISO timestamp> test-writer
+**Status:** OK | NEEDS-REVIEW | BLOCKED
+**Summary:** one line
+**Test files:** <list>
+**Coverage:** <before> → <after> (delta + threshold pass/fail)
+**Acceptance criteria covered:** <met>/<total>
+**Uncovered:** <list with reasons, or "none">
+**Confidence:** high | medium | low
+**Stuck on:** (only when BLOCKED)
+```

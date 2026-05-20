@@ -30,9 +30,23 @@ Invoke the existing `/pr` skill — it knows the title convention, body template
 
 If the implementation ran in a worktree at `~/.claude/worktrees/coupette/<branch>`, run `git worktree remove <path>` after the PR is created.
 
-## Return
+## If stuck
 
-The PR URL. The orchestrator reports this to the user.
+If any pre-flight check fails, return Status: BLOCKED with the specific check and what's needed. Do NOT attempt to push, force-push, or commit to fix it — those are Victor's actions.
+
+## Result
+
+Print the block below and append it to `./.scratchpad.md`. Keep under 30 lines.
+
+```markdown
+### <UTC ISO timestamp> pr-creator
+**Status:** OK | BLOCKED
+**Summary:** one line
+**PR URL:** <url, or "not created (blocked)">
+**Pre-flight:** all pass | failed (which)
+**Confidence:** high | medium | low
+**Stuck on:** (only when BLOCKED)
+```
 
 ## Do not
 

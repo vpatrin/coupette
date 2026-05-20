@@ -56,6 +56,25 @@ cd frontend && yarn lint && yarn test
 
 Fix anything you broke.
 
-## Return
+## If stuck
 
-Files changed, tests added, locale keys added to both languages, lint/test status, request for visual screenshot.
+If the spec requires a shadcn primitive that doesn't exist, a TypeScript pattern you can't satisfy without `any`, or a state shape that needs Redux-class state management — do NOT improvise. Return Status: BLOCKED with the constraint and a recommendation (add the shadcn primitive first / lift state / reconsider scope).
+
+## Result
+
+Print the block below and append it to `./.scratchpad.md`. Keep total response under 150 lines.
+
+```markdown
+### <UTC ISO timestamp> frontend-specialist
+**Status:** OK | NEEDS-REVIEW | BLOCKED
+**Summary:** one line
+**Plan:** <bullets from step 1>
+**Files changed:** <list>
+**Locale keys added:** <count> (fr + en both updated: yes | no)
+**Lint:** pass | fail
+**Tests:** pass | fail
+**Acceptance criteria:** <met>/<total>
+**Visual screenshot needed at:** <route> — request Victor to paste
+**Confidence:** high | medium | low
+**Stuck on:** (only when BLOCKED)
+```

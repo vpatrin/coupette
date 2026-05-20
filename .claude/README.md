@@ -55,18 +55,31 @@ A multi-agent pipeline for Coupette, inspired by Anthropic's orchestrator-worker
 Orchestrator spawns Scoper → spec at docs/specs/_drafts/<date>-<slug>.md
   ↓  (Victor reviews, says proceed)
 Orchestrator: git worktree add ~/.claude/worktrees/coupette/<branch>
-  ↓  (every subsequent subagent runs in the worktree)
-Explorer → recon brief
+              + initializes .scratchpad.md (Contract / Working notes / Stage results)
+  ↓  (every subsequent subagent runs in the worktree, reads .scratchpad.md first,
+       appends its Result block to Stage results on completion)
+Explorer → recon brief + reads prior session logs for the touched surface
 Migrator → only if spec says Needs migration: yes
-Specialist (or generic Implementer) → does the work
+Specialist (or generic Implementer) → does the work (Plan → Execute → Verify)
   ↓  (Victor reviews diff, says proceed)
 Test-Writer ∥ Reviewer (parallel via two Agent calls in one message)
   Reviewer reads .claude/commands/<advisor>.md and applies them itself
-Documenter (BLOCKING) → changelog + session log + ADR if applicable
+Documenter (BLOCKING) → consumes .scratchpad.md → writes session log
+              + changelog + ADR if applicable
 PR-Creator → invokes /pr
   ↓
-Orchestrator: git worktree remove
+Orchestrator: git worktree remove (scratchpad dies with worktree)
 ```
+
+## Three layers of memory
+
+| Artifact | Lives in | Lifetime | Audience |
+|---|---|---|---|
+| **Spec** | `docs/specs/_drafts/` | Ephemeral (cleared on merge) | Pipeline input |
+| **Scratchpad** | Worktree `.scratchpad.md` | Worktree lifetime | All subagents (primary working context) |
+| **Session log** | `docs/session-logs/` | Permanent (committed) | Future-you + future AI agents |
+
+The scratchpad is for optimization (tight context, survives compaction). The session log is for archaeology (decisions, dead ends, rejected alternatives — like ADRs but per-session). Pipeline runs always produce a session log; standalone work uses judgment.
 
 ## Agents
 
@@ -119,9 +132,9 @@ The documenter writes durable session logs to `docs/session-logs/<date>-<slug>.m
 
 ## Design references
 
-- Anthropic orchestrator-worker pattern: https://www.anthropic.com/engineering/multi-agent-research-system
-- Claude Code subagents: https://docs.claude.com (search "sub-agents")
-- Anthropic prompt engineering best practices: https://docs.claude.com (search "prompt engineering")
+- Anthropic orchestrator-worker pattern: <https://www.anthropic.com/engineering/multi-agent-research-system>
+- Claude Code subagents: <https://docs.claude.com/en/docs/claude-code/sub-agents>
+- Anthropic prompt engineering best practices: <https://docs.claude.com> (search "prompt engineering")
 
 ## Maintenance
 

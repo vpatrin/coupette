@@ -110,6 +110,24 @@ A logged-in user with saved stores wants to check whether a given wine is in sto
 - 500ms target is tight if user has many saved stores; consider pagination if exceeded
 ```
 
-## Return
+## If stuck
 
-The path to the spec file and a 2-line summary. The orchestrator will show this to the user for approval.
+If the request is too ambiguous to scope safely (multiple plausible interpretations, missing acceptance criteria you can't infer, conflicting with existing ADRs), do NOT guess. Return Status: BLOCKED with the specific ambiguity and 2-3 candidate interpretations for Victor to choose from.
+
+## Result
+
+Print the block below and append the same block to `./.scratchpad.md` if you're in a worktree. Keep total response under 30 lines.
+
+```markdown
+### <UTC ISO timestamp> scoper
+**Status:** OK | BLOCKED
+**Summary:** one line — what this spec delivers
+**Spec:** <path to the file you wrote>
+**Surfaces:** backend | frontend | bot | scraper | core | cross-cutting
+**Needs migration:** yes | no
+**Open questions:** <count> (see spec)
+**Confidence:** high | medium | low
+**Stuck on:** (only when BLOCKED)
+```
+
+Use `date -u +"%Y-%m-%dT%H:%M:%SZ"` for the timestamp.

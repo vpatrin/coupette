@@ -41,11 +41,27 @@ Coverage threshold ≥ 80%. Mock the HTTP layer at the boundary, not internal he
 make lint-scraper && make test-scraper
 ```
 
-## Return
+## If stuck
 
-- Files changed
-- New URL patterns introduced + the sitemap they came from (or "no new URLs")
-- Rate-limiting confirmation
-- New CLI commands + Make targets added
-- Coverage delta
-- Lint/test status
+If the spec implies fetching a URL pattern not covered by the listed sitemaps, return Status: BLOCKED with the legal concern. Victor decides whether to push back on the spec or escalate the data-source question.
+
+## Result
+
+Print the block below and append it to `./.scratchpad.md`. Keep under 150 lines.
+
+```markdown
+### <UTC ISO timestamp> scraper-specialist
+**Status:** OK | NEEDS-REVIEW | BLOCKED
+**Summary:** one line
+**Files changed:** <list>
+**New URL patterns:** <list with source sitemap, or "none">
+**Rate limit respected:** yes (existing client reused)
+**New CLI commands:** <list, or "none">
+**New Make targets:** <list, or "none">
+**Coverage:** <before> → <after>
+**Lint:** pass | fail
+**Tests:** pass | fail
+**Acceptance criteria:** <met>/<total>
+**Confidence:** high | medium | low
+**Stuck on:** (only when BLOCKED)
+```

@@ -17,6 +17,7 @@ A spec file path. Read it first.
 - The actual files listed in the spec's "Surfaces touched" table
 - One level of callers/dependencies for each touched file (`grep -r "from <module>"` etc.)
 - Existing tests that cover the touched surface
+- **Prior session logs for the touched surface.** Grep `docs/session-logs/` for the relevant surface name (e.g. `grep -l "sommelier" docs/session-logs/`) and read the most recent 1-2. Past dead ends + obstacles save the implementer from repeating them.
 
 ## Brief format
 
@@ -51,3 +52,23 @@ Things the spec doesn't answer but the implementer will hit.
 - Cite file paths and line numbers for every claim. Don't write "there's a helper for this" — write `backend/services/auth.py:42`.
 - If the spec asks for something that conflicts with an existing pattern or ADR, flag it loudly in **Gotchas**.
 - Do not write code suggestions. Your job is to brief, not design.
+
+## If stuck
+
+If the spec touches a surface you can't access (missing repo state, files don't exist where the spec assumes), return Status: BLOCKED with the specific surface and what's missing.
+
+## Result
+
+Write the full brief to the response. Also append the summary block below to `./.scratchpad.md` if you're in a worktree. Keep total response under 200 lines.
+
+```markdown
+### <UTC ISO timestamp> explorer
+**Status:** OK | BLOCKED
+**Summary:** one line — what the implementer most needs to know
+**Patterns to load:** <list of .claude/patterns/*.md files relevant to this work>
+**Domains to load:** <list of .claude/domains/*.md files relevant to this work>
+**Reuse opportunities:** <count>
+**Gotchas:** <count> (highest-priority one inline)
+**Confidence:** high | medium | low
+**Stuck on:** (only when BLOCKED)
+```

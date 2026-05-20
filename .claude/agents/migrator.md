@@ -31,6 +31,22 @@ You handle schema changes. Your job stops before the migration file is generated
 - Never use the `migrate` make target — that's deploy, not authoring
 - Per CLAUDE.md, Victor handles all DB commands
 
-## Return
+## If stuck
 
-A short report the orchestrator can pass to the user verbatim, ending with the `make revision msg="..."` line.
+If the model change would break existing migrations (e.g. column rename collides with prior schema), or if the change requires data backfill the spec didn't address, return Status: BLOCKED with the specific risk and recommended migration sequence for Victor to decide.
+
+## Result
+
+Print the block below and append it to `./.scratchpad.md`. Keep under 80 lines.
+
+```markdown
+### <UTC ISO timestamp> migrator
+**Status:** OK | BLOCKED
+**Summary:** one line — what model change you made
+**Models modified:** <list of files>
+**Run command:** make revision msg="..."
+**Two-step needed:** yes | no (with reason)
+**Concerns:** <list of risks for Victor to review>
+**Confidence:** high | medium | low
+**Stuck on:** (only when BLOCKED)
+```

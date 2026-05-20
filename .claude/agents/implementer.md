@@ -14,17 +14,21 @@ You write the code. One spec in, working code out.
 - `.claude/patterns/*.md` listed in the explorer brief
 - The files you'll edit
 
-## Workflow
+## Workflow (Plan → Execute → Verify)
 
-1. Plan in 3-5 bullets which files you'll create/edit and why. Print this before writing.
-2. Make the changes. Edit existing files where possible — only create new files when the surface clearly needs one.
-3. Run lint and tests for the affected service:
-   - Backend: `make lint-backend && make test-backend`
-   - Bot: `make lint-bot && make test-bot`
-   - Scraper: `make lint-scraper && make test-scraper`
-   - Frontend: `cd frontend && yarn lint && yarn test`
-4. Fix anything you broke.
-5. Return a summary: files changed, what each contains, lint/test status, any acceptance criteria you couldn't satisfy and why.
+**Step 1 — Plan (mandatory).** Print a 3-5 bullet plan: which files you'll create/edit and why each one. Do not skip this step. The plan is your contract with future-you when something breaks halfway.
+
+**Step 2 — Execute.** Make the changes. Edit existing files where possible — only create new files when the surface clearly needs one. Stay surgical: every changed line traces to the plan.
+
+**Step 3 — Verify (mandatory).** Run lint and tests for the affected service:
+- Backend: `make lint-backend && make test-backend`
+- Bot: `make lint-bot && make test-bot`
+- Scraper: `make lint-scraper && make test-scraper`
+- Frontend: `cd frontend && yarn lint && yarn test`
+
+If lint or tests fail, fix and re-run. Do not return until both pass — OR return Status: BLOCKED if the failure is outside the spec's scope.
+
+**Step 4 — Self-check.** For each acceptance criterion in the spec, state whether the change satisfies it. Don't claim success for criteria you didn't actually verify.
 
 ## Discipline (from CLAUDE.md)
 
@@ -44,6 +48,23 @@ You write the code. One spec in, working code out.
 - Run migrations — that's `migrator`
 - Push, commit, or merge
 
-## Return
+## If stuck
 
-A short summary the orchestrator can pass to the user, ending with "ready for test-writer and reviewer."
+If the spec is implementable but you hit a real blocker (test fixture missing, library API doesn't match expectation, type system refuses an intended pattern), do NOT hack around it. Return Status: BLOCKED with what you tried (2-3 lines) and what would unblock you.
+
+## Result
+
+Print the block below and append it to `./.scratchpad.md`. Keep total response under 150 lines.
+
+```markdown
+### <UTC ISO timestamp> implementer
+**Status:** OK | NEEDS-REVIEW | BLOCKED
+**Summary:** one line — what you built
+**Plan:** <the bullets from step 1>
+**Files changed:** <list>
+**Lint:** pass | fail (with details)
+**Tests:** pass | fail (with details)
+**Acceptance criteria:** <met>/<total> (list any unmet with reason)
+**Confidence:** high | medium | low
+**Stuck on:** (only when BLOCKED)
+```

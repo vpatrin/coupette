@@ -40,20 +40,28 @@ If your verdict is WARN or APPROVE and a deeper specialized review would still b
 - Comments preserved (especially `#!`, `#?`, `#*`, `#TODO`)
 - No mocking of internal helpers in new tests
 
-## Output format
+## If stuck
 
+If the diff is so large you can't review it confidently, return Status: BLOCKED with the recommendation to split the PR. Reviewing 1000-line diffs is a documented anti-pattern.
+
+## Result
+
+Print your full review and append the summary block to `./.scratchpad.md`. Keep total under 300 lines.
+
+```markdown
+### <UTC ISO timestamp> reviewer
+**Status:** OK | NEEDS-REVIEW | BLOCKED
+**Verdict:** APPROVE | WARN | BLOCK
+**Summary:** one line
+**Blockers:** <count> (BLOCK only — list each as file:line — issue)
+**Warnings:** <count> (WARN — list each as file:line — issue)
+**Notes:** <count> (notable but not blocking)
+**Recommend Victor run:** <list of advisors if a deeper pass would help, e.g. /security on auth diffs>
+**Confidence:** high | medium | low
+**Stuck on:** (only when BLOCKED)
 ```
-## Verdict: BLOCK | WARN | APPROVE
 
-### Blockers (BLOCK only)
-- file:line — issue + why it must be fixed before PR
-
-### Warnings
-- file:line — issue + suggested fix
-
-### Notes
-- Anything noteworthy that's not a blocker or warning
-```
+(Status maps to Verdict: APPROVE→OK, WARN→NEEDS-REVIEW, BLOCK→BLOCKED.)
 
 ## Do not
 

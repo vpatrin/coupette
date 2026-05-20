@@ -42,11 +42,26 @@ make lint-backend && make test-backend
 make lint-scraper && make test-scraper   # if scraper/ touched
 ```
 
-## Return
+## If stuck
 
-- Files changed
-- Token delta for any prompt change (input tokens, output tokens, estimated cost per call)
-- Eval gate status (required / waived, with reason)
-- Lint/test status
-- Whether re-embedding is needed
-- ADR suggestion if a real tradeoff was made
+If the change requires an embedding model swap, a major prompt restructure, or a retrieval architecture change with eval implications you can't predict, return Status: BLOCKED with the specific call to make and ask Victor for an explicit go-ahead with cost estimate.
+
+## Result
+
+Print the block below and append it to `./.scratchpad.md`. Keep under 150 lines.
+
+```markdown
+### <UTC ISO timestamp> rag-specialist
+**Status:** OK | NEEDS-REVIEW | BLOCKED
+**Summary:** one line
+**Files changed:** <list>
+**Token delta:** input <delta>, output <delta>, est. cost/call <delta> (or "no prompt change")
+**Eval gate:** required | waived (with reason)
+**Re-embedding needed:** yes | no
+**Lint:** pass | fail
+**Tests:** pass | fail
+**Acceptance criteria:** <met>/<total>
+**ADR suggested:** yes (title) | no
+**Confidence:** high | medium | low
+**Stuck on:** (only when BLOCKED)
+```
