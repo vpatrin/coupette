@@ -80,7 +80,7 @@ Evaluate each command against these dimensions:
 
 | Command | Role clarity | Context | Modes | Checklist | Output | Constraints | Overall |
 |---------|-------------|---------|-------|-----------|--------|-------------|---------|
-| `/plan` | A-F | A-F | A-F | A-F | A-F | A-F | A-F |
+| `/po` | A-F | A-F | A-F | A-F | A-F | A-F | A-F |
 | `/review` | A-F | A-F | A-F | A-F | A-F | A-F | A-F |
 | ... | ... | ... | ... | ... | ... | ... | ... |
 

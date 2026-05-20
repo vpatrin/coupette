@@ -36,7 +36,6 @@ A multi-agent pipeline for Coupette, inspired by Anthropic's orchestrator-worker
 | `/data` | DBA / data engineer — schema, queries, migrations |
 | `/ai` | AI/ML architect — prompts, retrieval, RAG design |
 | `/ux` | UX designer — spec + audit |
-| `/plan` | Senior PM — phase planning, breakdown |
 | `/roadmap-status` | Program manager — progress + cleanup |
 | `/health` | CTO — periodic project health |
 | `/eval-pipeline` | ML engineer — RAG score tuning |
