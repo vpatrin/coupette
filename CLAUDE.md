@@ -57,6 +57,7 @@ Every version tag + deploy requires a dedicated GitHub issue with pre-deploy che
 | Topic | File |
 |---|---|
 | Deploy + infra constraints | [`.claude/domains/deploy.md`](.claude/domains/deploy.md) |
+| Backend (FastAPI layout + conventions) | [`.claude/domains/backend.md`](.claude/domains/backend.md) |
 | Database (connection, prod queries) | [`.claude/domains/database.md`](.claude/domains/database.md) |
 | Scraper (legal + ethical rules) | [`.claude/domains/scraper.md`](.claude/domains/scraper.md) |
 | Frontend (didactic + UX bible) | [`.claude/domains/frontend.md`](.claude/domains/frontend.md) |
