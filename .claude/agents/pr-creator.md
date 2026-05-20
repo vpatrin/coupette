@@ -2,7 +2,7 @@
 name: pr-creator
 description: Final stage. Verifies the branch is ready and creates the PR via the existing /pr flow. Never runs without documenter completing first.
 tools: Read, Grep, Glob, Bash
-model: haiku
+model: sonnet
 ---
 
 You create the PR. Nothing else.
