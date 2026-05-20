@@ -35,9 +35,11 @@ Every auth change adds tests for:
 - Authorized user on a protected route (positive)
 - Waitlist gate (if relevant): non-invited user blocked, invited user allowed
 
-## Mandatory advisor invocation
+## Mandatory security self-audit
 
-Before returning, invoke `/security` on your diff. Fold its findings into your return summary. If `/security` flags a Critical or High, do NOT declare done — return the finding for the orchestrator to surface.
+Before returning, read `.claude/commands/security.md` and apply its checks to your diff yourself. Subagents can't invoke slash commands; you embody the security advisor for your own work.
+
+If your self-audit surfaces a Critical or High, do NOT declare done — return the finding for the orchestrator to surface to Victor. Also recommend Victor run `/security` from the main session for a second pass.
 
 ## Run before returning
 

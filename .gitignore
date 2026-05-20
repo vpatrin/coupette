@@ -50,6 +50,7 @@ dist/
 !.claude/domains/
 !.claude/patterns/
 !.claude/skills/
+!.claude/README.md
 # Benchmark results (generated, not versioned)
 backend/benchmarks/eval/results/
 !backend/benchmarks/eval/results/.gitkeep

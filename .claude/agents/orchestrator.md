@@ -34,9 +34,23 @@ If two specialists would apply (e.g. backend + RAG), prefer the more specific on
 
 ## Worktree
 
-For the implementation stage (5), the specialist works in `~/.claude/worktrees/coupette/<branch>` created by you via `git worktree add`. Other stages run in the current repo.
+After the user approves the spec (between stages 2 and 3), create a worktree:
 
-Clean up the worktree after pr-creator returns (`git worktree remove`).
+```bash
+git worktree add ~/.claude/worktrees/coupette/<branch> -b <branch>
+cd ~/.claude/worktrees/coupette/<branch>
+```
+
+Every subsequent subagent (explorer, migrator, specialist, test-writer, reviewer, documenter, pr-creator) runs with that worktree as cwd. Subagents inherit cwd from you, so you must `cd` before spawning them.
+
+Clean up after pr-creator returns:
+
+```bash
+cd <original repo path>
+git worktree remove ~/.claude/worktrees/coupette/<branch>
+```
+
+Skip the worktree only if the user explicitly says so (e.g. for a one-line fix where they prefer in-place changes).
 
 ## Handoffs
 

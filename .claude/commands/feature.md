@@ -24,3 +24,16 @@ The orchestrator will:
 9. Spawn `pr-creator` to ship
 
 After each subagent returns, the orchestrator reports back to the user and waits for go-ahead. Never auto-advance past a checkpoint.
+
+## Trivial-case shortcut
+
+If the feature is a single new endpoint, component, or function with no cross-cutting concerns and no schema change, you may invoke the matching specialist (or `implementer`) directly with the user's request — skip scoper and explorer. Use judgment. When in doubt, run the full pipeline.
+
+Examples of trivial:
+- "Add a `/api/health` route that returns `{status: ok}`"
+- "Add a `LoadingSpinner` component using shadcn primitives"
+
+Examples that need the full pipeline:
+- Anything touching `auth/`, `services/sommelier.py`, `services/recommendations.py`
+- Anything with a schema change
+- Anything that spans more than one service
