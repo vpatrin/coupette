@@ -75,6 +75,19 @@ EOF
 
 Every subsequent subagent runs with the worktree as cwd. They read `.scratchpad.md` first (it's their primary context) and append their own result block to **Stage results** on completion. You update **Working notes** between stages with anything Victor said that the next subagent needs to know.
 
+**Append convention for subagents** (all worker agents follow this — repeated here as the source of truth):
+
+```bash
+TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+cat >> .scratchpad.md <<'EOF'
+### <use $TS substituted above> <agent-name>
+**Status:** ...
+...
+EOF
+```
+
+Use single-quoted `<<'EOF'` to prevent unintended expansion of any `$variable` references inside markdown code blocks in the appended content. Substitute the timestamp into a shell variable first (as shown), then reference it in the heredoc body without `$`.
+
 Clean up after pr-creator returns:
 
 ```bash
