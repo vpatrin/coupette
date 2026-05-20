@@ -46,7 +46,10 @@ dist/
 # Claude
 .claude/*
 !.claude/commands/
-!.claude/commands/COMMANDS.md
+!.claude/agents/
+!.claude/domains/
+!.claude/patterns/
+!.claude/skills/
 # Benchmark results (generated, not versioned)
 backend/benchmarks/eval/results/
 !backend/benchmarks/eval/results/.gitkeep
