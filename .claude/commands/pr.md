@@ -22,4 +22,4 @@ Create a PR for the current branch. Follow the Pre-PR Checklist from CLAUDE.md.
 - Do NOT push the branch — if it's not pushed, stop and ask Victor to push first
 - Do NOT create the PR if CHANGELOG.md is missing an entry for user-visible changes — warn and stop
 - Prerequisite: `/review` must have passed. If unsure, ask Victor before proceeding.
-- **Scope note:** this command does not re-check code quality — that's `/review`'s job. It also does not check test coverage (`/qa`) or security (`/security`).
+- **Scope note:** this command does not re-check code quality — that's `/review`'s job. It also does not run a security audit (`/security`).

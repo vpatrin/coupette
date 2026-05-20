@@ -99,9 +99,8 @@ gh issue create --title "..." --label api --label feature --milestone "Phase 10:
 Before creating a PR:
 1. `/review` — code quality, DoD
 2. `/simplify` — cleanup on changed code
-3. `/qa` — coverage gaps and behavioral bugs (optional)
-4. `/security` — IMPORTANT if branch touches auth, API, or user data
-5. `/pr` — create the PR (only after `/review` passes)
+3. `/security` — IMPORTANT if branch touches auth, API, or user data
+4. `/pr` — create the PR (only after `/review` passes)
 
 For multi-stage features, drive the work via `/feature` (see [`.claude/README.md`](.claude/README.md)) — the orchestrated pipeline handles all of the above plus tests and docs.
 

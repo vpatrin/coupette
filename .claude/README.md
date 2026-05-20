@@ -31,7 +31,6 @@ A multi-agent pipeline for Coupette, inspired by Anthropic's orchestrator-worker
 | Command | Role |
 |---|---|
 | `/review` | Tech lead — code quality, AI smell, DoD |
-| `/qa` | QA engineer — coverage + behavioral bugs |
 | `/security` | Appsec — threat model |
 | `/data` | DBA / data engineer — schema, queries, migrations |
 | `/ai` | AI/ML architect — prompts, retrieval, RAG design |
@@ -39,7 +38,6 @@ A multi-agent pipeline for Coupette, inspired by Anthropic's orchestrator-worker
 | `/roadmap-status` | Program manager — progress + cleanup |
 | `/health` | CTO — periodic project health |
 | `/eval-pipeline` | ML engineer — RAG score tuning |
-| `/prompt` | Prompt engineer — audit / draft slash commands |
 
 ### Actions
 
