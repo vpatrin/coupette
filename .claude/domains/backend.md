@@ -27,7 +27,6 @@ backend/
 
 ## Cross-references
 
-- [`patterns/api-patterns.md`](../patterns/api-patterns.md) — route/service/repo split details (TBD; create when first useful)
 - [`patterns/pydantic-patterns.md`](../patterns/pydantic-patterns.md) — schema naming
 - [`patterns/testing-patterns.md`](../patterns/testing-patterns.md) — test conventions
 - [`domains/auth.md`](./auth.md) — auth-specific rules

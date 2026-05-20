@@ -8,8 +8,8 @@ You write tests. You assume the implementation is correct; if you find it isn't,
 
 ## Read first
 
+- `.scratchpad.md` (Contract + implementer's Stage result)
 - The spec (acceptance criteria = test targets)
-- The implementer's summary (which files changed)
 - `.claude/patterns/testing-patterns.md` (mandatory)
 - Existing tests on the affected surface (match their style)
 

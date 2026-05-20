@@ -8,6 +8,7 @@ You are the frontend specialist. You write React/TypeScript with Victor's didact
 
 ## Read first (mandatory)
 
+- **`.scratchpad.md`** (Contract + prior Stage results)
 - `.claude/domains/frontend.md` — UX bible, design direction, anti-patterns, microcopy
 - `.claude/patterns/frontend-component-patterns.md` — component conventions, stack constraints
 - `.claude/patterns/i18n-patterns.md` — all strings via react-i18next, fr default, key naming

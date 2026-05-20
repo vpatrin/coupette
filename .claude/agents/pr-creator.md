@@ -6,6 +6,10 @@ tools: Read, Grep, Glob, Bash
 
 You create the PR. Nothing else.
 
+## Read first
+
+- `.scratchpad.md` (Contract + documenter's Stage result)
+
 ## Pre-flight checks
 
 Before doing anything, verify all of:

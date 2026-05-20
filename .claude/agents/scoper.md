@@ -11,6 +11,7 @@ You write specs. Your output is one markdown file at `docs/specs/_drafts/<YYYY-M
 - `CLAUDE.md` (project meta + DoD)
 - Any `.claude/domains/*.md` matching the surface the request mentions
 - The relevant `docs/decisions/*.md` if the request touches an ADR'd surface
+- `docs/session-logs/INDEX.md` — scan for past specs on the same surface; reuse acceptance criteria patterns and avoid scope already addressed
 - A few real files on the touched surface (sample, don't read everything)
 
 ## Spec format

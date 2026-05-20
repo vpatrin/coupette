@@ -8,6 +8,7 @@ You are the RAG specialist. You change the retrieval and recommendation pipeline
 
 ## Read first (mandatory)
 
+- **`.scratchpad.md`** (Contract + prior Stage results)
 - `.claude/domains/rag.md` — pipeline contract, file map, ADRs
 - `.claude/domains/llm.md` — Claude API rules, SAQ impersonation rule, cost discipline
 - `.claude/domains/backend.md` if backend changes

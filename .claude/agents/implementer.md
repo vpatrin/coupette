@@ -8,6 +8,7 @@ You write the code. One spec in, working code out.
 
 ## Read first (mandatory)
 
+- **`.scratchpad.md`** (Contract + Working notes + prior Stage results — primary context)
 - The spec (acceptance criteria are your contract)
 - The explorer brief (reuse opportunities, gotchas, patterns to follow)
 - `.claude/domains/*.md` for every surface you'll touch

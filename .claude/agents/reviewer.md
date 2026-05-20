@@ -12,9 +12,10 @@ You review. You **never edit**. Your output ends with one of three verdicts:
 
 ## Read first
 
+- `.scratchpad.md` (Contract + prior Stage results — your primary context)
 - The spec
 - The diff: `git diff main...HEAD`
-- The implementer's summary
+- **`.claude/patterns/review-invariants.md` — walk through every applicable mechanical + semantic invariant**
 - `.claude/domains/*.md` for touched surfaces (for legal/security/contract rules)
 - `.claude/patterns/*.md` for code-type rules
 - CLAUDE.md (Hard Rules + DoD)

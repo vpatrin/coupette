@@ -30,26 +30,21 @@ Agent({
 })
 ```
 
-Subagents don't inherit your conversation. They see only:
-- Their own system prompt (the `.claude/agents/<name>.md` body)
-- The `prompt` you pass in the Agent call
-- Files they read themselves (including `.scratchpad.md`)
-
 Do NOT use `SendMessage` — that's for resuming a previously spawned background agent, which isn't this pipeline's pattern. Every stage is fire-and-forget.
 
 For parallel stages (test-writer ∥ reviewer), emit **one assistant turn with two `Agent` calls in it**. The harness executes them concurrently. Both append to `.scratchpad.md` (atomic heredoc append is safe for parallel writes).
+
+See [Handoff format](#handoff-format) below for what to put in `prompt`.
 
 ## Routing to a specialist
 
 Read the spec. Look at which directories the spec says will change.
 
-- Touches `backend/` only → `backend-specialist` (if exists, else `implementer`)
-- Touches `frontend/src/` only → `frontend-specialist`
-- Touches `bot/` only → `bot-specialist`
-- Touches `scraper/` only → `scraper-specialist`
-- Touches RAG surface (`backend/services/sommelier.py`, `backend/services/recommendations.py`, embedding pipeline) → `rag-specialist`
+- Touches `frontend/src/` → `frontend-specialist`
+- Touches `scraper/` → `scraper-specialist`
+- Touches RAG surface (`backend/services/sommelier.py`, `backend/services/recommendations.py`, `backend/services/intent.py`, embedding pipeline) → `rag-specialist`
 - Touches JWT, OAuth, or waitlist → `auth-specialist`
-- Cross-cuts or no specialist exists → `implementer`
+- Touches `backend/` (non-RAG, non-auth), `bot/`, `core/`, or cross-cuts → `implementer` (loads `domains/backend.md` etc. itself)
 
 If two specialists would apply (e.g. backend + RAG), prefer the more specific one (rag-specialist).
 

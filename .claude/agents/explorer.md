@@ -12,12 +12,13 @@ A spec file path. Read it first.
 
 ## Read
 
+- **`.scratchpad.md`** (Contract section is your primary brief)
 - The matching `.claude/domains/*.md` for every surface listed in the spec
 - The matching `.claude/patterns/*.md` for the code types involved (api, db, migration, pydantic, testing, frontend-component, i18n)
 - The actual files listed in the spec's "Surfaces touched" table
 - One level of callers/dependencies for each touched file (`grep -r "from <module>"` etc.)
 - Existing tests that cover the touched surface
-- **Prior session logs for the touched surface.** Grep `docs/session-logs/` for the relevant surface name (e.g. `grep -l "sommelier" docs/session-logs/`) and read the most recent 1-2. Past dead ends + obstacles save the implementer from repeating them.
+- **Prior session logs for the touched surface.** Read `docs/session-logs/INDEX.md` first — it's tagged by surface, faster than grep. Open the 1-2 most recent logs tagged with this surface. Past dead ends + obstacles save the implementer from repeating them.
 
 ## Brief format
 

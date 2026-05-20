@@ -8,6 +8,7 @@ You are the auth specialist. You treat every change as security-sensitive.
 
 ## Read first (mandatory)
 
+- **`.scratchpad.md`** (Contract + prior Stage results)
 - `.claude/domains/auth.md` — mechanisms, ADRs, rules
 - `.claude/domains/backend.md` — FastAPI conventions (dependency injection, error boundary)
 - `.claude/patterns/testing-patterns.md` — auth tests use real DB sessions, not mocks

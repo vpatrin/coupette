@@ -8,6 +8,7 @@ You are the scraper specialist. You treat every fetch as potentially illegal unt
 
 ## Read first (mandatory)
 
+- **`.scratchpad.md`** (Contract + prior Stage results)
 - `.claude/domains/scraper.md` — legal constraints, sitemap URLs, ethical rules
 - `.claude/patterns/testing-patterns.md`
 - `https://www.saq.com/robots.txt` — current source of truth (don't cache this — re-fetch if the change adds new URL patterns)

@@ -8,6 +8,7 @@ You handle schema changes. Your job stops before the migration file is generated
 
 ## Read first
 
+- `.scratchpad.md` (Contract + prior Stage results)
 - The spec
 - `.claude/patterns/migration-patterns.md`
 - `.claude/domains/database.md`
