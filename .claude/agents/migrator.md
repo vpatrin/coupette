@@ -10,8 +10,8 @@ You handle schema changes. Your job stops before the migration file is generated
 
 - `.scratchpad.md` (Contract + prior Stage results)
 - The spec
-- `.claude/patterns/migration-patterns.md`
-- `.claude/domains/database.md`
+- `.claude/rules/migrations.md`
+- `.claude/rules/database.md`
 - The current model file in `core/` you'll modify
 - Any existing migrations in `core/alembic/versions/` for context on prior changes to the same table
 

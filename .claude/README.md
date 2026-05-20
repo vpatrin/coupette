@@ -8,8 +8,10 @@ A multi-agent pipeline for Coupette, inspired by Anthropic's orchestrator-worker
 .claude/
 ├── agents/          Pipeline subagents (invoked by the orchestrator)
 ├── commands/        Slash commands (invoked by Victor)
-├── domains/         Business context per surface (read by agents on demand)
-├── patterns/        Code conventions per code type (read by agents on demand)
+├── rules/           Path-scoped context — auto-loaded by Claude when editing
+│                    matching files (main session) AND explicitly Read by
+│                    subagents in the pipeline. Single source of truth.
+├── skills/          Skills with supporting files (e.g. eval-pipeline)
 └── settings.local.json
 ```
 
@@ -108,19 +110,13 @@ The scratchpad is for optimization (tight context, survives compaction). The ses
 
 Backend and bot fall through to the generic `implementer` + `domains/backend.md`.
 
-## Context layer
+## Context layer (`.claude/rules/`)
 
-### Domains (business context per surface)
+One folder, single source of truth. Each file has `paths:` frontmatter so it auto-loads in main-session work when matching files are touched. Subagents Read them explicitly per their system prompts.
 
-Read by agents based on which surface the change touches.
+`auth.md` · `backend.md` · `deploy.md` · `frontend.md` · `llm.md` · `migrations.md` · `rag.md` · `scraper.md` · `testing.md`
 
-`auth.md` · `backend.md` · `database.md` · `deploy.md` · `frontend.md` · `llm.md` · `rag.md` · `scraper.md`
-
-### Patterns (code conventions per code type)
-
-Read by agents based on what kind of code they're writing.
-
-`testing-patterns.md` · `migration-patterns.md` · `i18n-patterns.md` · `frontend-component-patterns.md` · `pydantic-patterns.md`
+(Reviewer's project-specific invariants are inlined in `agents/reviewer.md` — they're reviewer-only and shouldn't auto-load into other sessions.)
 
 ## Worktree convention
 
@@ -139,6 +135,5 @@ The documenter writes durable session logs to `docs/session-logs/<date>-<slug>.m
 ## Maintenance
 
 - Adding a new specialist → write `.claude/agents/<name>-specialist.md` with a sharp `description` field. Update `orchestrator.md` routing if needed.
-- Adding a new domain → write `.claude/domains/<name>.md` + add to `CLAUDE.md` "Where things live" table.
-- Adding a new pattern → write `.claude/patterns/<name>-patterns.md` + add to `CLAUDE.md` table.
-- Removing an advisor → delete `.claude/commands/<name>.md`. The reviewer's "advisor self-audit" list in `agents/reviewer.md` references file paths, so prune those too.
+- Adding a new rule → write `.claude/rules/<name>.md` with `paths:` frontmatter scoping where it auto-loads. Add to `CLAUDE.md` "Where things live" table.
+- Removing an advisor → delete `.claude/commands/<name>.md`. The reviewer's advisor-checks list (in `agents/reviewer.md`) references those file paths, so prune there too.

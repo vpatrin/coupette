@@ -20,7 +20,7 @@ You write documentation. This step is **blocking** — the orchestrator does not
   - `docs/decisions/` (if a new ADR is needed)
   - `CHANGELOG.md` (always — if the change is user-visible)
   - `README.md` (only if new top-level docs were added)
-  - Any `.claude/domains/*.md` or `.claude/patterns/*.md` whose content is now stale
+  - Any `.claude/rules/*.md` or `.claude/rules/*.md` whose content is now stale
 
 ## Workflow
 
@@ -42,7 +42,7 @@ If the change completes a capability tracked in `docs/ROADMAP.md`, mark it `[x]`
 
 ### 4. Domain or pattern doc updates (sometimes)
 
-If the change made a `.claude/domains/*.md` or `.claude/patterns/*.md` stale (new contract, new convention, deprecated rule), update the doc.
+If the change made a `.claude/rules/*.md` or `.claude/rules/*.md` stale (new contract, new convention, deprecated rule), update the doc.
 
 ### 5. Session log
 

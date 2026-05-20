@@ -16,26 +16,21 @@ Wine discovery + recommendations via Telegram bot and web app. Modular monolith 
 
 ## Where things live
 
-Agents auto-load the matching domain or pattern doc before touching the surface. Read manually when working without the pipeline.
+`.claude/rules/*.md` are path-scoped rules — auto-loaded by Claude when you touch a matching file in normal coding, and explicitly Read by subagents in the pipeline.
 
-| Topic | File |
-|---|---|
-| Deploy + infra constraints | [`.claude/domains/deploy.md`](.claude/domains/deploy.md) |
-| Backend (FastAPI layout + conventions) | [`.claude/domains/backend.md`](.claude/domains/backend.md) |
-| Database (connection, prod queries) | [`.claude/domains/database.md`](.claude/domains/database.md) |
-| Scraper (legal + ethical rules) | [`.claude/domains/scraper.md`](.claude/domains/scraper.md) |
-| Frontend (UX bible + didactic) | [`.claude/domains/frontend.md`](.claude/domains/frontend.md) |
-| RAG / recommendations | [`.claude/domains/rag.md`](.claude/domains/rag.md) |
-| Auth (JWT, OAuth, waitlist) | [`.claude/domains/auth.md`](.claude/domains/auth.md) |
-| LLM (Claude API usage) | [`.claude/domains/llm.md`](.claude/domains/llm.md) |
-| Release + changelog | [`.claude/domains/release.md`](.claude/domains/release.md) |
-| Documentation rules + ADRs | [`.claude/domains/docs.md`](.claude/domains/docs.md) |
-| Testing | [`.claude/patterns/testing-patterns.md`](.claude/patterns/testing-patterns.md) |
-| Migrations | [`.claude/patterns/migration-patterns.md`](.claude/patterns/migration-patterns.md) |
-| Frontend component patterns | [`.claude/patterns/frontend-component-patterns.md`](.claude/patterns/frontend-component-patterns.md) |
-| i18n | [`.claude/patterns/i18n-patterns.md`](.claude/patterns/i18n-patterns.md) |
-| Pydantic schemas | [`.claude/patterns/pydantic-patterns.md`](.claude/patterns/pydantic-patterns.md) |
-| Agentic pipeline | [`.claude/README.md`](.claude/README.md) |
+| Topic | File | Auto-loads when editing |
+|---|---|---|
+| Backend (FastAPI + Pydantic + DB conventions + logging) | [`.claude/rules/backend.md`](.claude/rules/backend.md) | `backend/**/*.py` |
+| Frontend (UX bible + didactic + components + i18n) | [`.claude/rules/frontend.md`](.claude/rules/frontend.md) | `frontend/src/**/*.{ts,tsx}`, locales |
+| Auth (JWT, OAuth, waitlist, bot secret) | [`.claude/rules/auth.md`](.claude/rules/auth.md) | auth + OAuth + waitlist surfaces |
+| RAG / recommendations | [`.claude/rules/rag.md`](.claude/rules/rag.md) | sommelier, recommendations, intent, embed |
+| LLM (Claude API usage) | [`.claude/rules/llm.md`](.claude/rules/llm.md) | LLM-using services |
+| Scraper (legal + ethical rules) | [`.claude/rules/scraper.md`](.claude/rules/scraper.md) | `scraper/**/*.py` |
+| Migrations | [`.claude/rules/migrations.md`](.claude/rules/migrations.md) | `core/db/models/**`, `core/alembic/**` |
+| Testing | [`.claude/rules/testing.md`](.claude/rules/testing.md) | test files |
+| Deploy + infra | [`.claude/rules/deploy.md`](.claude/rules/deploy.md) | `docker-compose.yml`, `Dockerfile`, CI, Makefile |
+| Docs + ADRs + release + changelog | [`.claude/rules/docs.md`](.claude/rules/docs.md) | `docs/**`, `README.md`, `CHANGELOG.md` |
+| Agentic pipeline | [`.claude/README.md`](.claude/README.md) | — |
 
 ## Stack
 

@@ -13,8 +13,8 @@ A spec file path. Read it first.
 ## Read
 
 - **`.scratchpad.md`** (Contract section is your primary brief)
-- The matching `.claude/domains/*.md` for every surface listed in the spec
-- The matching `.claude/patterns/*.md` for the code types involved (api, db, migration, pydantic, testing, frontend-component, i18n)
+- The matching `.claude/rules/*.md` for every surface listed in the spec
+- The matching `.claude/rules/*.md` for the code types involved (api, db, migration, pydantic, testing, frontend-component, i18n)
 - The actual files listed in the spec's "Surfaces touched" table
 - One level of callers/dependencies for each touched file (`grep -r "from <module>"` etc.)
 - Existing tests that cover the touched surface
@@ -32,10 +32,10 @@ What exists now on the touched surfaces, in 3-5 bullets. Cite file:line.
 Existing functions, schemas, or components the implementer should reuse instead of duplicating. List with file:line.
 
 ### Patterns to follow
-Which `.claude/patterns/*.md` files apply to this work. Just list them.
+Which `.claude/rules/*.md` files apply to this work. Just list them.
 
 ### Domain context
-Key constraints from `.claude/domains/*.md` the implementer must respect (legal, security, schema).
+Key constraints from `.claude/rules/*.md` the implementer must respect (legal, security, schema).
 
 ### Test surface
 Where tests live for this code today (path + count). What style they use.
@@ -66,8 +66,8 @@ Write the full brief to the response. Also append the summary block below to `./
 ### <UTC ISO timestamp> explorer
 **Status:** OK | BLOCKED
 **Summary:** one line — what the implementer most needs to know
-**Patterns to load:** <list of .claude/patterns/*.md files relevant to this work>
-**Domains to load:** <list of .claude/domains/*.md files relevant to this work>
+**Patterns to load:** <list of .claude/rules/*.md files relevant to this work>
+**Domains to load:** <list of .claude/rules/*.md files relevant to this work>
 **Reuse opportunities:** <count>
 **Gotchas:** <count> (highest-priority one inline)
 **Confidence:** high | medium | low

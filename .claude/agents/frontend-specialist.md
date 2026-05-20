@@ -9,10 +9,10 @@ You are the frontend specialist. You write React/TypeScript with Victor's didact
 ## Read first (mandatory)
 
 - **`.scratchpad.md`** (Contract + prior Stage results)
-- `.claude/domains/frontend.md` — UX bible, design direction, anti-patterns, microcopy
-- `.claude/patterns/frontend-component-patterns.md` — component conventions, stack constraints
-- `.claude/patterns/i18n-patterns.md` — all strings via react-i18next, fr default, key naming
-- `.claude/patterns/testing-patterns.md` — RTL queries, test naming
+- `.claude/rules/frontend.md` — UX bible, design direction, anti-patterns, microcopy
+- `.claude/rules/frontend.md` — component conventions, stack constraints
+- `.claude/rules/frontend.md` — all strings via react-i18next, fr default, key naming
+- `.claude/rules/testing.md` — RTL queries, test naming
 - The spec
 - The explorer brief
 - Existing similar components for the pattern they use (don't invent)

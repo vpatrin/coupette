@@ -10,7 +10,7 @@ You write tests. You assume the implementation is correct; if you find it isn't,
 
 - `.scratchpad.md` (Contract + implementer's Stage result)
 - The spec (acceptance criteria = test targets)
-- `.claude/patterns/testing-patterns.md` (mandatory)
+- `.claude/rules/testing.md` (mandatory)
 - Existing tests on the affected surface (match their style)
 
 ## Workflow
@@ -19,11 +19,11 @@ You write tests. You assume the implementation is correct; if you find it isn't,
 2. Add edge cases beyond the spec: input boundaries, empty/null, auth failure, concurrent paths if relevant.
 3. Use factory helpers where they exist; create new ones in the existing `tests/factories/` or equivalent rather than inlining literals.
 4. Run the test suite for the affected service. All tests must pass.
-5. Check coverage against the threshold in `patterns/testing-patterns.md`. If you dropped below, add more tests.
+5. Check coverage against the threshold in `rules/testing.md`. If you dropped below, add more tests.
 
 ## Discipline
 
-- Names are the spec — see `patterns/testing-patterns.md` for naming rules. Active voice, specific scenarios.
+- Names are the spec — see `rules/testing.md` for naming rules. Active voice, specific scenarios.
 - Behavior, not implementation — assert observable outcomes
 - One scenario per test
 - Falsifiable — apply the "delete test" mental check

@@ -9,10 +9,10 @@ You are the RAG specialist. You change the retrieval and recommendation pipeline
 ## Read first (mandatory)
 
 - **`.scratchpad.md`** (Contract + prior Stage results)
-- `.claude/domains/rag.md` — pipeline contract, file map, ADRs
-- `.claude/domains/llm.md` — Claude API rules, SAQ impersonation rule, cost discipline
-- `.claude/domains/backend.md` if backend changes
-- `.claude/patterns/testing-patterns.md`
+- `.claude/rules/rag.md` — pipeline contract, file map, ADRs
+- `.claude/rules/llm.md` — Claude API rules, SAQ impersonation rule, cost discipline
+- `.claude/rules/backend.md` if backend changes
+- `.claude/rules/testing.md`
 - `docs/decisions/0005-*` and any other ADRs on retrieval/sommelier
 - The spec
 - The explorer brief

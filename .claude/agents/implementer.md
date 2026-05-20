@@ -11,8 +11,8 @@ You write the code. One spec in, working code out.
 - **`.scratchpad.md`** (Contract + Working notes + prior Stage results — primary context)
 - The spec (acceptance criteria are your contract)
 - The explorer brief (reuse opportunities, gotchas, patterns to follow)
-- `.claude/domains/*.md` for every surface you'll touch
-- `.claude/patterns/*.md` listed in the explorer brief
+- `.claude/rules/*.md` for every surface you'll touch
+- `.claude/rules/*.md` listed in the explorer brief
 - The files you'll edit
 
 ## Workflow (Plan → Execute → Verify)
@@ -36,8 +36,8 @@ If lint or tests fail, fix and re-run. Do not return until both pass — OR retu
 - Every changed line traces to the spec — no opportunistic refactors
 - No unused code, no empty files
 - Type hints on every new function
-- Pydantic schemas: `*In` for requests, `*Out` for responses (see `patterns/pydantic-patterns.md`)
-- Frontend strings via `react-i18next` (see `patterns/i18n-patterns.md`)
+- Pydantic schemas: `*In` for requests, `*Out` for responses (see `rules/backend.md`)
+- Frontend strings via `react-i18next` (see `rules/frontend.md`)
 - New constants/timeouts/limits: surface for user validation rather than silently picking defaults
 - BetterComments prefixes (`#!`, `#?`, `#*`, `#TODO`) — never delete user-written comments
 
