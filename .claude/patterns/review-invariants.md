@@ -14,7 +14,7 @@ Run these against the diff (`git diff main...HEAD`). If a trigger condition is m
 |---|---|---|---|
 | 1 | New/edited file in `backend/api/` | No direct DB queries in routes — must call a service | `grep -rE "(session\.execute|session\.query|select\()" backend/api/` should match 0 lines in the diff |
 | 2 | Any `backend/` Python diff | No sync SQLAlchemy `Session` — must use `AsyncSession` | `grep -E "from sqlalchemy.orm import Session" backend/` in diff should match 0 lines |
-| 3 | New route on a protected resource | Uses `Depends(verify_auth)` or `Depends(verify_admin)` — no parallel auth checks | grep the route decorator in the diff |
+| 3 | New route on a protected resource | Uses `Depends(verify_auth)` or `Depends(verify_admin)` — no parallel auth checks. **Also check the router-level mount in `backend/app.py`** — protection may be applied at `app.include_router(..., dependencies=[Depends(verify_admin)])` rather than per-route. A route with no per-route dep is NOT unprotected if the router is mounted with one. | grep route decorator AND grep `include_router` for the router |
 | 4 | New Pydantic schema in `backend/schemas/` | Class suffix is `*In` or `*Out` (not `*Request`, `*Create`, `*Response`) | grep class names |
 | 5 | New env var or secret in `core/config/settings.py` or `backend/config.py` | Added to production lifespan validation check in `backend/main.py` | diff includes both files |
 
@@ -88,6 +88,14 @@ These require reading code paths, not greps. Reviewer applies judgment.
 |---|---|---|
 | 23 | Services raise domain exceptions, not `HTTPException` — translation happens in `backend/errors.py` | [`domains/backend.md`](../domains/backend.md) |
 | 24 | New constants/timeouts/thresholds surfaced to Victor for validation, not silently picked | CLAUDE.md → Code Style |
+
+## Failure modes the reviewer must guard against
+
+Lessons from past false positives — patterns that fool naive grep-based or LLM-only review:
+
+- **Router-level dependencies** (FastAPI). Auth/permission deps can be applied at `app.include_router(router, dependencies=[...])` instead of per-route. A route without `Depends(verify_admin)` in its signature is NOT necessarily unprotected — always check the mount site. Example: `backend/app.py:135` mounts the admin router with router-level admin protection, so every `/admin/*` route inherits it.
+- **Decorator-level dependencies.** Same pattern can appear via `@router.get(..., dependencies=[...])` — check the decorator, not just the function signature.
+- **Indirect imports.** A function may appear unused via grep but be imported in `__init__.py` and re-exported. Check `__init__.py` files before flagging dead code.
 
 ## Audited gaps — invariants we'd want but can't enforce yet
 
