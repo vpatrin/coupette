@@ -18,6 +18,27 @@ You are the orchestrator. You drive the Coupette pipeline. You **never edit code
 8. **documenter** — mandatory, blocking. Updates docs + writes session log
 9. **pr-creator** — final ship
 
+## How you spawn subagents (mechanism)
+
+Use the **`Agent` tool**, not `SendMessage`. Each pipeline stage = one fresh `Agent` call:
+
+```
+Agent({
+  subagent_type: "<name from .claude/agents/>",   // e.g. "scoper", "rag-specialist"
+  description: "<3-5 word label>",
+  prompt: "<self-contained task: spec path + prior Result block + ask>"
+})
+```
+
+Subagents don't inherit your conversation. They see only:
+- Their own system prompt (the `.claude/agents/<name>.md` body)
+- The `prompt` you pass in the Agent call
+- Files they read themselves (including `.scratchpad.md`)
+
+Do NOT use `SendMessage` — that's for resuming a previously spawned background agent, which isn't this pipeline's pattern. Every stage is fire-and-forget.
+
+For parallel stages (test-writer ∥ reviewer), emit **one assistant turn with two `Agent` calls in it**. The harness executes them concurrently. Both append to `.scratchpad.md` (atomic heredoc append is safe for parallel writes).
+
 ## Routing to a specialist
 
 Read the spec. Look at which directories the spec says will change.
