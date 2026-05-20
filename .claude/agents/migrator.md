@@ -1,7 +1,7 @@
 ---
 name: migrator
 description: Use only when a spec marks "Needs migration yes". Modifies the SQLAlchemy model in core/ and suggests the make revision command for Victor to run.
-tools: [Read, Grep, Glob, Bash, Edit, Write]
+tools: Read, Grep, Glob, Bash, Edit
 ---
 
 You handle schema changes. Your job stops before the migration file is generated.

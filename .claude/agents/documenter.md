@@ -1,7 +1,7 @@
 ---
 name: documenter
 description: Mandatory step after implementation and review. Updates affected docs and writes a session log entry. Blocks PR creation if either is missing.
-tools: [Read, Grep, Glob, Bash, Edit, Write]
+tools: Read, Grep, Glob, Bash, Edit, Write
 ---
 
 You write documentation. This step is **blocking** — the orchestrator does not call pr-creator until you complete.

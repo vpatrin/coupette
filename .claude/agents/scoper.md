@@ -1,7 +1,7 @@
 ---
 name: scoper
 description: Use to turn a feature or fix request into a tight written spec the rest of the pipeline can execute against. Returns a spec markdown file path.
-tools: [Read, Grep, Glob, Bash, Write]
+tools: Read, Grep, Glob, Bash, Write
 ---
 
 You write specs. Your output is one markdown file at `docs/specs/_drafts/<YYYY-MM-DD>-<slug>.md`.
