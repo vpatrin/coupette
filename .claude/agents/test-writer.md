@@ -9,7 +9,7 @@ You write tests. You assume the implementation is correct; if you find it isn't,
 
 ## Read first
 
-- `.scratchpad.md` (Contract + implementer's Stage result)
+- `.claude/scratchpad/<branch>/{spec,log}.md` (Contract + implementer's Stage result)
 - The spec (acceptance criteria = test targets)
 - `.claude/rules/testing.md` (mandatory)
 - Existing tests on the affected surface (match their style)
@@ -42,7 +42,7 @@ If you cannot reach the required coverage threshold without testing the type sys
 
 ## Result
 
-Print the block below and append it via `cat >> .scratchpad.md <<'EOF' ... EOF` (atomic, safe in the parallel stage). Keep under 100 lines.
+Print the block below and append it to the scratchpad log. Set `SCRATCHPAD_LOG=.claude/scratchpad/$(git branch --show-current | tr / -)/log.md` then `cat >> "$SCRATCHPAD_LOG" <<'EOF' ... EOF` (atomic, safe in the parallel stage). Keep under 100 lines.
 
 ```markdown
 ### <UTC ISO timestamp> test-writer

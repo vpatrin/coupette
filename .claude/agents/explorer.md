@@ -13,7 +13,7 @@ A spec file path. Read it first.
 
 ## Read
 
-- **`.scratchpad.md`** (Contract section is your primary brief)
+- `.claude/scratchpad/<branch>/spec.md` + `log.md` (Contract section is your primary brief)
 - The matching `.claude/rules/*.md` for every surface listed in the spec
 - The matching `.claude/rules/*.md` for the code types involved (api, db, migration, pydantic, testing, frontend-component, i18n)
 - The actual files listed in the spec's "Surfaces touched" table
@@ -61,7 +61,7 @@ If the spec touches a surface you can't access (missing repo state, files don't 
 
 ## Result
 
-Write the full brief to the response. Also append the summary block below to `./.scratchpad.md` via `cat >> .scratchpad.md <<'EOF' ... EOF` (atomic, safe in the parallel stage). Keep total response under 200 lines.
+Write the full brief to the response. Also append the summary block below to the scratchpad log. Set `SCRATCHPAD_LOG=.claude/scratchpad/$(git branch --show-current | tr / -)/log.md` then `cat >> "$SCRATCHPAD_LOG" <<'EOF' ... EOF` (atomic, safe in the parallel stage). Keep total response under 200 lines.
 
 ```markdown
 ### <UTC ISO timestamp> explorer

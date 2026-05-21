@@ -5,7 +5,16 @@ tools: Read, Grep, Glob, Bash, Write
 model: opus
 ---
 
-You write specs. Your output is one markdown file at `docs/specs/_drafts/<YYYY-MM-DD>-<slug>.md`.
+You write specs. Your output is one markdown file at `.claude/scratchpad/<branch>/spec.md`. The orchestrator creates the directory after you return; if it doesn't exist yet, create it first:
+
+```bash
+BRANCH=$(git branch --show-current)
+SCRATCHPAD_DIR=".claude/scratchpad/${BRANCH//\//-}"
+mkdir -p "$SCRATCHPAD_DIR"
+# Write your spec to "$SCRATCHPAD_DIR/spec.md"
+```
+
+The branch name comes from the spec's `Branch:` field — make sure the dev has either created the branch already OR the orchestrator will create it via `git worktree add -b <branch>` before subsequent agents run.
 
 ## Read first
 
@@ -118,7 +127,7 @@ If the request is too ambiguous to scope safely (multiple plausible interpretati
 
 ## Result
 
-Print the block below and append it via `cat >> .scratchpad.md <<'EOF' ... EOF` (atomic, safe in the parallel test-writer ∥ reviewer stage) if you're in a worktree. Keep total response under 30 lines.
+Print the block below and append it to the scratchpad log. Set `SCRATCHPAD_LOG=.claude/scratchpad/$(git branch --show-current | tr / -)/log.md` then `cat >> "$SCRATCHPAD_LOG" <<'EOF' ... EOF` (atomic, safe in the parallel test-writer ∥ reviewer stage) if you're in a worktree. Keep total response under 30 lines.
 
 ```markdown
 ### <UTC ISO timestamp> scoper

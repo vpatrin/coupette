@@ -33,7 +33,7 @@ Agent({
 
 Do NOT use `SendMessage` — that's for resuming a previously spawned background agent, which isn't this pipeline's pattern. Every stage is fire-and-forget.
 
-For parallel stages (test-writer ∥ reviewer), emit **one assistant turn with two `Agent` calls in it**. The harness executes them concurrently. Both append to `.scratchpad.md` (atomic heredoc append is safe for parallel writes).
+For parallel stages (test-writer ∥ reviewer), emit **one assistant turn with two `Agent` calls in it**. The harness executes them concurrently. Both append to the scratchpad log (atomic heredoc append is safe for parallel writes).
 
 See [Handoff format](#handoff-format) below for what to put in `prompt`.
 
@@ -58,31 +58,27 @@ git worktree add ~/.claude/worktrees/coupette/<branch> -b <branch>
 cd ~/.claude/worktrees/coupette/<branch>
 ```
 
-Initialize the scratchpad at the worktree root. The scratchpad has three sections and is the primary working context for every subagent — it's tighter than the spec and survives your context compaction:
+Initialize the scratchpad — **one directory per branch, two files**:
 
 ```bash
-cat > .scratchpad.md <<EOF
-# Scratchpad: <spec title>
+BRANCH=$(git branch --show-current)
+SCRATCHPAD_DIR=".claude/scratchpad/${BRANCH//\//-}"
+mkdir -p "$SCRATCHPAD_DIR"
 
-**Branch:** <branch>
+# spec.md — scoper has already produced this at .claude/scratchpad/<branch>/spec.md
+# (per scoper.md). The orchestrator only initializes log.md.
+
+# log.md — initialize with header
+cat > "$SCRATCHPAD_DIR/log.md" <<EOF
+# Pipeline log: <spec title>
+
+**Branch:** $BRANCH
 **Started:** $(date -u +"%Y-%m-%dT%H:%M:%SZ")
-**Spec:** <path to spec file>
-
-## Contract
-
-Copied from the spec — agents read this instead of re-parsing the spec every time.
-
-**Acceptance criteria:**
-- [ ] (copy each from spec)
-
-**Surfaces touched:** <list>
-**Needs migration:** yes | no
-**Out of scope:** <list>
-**Open questions:** <list, or "resolved during review">
+**Spec:** $SCRATCHPAD_DIR/spec.md
 
 ## Working notes
 
-(Orchestrator updates this between stages: user clarifications received, decisions made, scope adjustments.)
+(Orchestrator updates this between stages: user clarifications, decisions, scope adjustments.)
 
 ## Stage results
 
@@ -90,13 +86,19 @@ Copied from the spec — agents read this instead of re-parsing the spec every t
 EOF
 ```
 
-Every subsequent subagent runs with the worktree as cwd. They read `.scratchpad.md` first (it's their primary context) and append their own result block to **Stage results** on completion. You update **Working notes** between stages with anything Victor said that the next subagent needs to know.
+Every subsequent subagent runs with the worktree as cwd. They read **both** files in `.claude/scratchpad/<branch>/`:
+- `spec.md` — the contract (acceptance criteria, surfaces, out-of-scope)
+- `log.md` — prior agents' Result blocks + your Working notes
+
+They append their own Result block to `log.md` on completion. You update **Working notes** in `log.md` between stages with anything Victor said that the next subagent needs to know.
 
 **Append convention for subagents** (all worker agents follow this — repeated here as the source of truth):
 
 ```bash
+BRANCH=$(git branch --show-current)
+SCRATCHPAD_LOG=".claude/scratchpad/${BRANCH//\//-}/log.md"
 TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-cat >> .scratchpad.md <<'EOF'
+cat >> "$SCRATCHPAD_LOG" <<'EOF'
 ### <use $TS substituted above> <agent-name>
 **Status:** ...
 ...
@@ -110,9 +112,12 @@ Clean up after pr-creator returns:
 ```bash
 cd <original repo path>
 git worktree remove ~/.claude/worktrees/coupette/<branch>
+# Scratchpad directory at .claude/scratchpad/<branch>/ persists locally
+# (gitignored, useful for retrospection). Manual cleanup via `make clean-scratchpad`
+# or `rm -rf .claude/scratchpad/<branch>/` when no longer needed.
 ```
 
-The scratchpad dies with the worktree — never committed. The documenter consumes the whole scratchpad to write the permanent session log into `docs/session-logs/` before the worktree is removed.
+The scratchpad is gitignored (covered by `.claude/*` rule). The documenter consumes both `spec.md` and `log.md` to write the permanent session log into `docs/session-logs/` before the worktree is removed.
 
 **Skipping the worktree is a state-changing decision.** Only skip when:
 - The user passed an explicit flag like `--no-worktree` or said something like "no worktree" / "in-place" / "skip the worktree"
@@ -125,7 +130,7 @@ If you intend to skip, **ANNOUNCE the decision before spawning the next subagent
 When spawning a subagent, the prompt you pass includes:
 
 1. **Spec path** (every stage after scoper)
-2. **Prior stage's Result block** (verbatim, from `.scratchpad.md`) — or a 3-line summary if the prior block is large
+2. **Prior stage's Result block** (verbatim, from `.claude/scratchpad/<branch>/log.md`) — or a 3-line summary if the prior block is large
 3. **What you want this subagent to do** (1-3 sentences)
 4. **Any user clarification** received since the prior stage
 

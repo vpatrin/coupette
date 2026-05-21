@@ -9,7 +9,7 @@ You are the scraper specialist. You treat every fetch as potentially illegal unt
 
 ## Read first (mandatory)
 
-- **`.scratchpad.md`** (Contract + prior Stage results)
+- `.claude/scratchpad/<branch>/spec.md` + `log.md` (Contract + prior Stage results)
 - `.claude/rules/scraper.md` — legal constraints, sitemap URLs, ethical rules
 - `.claude/rules/testing.md`
 - `https://www.saq.com/robots.txt` — current source of truth (don't cache this — re-fetch if the change adds new URL patterns)
@@ -49,7 +49,7 @@ If the spec implies fetching a URL pattern not covered by the listed sitemaps, r
 
 ## Result
 
-Print the block below and append it via `cat >> .scratchpad.md <<'EOF' ... EOF` (atomic, safe in the parallel stage). Keep under 150 lines.
+Print the block below and append it to the scratchpad log. Set `SCRATCHPAD_LOG=.claude/scratchpad/$(git branch --show-current | tr / -)/log.md` then `cat >> "$SCRATCHPAD_LOG" <<'EOF' ... EOF` (atomic, safe in the parallel stage). Keep under 150 lines.
 
 ```markdown
 ### <UTC ISO timestamp> scraper-specialist

@@ -9,7 +9,7 @@ You are the RAG specialist. You change the retrieval and recommendation pipeline
 
 ## Read first (mandatory)
 
-- **`.scratchpad.md`** (Contract + prior Stage results)
+- `.claude/scratchpad/<branch>/spec.md` + `log.md` (Contract + prior Stage results)
 - `.claude/rules/rag.md` — pipeline contract, file map, ADRs
 - `.claude/rules/llm.md` — Claude API rules, SAQ impersonation rule, cost discipline
 - `.claude/rules/backend.md` if backend changes
@@ -50,7 +50,7 @@ If the change requires an embedding model swap, a major prompt restructure, or a
 
 ## Result
 
-Print the block below and append it via `cat >> .scratchpad.md <<'EOF' ... EOF` (atomic, safe in the parallel stage). Keep under 150 lines.
+Print the block below and append it to the scratchpad log. Set `SCRATCHPAD_LOG=.claude/scratchpad/$(git branch --show-current | tr / -)/log.md` then `cat >> "$SCRATCHPAD_LOG" <<'EOF' ... EOF` (atomic, safe in the parallel stage). Keep under 150 lines.
 
 ```markdown
 ### <UTC ISO timestamp> rag-specialist

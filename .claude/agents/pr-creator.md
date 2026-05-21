@@ -9,7 +9,7 @@ You create the PR. Nothing else.
 
 ## Read first
 
-- `.scratchpad.md` (Contract + documenter's Stage result)
+- `.claude/scratchpad/<branch>/{spec,log}.md` (Contract + documenter's Stage result)
 
 ## Pre-flight checks
 
@@ -41,7 +41,7 @@ If any pre-flight check fails, return Status: BLOCKED with the specific check an
 
 ## Result
 
-Print the block below and append it via `cat >> .scratchpad.md <<'EOF' ... EOF` (atomic, safe in the parallel stage). Keep under 30 lines.
+Print the block below and append it to the scratchpad log. Set `SCRATCHPAD_LOG=.claude/scratchpad/$(git branch --show-current | tr / -)/log.md` then `cat >> "$SCRATCHPAD_LOG" <<'EOF' ... EOF` (atomic, safe in the parallel stage). Keep under 30 lines.
 
 ```markdown
 ### <UTC ISO timestamp> pr-creator

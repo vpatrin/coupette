@@ -13,7 +13,7 @@ Pass the orchestrator:
 - `Type: feature`
 
 The orchestrator will:
-1. Spawn `scoper` to produce a spec at `docs/specs/_drafts/<date>-<slug>.md`
+1. Spawn `scoper` to produce a spec at `.claude/scratchpad/<branch>/spec.md`
 2. Return the spec to you, the user reads it, says proceed
 3. Spawn `explorer` for read-only recon
 4. Spawn `migrator` if the spec marks `Needs migration: yes`

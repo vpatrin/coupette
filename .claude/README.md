@@ -51,11 +51,11 @@ A multi-agent pipeline for Coupette, inspired by Anthropic's orchestrator-worker
 ```
 /feature add wine pairing endpoint
   ↓
-Orchestrator spawns Scoper → spec at docs/specs/_drafts/<date>-<slug>.md
+Orchestrator spawns Scoper → spec at .claude/scratchpad/<branch>/spec.md
   ↓  (Victor reviews, says proceed)
 Orchestrator: git worktree add ~/.claude/worktrees/coupette/<branch>
-              + initializes .scratchpad.md (Contract / Working notes / Stage results)
-  ↓  (every subsequent subagent runs in the worktree, reads .scratchpad.md first,
+              + initializes .claude/scratchpad/<branch>/log.md (Working notes + Stage results)
+  ↓  (every subsequent subagent runs in the worktree, reads spec.md + log.md first,
        appends its Result block to Stage results on completion)
 Explorer → recon brief + reads prior session logs for the touched surface
 Migrator → only if spec says Needs migration: yes
@@ -63,19 +63,20 @@ Specialist (or generic Implementer) → does the work (Plan → Execute → Veri
   ↓  (Victor reviews diff, says proceed)
 Test-Writer ∥ Reviewer (parallel via two Agent calls in one message)
   Reviewer reads .claude/commands/<advisor>.md and applies them itself
-Documenter (BLOCKING) → consumes .scratchpad.md → writes session log
+Documenter (BLOCKING) → consumes spec.md + log.md → writes session log
               + changelog + ADR if applicable
 PR-Creator → invokes /pr
   ↓
-Orchestrator: git worktree remove (scratchpad dies with worktree)
+Orchestrator: git worktree remove (scratchpad dir persists locally for retrospection,
+              gitignored, manual cleanup via `make clean-scratchpad`)
 ```
 
 ## Three layers of memory
 
 | Artifact | Lives in | Lifetime | Audience |
 |---|---|---|---|
-| **Spec** | `docs/specs/_drafts/` | Ephemeral (cleared on merge) | Pipeline input |
-| **Scratchpad** | Worktree `.scratchpad.md` | Worktree lifetime | All subagents (primary working context) |
+| **Spec** | `.claude/scratchpad/<branch>/spec.md` | Local, gitignored — persists until manually cleaned | Pipeline input (scoper writes, agents read) |
+| **Pipeline log** | `.claude/scratchpad/<branch>/log.md` | Same — local, gitignored, persists | All subagents (primary trace) |
 | **Session log** | `docs/session-logs/` | Permanent (committed) | Future-you + future AI agents |
 
 The scratchpad is for optimization (tight context, survives compaction). The session log is for archaeology (decisions, dead ends, rejected alternatives — like ADRs but per-session). Pipeline runs always produce a session log; standalone work uses judgment.

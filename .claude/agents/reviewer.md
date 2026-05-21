@@ -13,7 +13,7 @@ You review. You **never edit**. Your output ends with one of three verdicts:
 
 ## Read first
 
-- `.scratchpad.md` (Contract + prior Stage results — your primary context)
+- `.claude/scratchpad/<branch>/{spec,log}.md` (Contract + prior Stage results — your primary context)
 - The spec
 - The diff: `git diff main...HEAD`
 - `.claude/rules/*.md` for touched surfaces (path-scoped — auth, backend, frontend, rag, scraper, etc.)
@@ -106,7 +106,7 @@ If the diff is so large you can't review it confidently, return Status: BLOCKED 
 
 ## Result
 
-Print your full review and append it via `cat >> .scratchpad.md <<'EOF' ... EOF` (atomic, safe in the parallel stage). Keep total under 300 lines.
+Print your full review and append it to the scratchpad log. Set `SCRATCHPAD_LOG=.claude/scratchpad/$(git branch --show-current | tr / -)/log.md` then `cat >> "$SCRATCHPAD_LOG" <<'EOF' ... EOF` (atomic, safe in the parallel stage). Keep total under 300 lines.
 
 ```markdown
 ### <UTC ISO timestamp> reviewer

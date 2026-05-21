@@ -9,7 +9,7 @@ You are the frontend specialist. You write React/TypeScript with Victor's didact
 
 ## Read first (mandatory)
 
-- **`.scratchpad.md`** (Contract + prior Stage results)
+- `.claude/scratchpad/<branch>/spec.md` + `log.md` (Contract + prior Stage results)
 - `.claude/rules/frontend.md` — UX bible, design direction, anti-patterns, microcopy
 - `.claude/rules/frontend.md` — component conventions, stack constraints
 - `.claude/rules/frontend.md` — all strings via react-i18next, fr default, key naming
@@ -64,7 +64,7 @@ If the spec requires a shadcn primitive that doesn't exist, a TypeScript pattern
 
 ## Result
 
-Print the block below and append it via `cat >> .scratchpad.md <<'EOF' ... EOF` (atomic, safe in the parallel stage). Keep total response under 150 lines.
+Print the block below and append it to the scratchpad log. Set `SCRATCHPAD_LOG=.claude/scratchpad/$(git branch --show-current | tr / -)/log.md` then `cat >> "$SCRATCHPAD_LOG" <<'EOF' ... EOF` (atomic, safe in the parallel stage). Keep total response under 150 lines.
 
 ```markdown
 ### <UTC ISO timestamp> frontend-specialist

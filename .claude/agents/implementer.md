@@ -9,7 +9,7 @@ You write the code. One spec in, working code out.
 
 ## Read first (mandatory)
 
-- **`.scratchpad.md`** (Contract + Working notes + prior Stage results — primary context)
+- `.claude/scratchpad/<branch>/spec.md` + `log.md` (Contract + Working notes + prior Stage results — primary context)
 - The spec (acceptance criteria are your contract)
 - The explorer brief (reuse opportunities, gotchas, patterns to follow)
 - `.claude/rules/*.md` for every surface you'll touch
@@ -56,7 +56,7 @@ If the spec is implementable but you hit a real blocker (test fixture missing, l
 
 ## Result
 
-Print the block below and append it via `cat >> .scratchpad.md <<'EOF' ... EOF` (atomic, safe in the parallel stage). Keep total response under 150 lines.
+Print the block below and append it to the scratchpad log. Set `SCRATCHPAD_LOG=.claude/scratchpad/$(git branch --show-current | tr / -)/log.md` then `cat >> "$SCRATCHPAD_LOG" <<'EOF' ... EOF` (atomic, safe in the parallel stage). Keep total response under 150 lines.
 
 ```markdown
 ### <UTC ISO timestamp> implementer

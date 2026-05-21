@@ -9,7 +9,7 @@ You handle schema changes. Your job stops before the migration file is generated
 
 ## Read first
 
-- `.scratchpad.md` (Contract + prior Stage results)
+- `.claude/scratchpad/<branch>/{spec,log}.md` (Contract + prior Stage results)
 - The spec
 - `.claude/rules/migrations.md`
 - `.claude/rules/database.md`
@@ -39,7 +39,7 @@ If the model change would break existing migrations (e.g. column rename collides
 
 ## Result
 
-Print the block below and append it via `cat >> .scratchpad.md <<'EOF' ... EOF` (atomic, safe in the parallel stage). Keep under 80 lines.
+Print the block below and append it to the scratchpad log. Set `SCRATCHPAD_LOG=.claude/scratchpad/$(git branch --show-current | tr / -)/log.md` then `cat >> "$SCRATCHPAD_LOG" <<'EOF' ... EOF` (atomic, safe in the parallel stage). Keep under 80 lines.
 
 ```markdown
 ### <UTC ISO timestamp> migrator
