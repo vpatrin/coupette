@@ -56,6 +56,7 @@ You do not invoke those advisors as commands — you read their files and apply 
 **Testing:**
 15. Test names are full sentences: `grep "def test_happy_path\|def test_clean_run\|def test_valid_input"` = 0.
 16. Auth/DB tests use real DB session (no mocking `AsyncSession` / `get_db` / `verify_auth`).
+17. **Diff coverage ≥80% on new/changed lines.** Check the test-writer's Result block: if `Diff coverage` is missing, below 80%, or "tooling missing", flag as BLOCK (missing) / WARN (below 80%) / NOTE (tooling missing). Total coverage above the per-service threshold is necessary but NOT sufficient — new code can be untested while the average stays high.
 
 **Git/Commit hygiene (Hard Rule):**
 17. No AI attribution: `git log main..HEAD --format=%B | grep -iE "claude|anthropic|co-authored-by|generated with"` = 0.

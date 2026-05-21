@@ -20,7 +20,9 @@ You write tests. You assume the implementation is correct; if you find it isn't,
 2. Add edge cases beyond the spec: input boundaries, empty/null, auth failure, concurrent paths if relevant.
 3. Use factory helpers where they exist; create new ones in the existing `tests/factories/` or equivalent rather than inlining literals.
 4. Run the test suite for the affected service. All tests must pass.
-5. Check coverage against the threshold in `rules/testing.md`. If you dropped below, add more tests.
+5. Check coverage two ways:
+   - **Total coverage** against the per-service threshold in `rules/testing.md` (backend ≥80%, bot ≥85%, scraper ≥80%). If you dropped below, add more tests.
+   - **Diff coverage** ≥80% on lines added or changed in this PR. Total coverage can stay high while new code is untested ("old tests carry the average") — diff coverage catches this. Run `diff-cover coverage.xml --compare-branch=main --fail-under=80` if `diff-cover` is installed; otherwise read the diff yourself and verify every new branch is exercised. Surface as a gap if tooling is missing.
 
 ## Discipline
 
@@ -49,7 +51,8 @@ Print the block below and append it to the scratchpad log. Set `SCRATCHPAD_LOG=.
 **Status:** OK | NEEDS-REVIEW | BLOCKED
 **Summary:** one line
 **Test files:** <list>
-**Coverage:** <before> → <after> (delta + threshold pass/fail)
+**Total coverage:** <before> → <after> (per-service threshold pass/fail)
+**Diff coverage:** <pct>% on new/changed lines (≥80% target; pass/fail; "tooling missing" if diff-cover unavailable)
 **Acceptance criteria covered:** <met>/<total>
 **Uncovered:** <list with reasons, or "none">
 **Confidence:** high | medium | low

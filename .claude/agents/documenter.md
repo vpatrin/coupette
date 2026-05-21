@@ -56,6 +56,19 @@ ADRs are durable architectural decisions. Target throughput: **5–15 ADRs per y
 - ❌ "Named the schema `WineOut`" (convention; already in CLAUDE.md)
 - ❌ "Bumped curation prompt to include intent" (small tuning; session log entry)
 
+#### Amending existing ADRs
+
+ADRs are mostly **immutable** after acceptance — write a new ADR rather than rewriting an old one. Allowed amendments vs. not:
+
+| ✅ Allowed amendment | ❌ Not allowed (write a new ADR instead) |
+|---|---|
+| Typos, broken links, formatting | Changing the decision |
+| Status change (Accepted → Deprecated → Superseded by NNNN) | Changing rejected alternatives or rationale |
+| Adding clarifying examples | Adding sections that reframe the decision |
+| Cross-linking to newer ADRs that supersede or extend | Updating "Consequences" after the fact (those are predictions; correct via session log) |
+
+When superseding: update the OLD ADR's status to `Superseded by [NNNN](NNNN-xxx.md)`. The old text stays; the link to the new one is the only edit.
+
 ### 3. Roadmap (sometimes)
 
 If the change completes a capability tracked in `docs/ROADMAP.md`, mark it `[x]` with the issue/PR ref.
