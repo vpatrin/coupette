@@ -52,6 +52,10 @@ dist/
 !.claude/rules/
 !.claude/skills/
 !.claude/README.md
+
+# Pipeline ephemeral state — must never be committed
+.scratchpad.md
+docs/specs/_drafts/
 # Benchmark results (generated, not versioned)
 backend/benchmarks/eval/results/
 !backend/benchmarks/eval/results/.gitkeep
