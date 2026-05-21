@@ -296,3 +296,8 @@ clean:
 	rm -rf .pytest_cache backend/.pytest_cache scraper/.pytest_cache bot/.pytest_cache
 	rm -rf .ruff_cache backend/.ruff_cache scraper/.ruff_cache core/.ruff_cache bot/.ruff_cache
 	rm -rf *.egg-info
+
+clean-scratchpad:
+	@echo "\n▶ Cleaning pipeline scratchpads (.claude/scratchpad/)"
+	rm -rf .claude/scratchpad
+	@echo "Done. Run /feature or /fix to recreate per branch."
