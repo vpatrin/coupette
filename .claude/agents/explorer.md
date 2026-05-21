@@ -20,6 +20,7 @@ A spec file path. Read it first.
 - One level of callers/dependencies for each touched file (`grep -r "from <module>"` etc.)
 - Existing tests that cover the touched surface
 - **Prior session logs for the touched surface.** Read `docs/session-logs/INDEX.md` first — it's tagged by surface, faster than grep. Open the 1-2 most recent logs tagged with this surface. Past dead ends + obstacles save the implementer from repeating them.
+- **`docs/architecture.md`** — only on cross-cutting changes that span multiple subsystems. For single-surface changes, the matching `docs/specs/<surface>.md` is enough.
 
 ## Brief format
 

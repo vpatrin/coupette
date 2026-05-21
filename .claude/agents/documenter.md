@@ -60,9 +60,33 @@ ADRs are durable architectural decisions. Target throughput: **5–15 ADRs per y
 
 If the change completes a capability tracked in `docs/ROADMAP.md`, mark it `[x]` with the issue/PR ref.
 
-### 4. Domain or pattern doc updates (sometimes)
+### 4. Agent rule updates (sometimes)
 
 If the change made a `.claude/rules/*.md` stale (new contract, new convention, deprecated rule), update the doc.
+
+### 4b. Human-KB spec sync (sometimes)
+
+You also own `docs/specs/<subsystem>.md` — the human-facing KB for each subsystem. After the pipeline runs, ask:
+
+> "Did this change the **contract** or **how-it-works** of a subsystem that has a committed spec?"
+
+Triggers (update if any apply):
+- Public API contract changed (new route, route signature, returned shape)
+- Data flow changed (new dependency between subsystems, new event)
+- Operational gotcha added (new env var, secret, ordering constraint)
+- File-map changed (entry point moved, core logic refactored across files)
+
+Skip (no spec update):
+- Internal refactor with no contract change
+- Bug fix without behavior change
+- Mechanical edits (rename, typo)
+
+Update style:
+- **Surgical**: edit the affected sections only — do NOT rewrite the whole spec
+- **Cross-link**: add the new session log path to the spec's "Related → Recent session logs" section
+- **Flag big rewrites**: if more than ~30% of the spec is now stale, do NOT auto-fix. Return Status: NEEDS-REVIEW with "spec docs/specs/<x>.md needs human review — pipeline changed Y but doc still describes Z."
+
+Specs follow the template at `docs/specs/_template.md`. Don't restructure existing specs to match the template if their current structure conveys the same information — that's content surgery best done one spec at a time outside the pipeline.
 
 ### 5. Session log
 
@@ -101,7 +125,9 @@ Print the block below and append it to the scratchpad log. Set `SCRATCHPAD_LOG=.
 **Changelog updated:** yes | no (with reason if no)
 **ADRs created:** <list, or "none">
 **Roadmap items marked:** <list, or "none">
-**Domain/pattern docs updated:** <list, or "none">
+**Agent rules updated:** <list of .claude/rules/*.md, or "none">
+**Specs updated:** <list of docs/specs/*.md, or "none — change didn't touch subsystem contract">
+**Specs flagged stale (needs human review):** <list, or "none">
 **Session log:** <path, or "skipped (standalone, trivial)">
 **Index updated:** yes | n/a (skipped)
 **Signals consumed from scratchpad:** <list, e.g. "rag-specialist ADR-suggested → wrote ADR-0011">
