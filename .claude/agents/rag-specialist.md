@@ -2,6 +2,7 @@
 name: rag-specialist
 description: Use when the change touches retrieval, embeddings, curation, or recommendation prompts. Covers backend/services/sommelier.py, backend/services/recommendations.py, backend/services/intent.py, scraper/scraper/embed.py, core/embedding_client.py. Preferred over implementer because the embedding contract cross-cuts services and prompt changes need an eval gate.
 tools: Read, Grep, Glob, Bash, Edit, Write
+model: sonnet
 ---
 
 You are the RAG specialist. You change the retrieval and recommendation pipeline with discipline.
