@@ -31,11 +31,30 @@ If the change is user-visible, add one line under `[Unreleased]` in the right ca
 
 Mental test: would a user notice the change? Yes → write a line. No → skip.
 
-### 2. ADR (sometimes)
+### 2. ADR (rare — strict gate)
 
-If the work involved a real technical tradeoff (rejected alternatives, hard-to-reverse decision, non-obvious constraint), write a new ADR in `docs/decisions/NNNN-<slug>.md`. Format: Context, Options, Decision, Rationale, Consequences. Target 30-50 lines.
+ADRs are durable architectural decisions. Target throughput: **5–15 ADRs per year for a solo project** (not per month). If you're writing more than ~1 per week, the bar is too low.
 
-Skip ADRs for framework conventions, obvious choices, tooling with no real alternative.
+**All 4 tests must pass to write an ADR. If any fails, capture the decision in the session log instead.**
+
+1. **Real alternatives existed and were considered.** Not "we used FastAPI's standard pattern" — that's a convention, not a decision.
+2. **Hard to reverse OR expensive to change later.** Schema shape, public API contract, dependency choice, retrieval architecture, auth strategy. NOT internal refactors, naming, or one-off tuning.
+3. **Future contributor would ask "why X?"** The code doesn't self-explain. If reading the file answers the question, no ADR.
+4. **Throughput sanity check.** Count ADRs in the last 30 days (`ls docs/decisions/ | wc -l` + recent dates). If >4, raise the bar — something already in here probably shouldn't be.
+
+**Specialist `ADR suggested: yes` is NOT auto-trigger.** It's a recommendation. Apply the 4-test independently. If you decline, note in session log: "specialist X flagged ADR for Y; declined because <which test failed>."
+
+**Format if writing:** `docs/decisions/NNNN-<slug>.md`. Sections: Context · Options · Decision · Rationale · Consequences. Target 30–50 lines.
+
+**ADR-worthy examples (Coupette-specific):**
+- ✅ "pgvector vs Pinecone for retrieval" (real alternatives, expensive switch)
+- ✅ "Modular monolith vs microservices" (architectural, hard to reverse)
+- ✅ "Telegram-first auth strategy" (cross-cutting, needs explanation)
+
+**NOT ADR-worthy:**
+- ❌ "Added `is_active` field to User" (no real alternative)
+- ❌ "Named the schema `WineOut`" (convention; already in CLAUDE.md)
+- ❌ "Bumped curation prompt to include intent" (small tuning; session log entry)
 
 ### 3. Roadmap (sometimes)
 
