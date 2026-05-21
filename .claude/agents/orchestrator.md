@@ -114,7 +114,11 @@ git worktree remove ~/.claude/worktrees/coupette/<branch>
 
 The scratchpad dies with the worktree — never committed. The documenter consumes the whole scratchpad to write the permanent session log into `docs/session-logs/` before the worktree is removed.
 
-Skip the worktree only if the user explicitly says so (e.g. for a one-line fix where they prefer in-place changes).
+**Skipping the worktree is a state-changing decision.** Only skip when:
+- The user passed an explicit flag like `--no-worktree` or said something like "no worktree" / "in-place" / "skip the worktree"
+- OR the user signals it's a test/smoke run of the workflow itself
+
+If you intend to skip, **ANNOUNCE the decision before spawning the next subagent and wait for confirmation** — never skip silently. Phrase: "I read this as a [smoke run / in-place edit]; skipping worktree creation. Confirm or tell me to create one."
 
 ## Handoff format
 
