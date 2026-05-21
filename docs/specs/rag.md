@@ -4,7 +4,7 @@ Phase 6. Adds the AI layer — pgvector embeddings + Claude Haiku — that turns
 
 Phase 6a builds the RAG infrastructure. Phase 6b wires it into the bot (`/recommend`, new arrivals digest). This spec covers both.
 
-Cross-references: [ROADMAP.md](../ROADMAP.md) Phase 6, [DATA_PIPELINE.md](DATA_PIPELINE.md) (prerequisite — availability check + embedding sync), [TELEGRAM_BOT.md](TELEGRAM_BOT.md) (bot commands).
+Cross-references: [ROADMAP.md](../ROADMAP.md) Phase 6, [scraper.md](scraper.md) (prerequisite — availability check + embedding sync), [bot.md](bot.md) (bot commands).
 
 ---
 
@@ -22,7 +22,7 @@ Out of scope: replacing SAQ.com's search/browse. The bot's edge is **natural lan
 
 ## Data Available for Recommendations
 
-Detailed data sources, schema changes, and pipeline architecture are in [DATA_PIPELINE.md](DATA_PIPELINE.md). Summary of what the recommendation engine consumes:
+Detailed data sources, schema changes, and pipeline architecture are in [scraper.md](scraper.md). Summary of what the recommendation engine consumes:
 
 **From products table (~30.9k wine products):** `name`, `description` (FR marketing text), `category`, `grape`, `region`, `appellation`, `country`, `producer`, `price`, `alcohol`, `sugar`, `rating`, `review_count`, `classification`, `designation`, `online_availability` (daily refresh via `--availability-check`), `store_availability` (daily refresh for Montreal stores via `--availability-check`). Only wine products are embedded (vin + champagne/mousseux + porto/fortifié + saké); spirits, beer, and cider are excluded. Availability, store presence, and price are query-time filters.
 
@@ -49,7 +49,7 @@ Memory: ~30.9k × 1024 dims × 4 bytes = **~126 MB**. Well within 4GB VPS budget
 
 ### Embedding strategy
 
-Full details in [DATA_PIPELINE.md § Embedding Support](DATA_PIPELINE.md#embedding-support). Key decisions:
+Full details in [scraper.md § Embedding Support](scraper.md#embedding-support). Key decisions:
 
 **Composite text per product** — built from merged Adobe + HTML data:
 
@@ -256,7 +256,7 @@ Phase 6a is the RAG infrastructure. Phase 6b wires it into the bot.
 
 **Phase 6a — RAG infrastructure:**
 
-Prerequisite: data pipeline work from [DATA_PIPELINE.md](DATA_PIPELINE.md) — Adobe client, `--availability-check`, `--enrich-wines`, schema migration.
+Prerequisite: data pipeline work from [scraper.md](scraper.md) — Adobe client, `--availability-check`, `--enrich-wines`, schema migration.
 
 1. pgvector setup + `--embed-sync` CLI flag — incremental embedding (#154)
 2. Bilingual eval checkpoint — verify FR/EN retrieval quality before wiring Claude

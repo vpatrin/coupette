@@ -142,7 +142,7 @@ See [DEVELOPMENT.md](DEVELOPMENT.md#deploy) for deploy process. Systemd timers a
 
 RAG-based wine recommendation pipeline: intent parsing → embedding → hybrid retrieval → diversity reranking → curation. Claude Haiku for LLM calls, OpenAI `text-embedding-3-large` for embeddings, pgvector for hybrid search.
 
-Full architecture, rationale, and key decisions in [ADR 0005](decisions/0005-rag-pipeline.md). Eval framework in [specs/RECOMMENDATIONS.md](specs/RECOMMENDATIONS.md).
+Full architecture, rationale, and key decisions in [ADR 0005](decisions/0005-rag-pipeline.md). Eval framework in [specs/rag.md](specs/rag.md).
 
 ---
 
@@ -194,7 +194,7 @@ Phase 4 — Cloud benchmarks (#523):
 
 ### AI quality
 
-Eval framework in `backend/benchmarks/eval/`, spec in [specs/RECOMMENDATIONS.md](specs/RECOMMENDATIONS.md). Measures recommendation relevance, diversity, and prompt adherence against a frozen test set.
+Eval framework in `backend/benchmarks/eval/`, spec in [specs/rag.md](specs/rag.md). Measures recommendation relevance, diversity, and prompt adherence against a frozen test set.
 
 **Backlog:**
 
@@ -267,7 +267,7 @@ Five actionables identified from a full frontend audit (2026-04-02). In priority
 
 **AI/ML:**
 
-- RAG eval iteration — frozen until pipeline quality needs attention or Phase 10 benchmark. See [specs/RECOMMENDATIONS.md](specs/RECOMMENDATIONS.md)
+- RAG eval iteration — frozen until pipeline quality needs attention or Phase 10 benchmark. See [specs/rag.md](specs/rag.md)
 
 **SRE:**
 

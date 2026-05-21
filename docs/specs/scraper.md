@@ -2,7 +2,7 @@
 
 Phase 6 prerequisite. Replaces `STORE_AVAILABILITY.md` and `CATALOG_AVAILABILITY.md`.
 
-Cross-reference: [ROADMAP.md](../ROADMAP.md) Phase 6, [RECOMMENDATIONS.md](RECOMMENDATIONS.md) for RAG architecture + Claude integration.
+Cross-reference: [ROADMAP.md](../ROADMAP.md) Phase 6, [rag.md](rag.md) for RAG architecture + Claude integration.
 
 ---
 
@@ -615,7 +615,7 @@ Each column has exactly one writer. No overlap.
 
 ## Embedding Support
 
-This pipeline feeds the recommendation engine. Embedding strategy, pgvector setup, RAG pipeline, and Claude integration are in [RECOMMENDATIONS.md](RECOMMENDATIONS.md).
+This pipeline feeds the recommendation engine. Embedding strategy, pgvector setup, RAG pipeline, and Claude integration are in [rag.md](rag.md).
 
 **What this pipeline provides for embeddings:**
 
