@@ -1,10 +1,23 @@
-# Chat System
+# Chat
 
-Multi-turn conversational wine assistant. Intent routing via Claude Haiku, hybrid search via pgvector, curation via Claude.
+> Multi-turn conversational wine assistant — Claude Haiku for intent classification, pgvector hybrid search for retrieval, Claude for curation. Persists sessions + messages in PostgreSQL.
 
----
+## Contract
 
-## Flow
+What the chat surface exposes:
+
+| Operation | Endpoint | Notes |
+|---|---|---|
+| Create session | `POST /api/chat/sessions` | Title = first 50 chars of first message |
+| List sessions | `GET /api/chat/sessions?limit=20&offset=0` | Ordered by `updated_at DESC` |
+| Get session | `GET /api/chat/sessions/{id}` | Includes full message history |
+| Rename session | `PATCH /api/chat/sessions/{id}` | Title max 50 chars |
+| Delete session | `DELETE /api/chat/sessions/{id}` | Cascades to messages |
+| Send message | `POST /api/chat/sessions/{id}/messages` | Returns assistant response (synchronous) |
+
+All operations check session ownership (`user_id` match) via `Depends(verify_auth)`.
+
+## How it works
 
 ```
 User message → save to DB → extract multi-turn context → classify intent
@@ -13,20 +26,69 @@ User message → save to DB → extract multi-turn context → classify intent
   └── off_topic     → static bilingual message → save → return
 ```
 
-## Session Lifecycle
+**Intent routing** — Claude Haiku classifies each message into one of three intents via tool_use:
 
-| Operation | Endpoint | Notes |
+| Intent | Trigger | Pipeline |
 |---|---|---|
-| Create | `POST /api/chat/sessions` | Title = first 50 chars of first message |
-| List | `GET /api/chat/sessions?limit=20&offset=0` | Ordered by `updated_at DESC` |
-| Get | `GET /api/chat/sessions/{id}` | Includes full message history |
-| Rename | `PATCH /api/chat/sessions/{id}` | Title max 50 chars |
-| Delete | `DELETE /api/chat/sessions/{id}` | Cascades to messages |
-| Send | `POST /api/chat/sessions/{id}/messages` | Returns assistant response |
+| `search_wines` (recommendation) | User wants product recommendations | Full RAG: embed → pgvector hybrid search → Claude curation |
+| `wine_chat` (sommelier) | General wine knowledge — grapes, regions, pairing, history | Direct LLM response (2-4 paragraphs, no products) |
+| `off_topic` | Non-wine query | Static bilingual "I'm a wine assistant — I can't help with that." |
 
-All operations check session ownership (`user_id` match).
+Fallback behavior:
+- API error → treat as `recommendation` with raw query
+- No tool_use block in response → treat as `wine_chat`
 
-## Message Storage
+**Multi-turn context** — sliding window of `CONTEXT_WINDOW_TURNS` (5) pairs = 10 messages max. Two windows for two purposes:
+
+| Window | Size | Used for |
+|---|---|---|
+| Last 2 turns (4 messages) | Small | Intent parsing — resolves follow-ups ("something lighter") |
+| Full sliding window (10 messages) | Large | Recommendation curation — personalizes explanations |
+
+**SKU deduplication** — all assistant messages in the session are scanned to extract previously recommended SKUs. These are excluded from subsequent searches so the same wine is never recommended twice in a session.
+
+**Recommendation pipeline integration** (when intent is `recommendation`):
+
+1. **Embed** query via OpenAI `text-embedding-3-large`
+2. **Search** via `find_similar()` — pgvector hybrid search with intent filters
+3. **Curate** via Claude — generates per-product reasons + summary
+4. **Assemble** `RecommendationOut` with products, reasons, intent, summary
+
+Conversation history (full window) passed to curation for personalized explanations. Excluded SKUs passed to search to avoid repeats.
+
+## Files
+
+| Concern | Where |
+|---|---|
+| Chat API routes | `backend/api/chat.py` |
+| Session repository | `backend/repositories/chat_sessions.py` |
+| Message repository | `backend/repositories/chat_messages.py` |
+| Intent classifier | `backend/services/intent.py` |
+| Sommelier service (wine_chat path) | `backend/services/sommelier.py` |
+| Recommendations service (search_wines path) | `backend/services/recommendations.py` |
+| Chat session model | `core/db/models/chat_session.py` |
+| Chat message model | `core/db/models/chat_message.py` |
+| Schemas | `backend/schemas/chat.py`, `backend/schemas/recommendations.py` |
+| Tests | `backend/tests/test_chat_*.py`, `test_intent_*.py` |
+
+## Dependencies
+
+- **`backend/services/intent.py`** — uses Claude Haiku via tool_use for classification
+- **`backend/services/recommendations.py`** — full RAG pipeline (see [`rag.md`](rag.md))
+- **`backend/services/sommelier.py`** — wine_chat persona prompt + Claude conversation
+- **PostgreSQL** — `chat_sessions`, `chat_messages` tables
+- **OpenAI embeddings** (`text-embedding-3-large`) — only on recommendation path
+- **pgvector** — similarity search on the recommendation path
+
+## Cross-cutting concerns
+
+- **Auth:** every chat route uses `Depends(verify_auth)`; session ownership checked in the repository
+- **Logging:** intent classification + RAG pipeline calls structured-logged via loguru
+- **Errors:** intent classification failures fall back to `recommendation`; LLM API errors surface as 502
+- **Observability:** Prometheus metrics on `intent_classifications`, `recommendation_pipeline_errors`, `llm_call_duration`, `llm_tokens` (see `backend/metrics.py`)
+- **Rate limiting:** SlowAPI on the message-send endpoint
+
+### Message storage
 
 Messages stored in `chat_messages` table, indexed on `(session_id, created_at)`.
 
@@ -37,28 +99,11 @@ Messages stored in `chat_messages` table, indexed on `(session_id, created_at)`.
 
 **Serialization:** recommendation responses are stored as `RecommendationOut.model_dump_json()`. On retrieval, the API attempts `model_validate_json()` and falls back to raw text if deserialization fails (handles schema evolution).
 
-## Multi-Turn Context
-
-**Sliding window:** last `CONTEXT_WINDOW_TURNS` (5) exchange pairs = 10 messages max.
-
-Two windows, two purposes:
-
-| Window | Size | Used for |
-|---|---|---|
-| Last 2 turns (4 messages) | Small | Intent parsing — resolves follow-ups ("something lighter") |
-| Full sliding window (10 messages) | Large | Recommendation curation — personalizes explanations |
-
-**SKU deduplication:** all assistant messages in the session are scanned to extract previously recommended SKUs. These are excluded from subsequent searches so the same wine is never recommended twice in a session.
-
 **Empty sessions:** conversation history coerced to `None` (not empty string) for fresh sessions.
 
-## Intent Routing
+### Intent classifier — extracted filters (search_wines)
 
-Claude Haiku classifies each message into one of three intents using tool_use:
-
-### search_wines (recommendation)
-
-User wants product recommendations. Claude extracts structured filters:
+When Claude classifies as `search_wines`, it extracts structured filters:
 
 | Filter | Type | Example |
 |---|---|---|
@@ -74,42 +119,9 @@ Key prompt rules:
 - `semantic_query` must include grape names (embeddings use them)
 - `exclude_grapes` populated on fatigue cues ("tanné de", "tired of")
 
-### wine_chat (sommelier)
+## Operational notes
 
-General wine knowledge — grape info, region facts, food pairing, winemaking, comparisons. No product recommendations. Claude responds conversationally (2-4 paragraphs).
-
-### off_topic
-
-Non-wine queries. Returns static bilingual message: "I'm a wine assistant — I can't help with that."
-
-### Fallback behavior
-
-- API error → treat as `recommendation` with raw query
-- No tool_use block in response → treat as `wine_chat`
-
-## Recommendation Pipeline Integration
-
-When intent is `recommendation`, the full RAG pipeline runs:
-
-1. **Embed** query via OpenAI `text-embedding-3-large`
-2. **Search** via `find_similar()` — pgvector hybrid search with intent filters
-3. **Curate** via Claude — generates per-product reasons + summary
-4. **Assemble** `RecommendationOut` with products, reasons, intent, summary
-
-Conversation history (full window) passed to curation for personalized explanations. Excluded SKUs passed to search to avoid repeats.
-
-## Conversation Starters
-
-Shown on empty chat (frontend only):
-
-- "A bold red under $30"
-- "What pairs with lamb?"
-- "What's the difference between Syrah and Shiraz?"
-- "Explore wines from Argentina"
-
-Rendered as clickable prompt chips. On click, submitted as a regular message.
-
-## Config
+**Config constants:**
 
 | Constant | Value | Purpose |
 |---|---|---|
@@ -120,6 +132,20 @@ Rendered as clickable prompt chips. On click, submitted as a regular message.
 | `DEFAULT_RECOMMENDATION_LIMIT` | 5 | Max products per recommendation |
 | `NON_WINE_MESSAGE` | bilingual string | Off-topic / fallback response |
 
-## Design Constraints
+**Conversation starters** (frontend only, on empty chat):
+- "A bold red under $30"
+- "What pairs with lamb?"
+- "What's the difference between Syrah and Shiraz?"
+- "Explore wines from Argentina"
 
+Rendered as clickable prompt chips; on click, submitted as a regular message.
+
+**Design constraints:**
 - **Synchronous responses** — no SSE streaming. The full pipeline completes before the API returns. Frontend shows "Thinking..." while waiting.
+
+## Related
+
+- **ADRs:** [`0005-rag-pipeline.md`](../adrs/0005-rag-pipeline.md), [`0007-sommelier-memory-architecture.md`](../adrs/0007-sommelier-memory-architecture.md)
+- **Agent rules (imperative form):** [`.claude/rules/rag.md`](../../.claude/rules/rag.md), [`.claude/rules/llm.md`](../../.claude/rules/llm.md)
+- **Related specs:** [`rag.md`](rag.md) (the retrieval pipeline this calls)
+- **Recent session logs:** look up via [`../session-logs/INDEX.md`](../session-logs/INDEX.md)
