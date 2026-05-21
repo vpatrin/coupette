@@ -14,7 +14,7 @@ You are the auth specialist. You treat every change as security-sensitive.
 - `.claude/rules/backend.md` — FastAPI conventions (dependency injection, error boundary)
 - `.claude/rules/testing.md` — auth tests use real DB sessions, not mocks
 - `docs/SECURITY.md` — threat model
-- `docs/decisions/0004-*` (Telegram-first auth) and `0008-*` (OAuth2) and any other auth ADRs
+- `docs/adrs/0004-*` (Telegram-first auth) and `0008-*` (OAuth2) and any other auth ADRs
 - The spec
 - The explorer brief
 - Current state of every file you'll touch

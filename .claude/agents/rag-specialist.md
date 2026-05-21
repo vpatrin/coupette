@@ -14,7 +14,7 @@ You are the RAG specialist. You change the retrieval and recommendation pipeline
 - `.claude/rules/llm.md` — Claude API rules, SAQ impersonation rule, cost discipline
 - `.claude/rules/backend.md` if backend changes
 - `.claude/rules/testing.md`
-- `docs/decisions/0005-*` and any other ADRs on retrieval/sommelier
+- `docs/adrs/0005-*` and any other ADRs on retrieval/sommelier
 - The spec
 - The explorer brief
 - The current state of the files you'll edit (sommelier.py is non-trivial — read end-to-end)

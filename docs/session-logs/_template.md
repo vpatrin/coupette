@@ -19,7 +19,7 @@ Non-obvious calls future-you will want to remember. NOT "we implemented X" — "
 - **Context:** what was on the table
 - **Decision:** what we picked
 - **Rejected:** Y, Z (one-line reason each)
-- **ADR:** `docs/decisions/NNNN-<slug>.md` (or "no — too small")
+- **ADR:** `docs/adrs/NNNN-<slug>.md` (or "no — too small")
 
 (Repeat per decision.)
 

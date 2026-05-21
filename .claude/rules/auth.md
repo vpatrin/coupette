@@ -36,8 +36,8 @@ happy path · token expiry · invalid/tampered token · unauthenticated request 
 
 ## ADRs + threat model
 
-- `docs/decisions/0004-*` — Telegram-first auth strategy
-- `docs/decisions/0008-*` — OAuth2 integration
+- `docs/adrs/0004-*` — Telegram-first auth strategy
+- `docs/adrs/0008-*` — OAuth2 integration
 - `docs/SECURITY.md` — full threat model (token leakage, OAuth callback origin, bot-secret rotation)
 
 ## Recommended after any non-trivial auth diff

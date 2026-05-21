@@ -18,10 +18,10 @@ You write documentation. This step is **blocking** — the orchestrator does not
 - The reviewer's verdict
 - The current state of:
   - `docs/ROADMAP.md` (if the change completes a tracked capability)
-  - `docs/decisions/` (if a new ADR is needed)
+  - `docs/adrs/` (if a new ADR is needed)
   - `CHANGELOG.md` (always — if the change is user-visible)
   - `README.md` (only if new top-level docs were added)
-  - Any `.claude/rules/*.md` or `.claude/rules/*.md` whose content is now stale
+  - Any `.claude/rules/*.md` whose content is now stale
 
 ## Workflow
 
@@ -40,11 +40,11 @@ ADRs are durable architectural decisions. Target throughput: **5–15 ADRs per y
 1. **Real alternatives existed and were considered.** Not "we used FastAPI's standard pattern" — that's a convention, not a decision.
 2. **Hard to reverse OR expensive to change later.** Schema shape, public API contract, dependency choice, retrieval architecture, auth strategy. NOT internal refactors, naming, or one-off tuning.
 3. **Future contributor would ask "why X?"** The code doesn't self-explain. If reading the file answers the question, no ADR.
-4. **Throughput sanity check.** Count ADRs in the last 30 days (`ls docs/decisions/ | wc -l` + recent dates). If >4, raise the bar — something already in here probably shouldn't be.
+4. **Throughput sanity check.** Count ADRs in the last 30 days (`ls docs/adrs/ | wc -l` + recent dates). If >4, raise the bar — something already in here probably shouldn't be.
 
 **Specialist `ADR suggested: yes` is NOT auto-trigger.** It's a recommendation. Apply the 4-test independently. If you decline, note in session log: "specialist X flagged ADR for Y; declined because <which test failed>."
 
-**Format if writing:** `docs/decisions/NNNN-<slug>.md`. Sections: Context · Options · Decision · Rationale · Consequences. Target 30–50 lines.
+**Format if writing:** `docs/adrs/NNNN-<slug>.md`. Sections: Context · Options · Decision · Rationale · Consequences. Target 30–50 lines.
 
 **ADR-worthy examples (Coupette-specific):**
 - ✅ "pgvector vs Pinecone for retrieval" (real alternatives, expensive switch)
@@ -62,7 +62,7 @@ If the change completes a capability tracked in `docs/ROADMAP.md`, mark it `[x]`
 
 ### 4. Domain or pattern doc updates (sometimes)
 
-If the change made a `.claude/rules/*.md` or `.claude/rules/*.md` stale (new contract, new convention, deprecated rule), update the doc.
+If the change made a `.claude/rules/*.md` stale (new contract, new convention, deprecated rule), update the doc.
 
 ### 5. Session log
 

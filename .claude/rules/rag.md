@@ -46,6 +46,6 @@ Refactors / type fixes / log changes → eval gate waived. State so explicitly.
 
 ## ADR + constraints
 
-- `docs/decisions/0005-*` — RAG pipeline decision
+- `docs/adrs/0005-*` — RAG pipeline decision
 - 1536-dim embeddings — changing the model means re-embedding the entire catalog
 - Retrieval must work for cold-start users (no behavioral signal) — relies on intent + similarity only

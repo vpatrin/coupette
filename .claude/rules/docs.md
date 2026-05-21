@@ -28,7 +28,7 @@ paths:
 
 User-noticeable change → coupette ROADMAP. Builds-better-not-user-visible → ENGINEERING. VPS / shared services → infra ROADMAP.
 
-## ADRs (`docs/decisions/`)
+## ADRs (`docs/adrs/`)
 
 Format: Context, Options, Decision, Rationale, Consequences. `NNNN-short-description.md`, 30-50 lines. Capture *why*, not *how*.
 
