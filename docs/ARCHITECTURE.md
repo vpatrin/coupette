@@ -99,7 +99,7 @@ coupette/
 
 ## Key architectural decisions
 
-Full decision records with context, alternatives, and rationale live in [docs/decisions/](decisions/). Summaries below.
+Full decision records with context, alternatives, and rationale live in [docs/adrs/](adrs/). Summaries below.
 
 ### Modular monolith over microservices
 

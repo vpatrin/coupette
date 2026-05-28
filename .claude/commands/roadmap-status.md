@@ -75,5 +75,5 @@ Local branches with gone upstream or no activity in 2+ weeks:
 - Do NOT delete branches — list them and wait for Victor's confirmation
 - Do NOT create issues — suggest them for Victor's approval
 - Do NOT modify `docs/ROADMAP.md` — flag inconsistencies for Victor to resolve
-- Cross-reference: if findings suggest planning work, point to `/plan`. If findings suggest a health check, point to `/health`.
+- Cross-reference: if findings suggest a new capability, point to `/feature`. If findings suggest a health check, point to `/health`.
 - When recommending tasks, prefer vertical slices that ship user-facing value over horizontal infrastructure work

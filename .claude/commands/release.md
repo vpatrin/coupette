@@ -37,7 +37,7 @@ Print your pick + one-line rationale. Borderline (mix of fix + small feat): ASK 
 
 ### Step 3 — CHANGELOG gap detection (the critical step)
 
-This is where the "re-run" pain came from in the old `/tag`. Catch gaps NOW.
+This is the historical pain point — missing changelog entries force a re-tag. Catch gaps NOW.
 
 Compare commits since last tag against `[Unreleased]`:
 

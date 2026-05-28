@@ -47,8 +47,6 @@ dist/
 .claude/*
 !.claude/commands/
 !.claude/agents/
-!.claude/domains/
-!.claude/patterns/
 !.claude/rules/
 !.claude/skills/
 !.claude/README.md
