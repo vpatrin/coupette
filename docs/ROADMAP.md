@@ -39,7 +39,7 @@ Design reference: `ui/journal/journal.html`, `ui/journal/notif-noteview.html`
 
 ### Taste Profile *(milestone: Taste Profile)*
 
-Longitudinal user model built from watches, recommendation feedback, and tasting journal scores. Reflection-based memory architecture: SQL aggregation for structured signals, Haiku extraction for prose, Sonnet synthesis for a living profile document. See `docs/decisions/0007-sommelier-memory-architecture.md`. Injected into recommendation prompts for personalization. Displayed as a sidebar widget.
+Longitudinal user model built from watches, recommendation feedback, and tasting journal scores. Reflection-based memory architecture: SQL aggregation for structured signals, Haiku extraction for prose, Sonnet synthesis for a living profile document. See `docs/adrs/0007-sommelier-memory-architecture.md`. Injected into recommendation prompts for personalization. Displayed as a sidebar widget.
 
 - [ ] Schema — `user_signals`, `user_profiles`, `profile_update_jobs` tables + migrations
 - [ ] SQL signal aggregation — compute from ratings, watches, and recommendations
@@ -100,7 +100,7 @@ Add `contact@coupette.club` via Proton Mail custom domain (requires Proton Unlim
 
 #### Extended Auth — GitHub + Google OAuth
 
-OAuth-only login (no email/password, no Telegram login). Clean multi-provider identity model, RFC 6749 + RFC 9700 compliant. Telegram stays as a notification channel (link from Settings). See `docs/decisions/0008-oauth2-security-design.md`.
+OAuth-only login (no email/password, no Telegram login). Clean multi-provider identity model, RFC 6749 + RFC 9700 compliant. Telegram stays as a notification channel (link from Settings). See `docs/adrs/0008-oauth2-security-design.md`.
 
 **Identity model:**
 

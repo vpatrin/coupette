@@ -32,7 +32,7 @@ Before reviewing, silently:
 **Full repo mode (`--full`):**
 
 1. Read all files in the AI file map below
-2. Read `docs/specs/DATA_PIPELINE.md` for data ingestion context
+2. Read `docs/specs/scraper.md` for data ingestion context
 3. Read eval results (`backend/benchmarks/eval/results/`) for current quality baseline
 4. Read `backend/benchmarks/eval/levers.md` for optimization surface
 

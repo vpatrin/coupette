@@ -46,7 +46,13 @@ dist/
 # Claude
 .claude/*
 !.claude/commands/
-!.claude/commands/COMMANDS.md
+!.claude/agents/
+!.claude/rules/
+!.claude/skills/
+!.claude/README.md
+
+# Pipeline ephemeral state — `.claude/scratchpad/` is covered by the
+# `.claude/*` rule above; no extra entries needed
 # Benchmark results (generated, not versioned)
 backend/benchmarks/eval/results/
 !backend/benchmarks/eval/results/.gitkeep

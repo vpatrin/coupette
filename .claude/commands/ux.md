@@ -81,7 +81,7 @@ Apply CLAUDE.md's UX anti-patterns. Additionally, cut anything that's technicall
 Desktop-first, but flag anything that will obviously break on smaller screens. Don't solve it — just note it for a future responsive pass.
 
 ### 10. Implementation steps
-Ordered steps to implement **this single issue** (not a multi-issue breakdown — that's `/plan`'s job). Each step should be:
+Ordered steps to implement **this single issue** (not a multi-issue breakdown — that belongs in `/feature` or a scoper-driven spec). Each step should be:
 - Small enough to implement in one sitting
 - Independently testable
 - In dependency order (what must exist before what)

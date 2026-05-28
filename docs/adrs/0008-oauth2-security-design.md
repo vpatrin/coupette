@@ -36,6 +36,12 @@ PKCE (S256) + AES-256-GCM encrypted + HMAC-SHA256 signed state + Redis-backed si
 | State expiry | Stale flow protection |
 | Exchange code (60s, single-use) | JWT delivery — token never appears in URL, logs, or Referer headers |
 
+## Rationale
+
+- **Defense-in-depth over single-mechanism.** No single layer covers every documented OAuth2 BCP threat (RFC 9700). PKCE protects code interception; state-encryption hides payload contents from logs/referrers; nonce kills replay. Each layer earns its place by addressing a distinct attack class.
+- **Redis amortizes infra cost.** State + nonce + exchange-code all need TTL'd single-use storage; Redis native TTL eliminates per-table cleanup jobs. Same Redis instance will back rate limiting and intent caching later, so the new dependency carries forward.
+- **Exchange code keeps JWTs out of URLs.** Putting the JWT in the redirect URL leaks it to server logs, Referer headers, and browser history. The opaque exchange code redirects through that boundary, then the SPA POSTs to retrieve the actual JWT in a response body.
+
 ## Intentional tradeoffs
 
 1. **No Telegram login** — Telegram widget stays for bot alerts only (linked from Settings). GitHub/Google guarantee a verified email; Telegram does not. Email is the identity anchor for account linking and deduplication.

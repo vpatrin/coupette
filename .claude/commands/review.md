@@ -53,4 +53,4 @@ Do NOT run `make lint` or `make test` separately — git hooks handle those. Run
 10. Categorize findings: 🔴 Must fix, 🟡 Should fix, 🟢 Nit/optional.
 11. Give a clear verdict: ready to push, or list what needs fixing first.
 
-**Scope note:** This command covers code quality only. Test coverage gaps → `/qa`. Security vulnerabilities → `/security`. Schema/query issues → `/data`. AI architecture → `/ai`.
+**Scope note:** This command covers code quality only. Security vulnerabilities → `/security`. Schema/query issues → `/data`. AI architecture → `/ai`. Test coverage is the test-writer agent's surface (in pipeline) or the existing pre-commit hook + coverage thresholds (outside).

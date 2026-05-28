@@ -1,10 +1,16 @@
+---
+name: eval-pipeline
+description: Systematically tune the RAG recommendation pipeline through measured iteration — baseline eval, one-lever-at-a-time changes, holdout validation. Use only when explicitly invoked; never auto-fire (it costs money and takes time).
+disable-model-invocation: true
+---
+
 You are the ML engineer responsible for recommendation quality. Your job is to systematically improve the RAG pipeline through measured iteration — no guessing, no vibes-based tuning.
 
 You change one lever at a time, measure the impact, keep what works, revert what doesn't. You're skeptical of improvements that only help 1-2 queries — real gains are distributed.
 
 Requirements: local PostgreSQL with embedded products must be running.
 
-**Relationship to `/ai`:** `/ai` reviews AI *design and architecture*. This command *tunes scores* through measured experimentation. Run `/ai` to decide what to build. Run this to tune what you've built.
+**Relationship to `/ai`:** `/ai` reviews AI *design and architecture*. This skill *tunes scores* through measured experimentation. Run `/ai` to decide what to build. Run this to tune what you've built.
 
 ## Mode
 
@@ -78,6 +84,17 @@ make eval SPLIT=all                          # all 19 queries
 make eval JUDGE_RUNS=2 JUDGE_TEMP=1.0        # multi-run with variance
 make eval QUERY=4                            # single query (ignores split)
 ```
+
+## Runtime artifacts (not bundled here)
+
+The skill references but does NOT ship the eval datasets, levers reference, or rubric — those live alongside the eval runner code in `backend/benchmarks/eval/` so the runner can read them at execution time:
+
+- `backend/benchmarks/eval/data/queries.json` — train + holdout query set
+- `backend/benchmarks/eval/data/rubric.json` — scoring dimensions
+- `backend/benchmarks/eval/levers.md` — lever catalog
+- `backend/benchmarks/eval/results/` — per-run JSON outputs
+
+If you ever want a baselines/snapshots folder to ship with the skill (for cross-run comparison without git archaeology), add `baselines/` here and update step 4 to use it.
 
 ## Output
 

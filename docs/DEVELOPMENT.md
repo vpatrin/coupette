@@ -196,7 +196,7 @@ The scraper programmatically enforces SAQ's `robots.txt`:
 
 Daily job that refreshes online and in-store availability from Adobe Live Search, detects transitions for watched products, and emits `StockEvent` alerts. Runs as `python -m scraper availability`.
 
-See [specs/DATA_PIPELINE.md](specs/DATA_PIPELINE.md) § Availability Check for full architecture.
+See [specs/scraper.md](specs/scraper.md) § Availability Check for full architecture.
 
 ### How it works
 
