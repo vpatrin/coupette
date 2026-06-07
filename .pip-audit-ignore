@@ -6,6 +6,10 @@
 # Tracks: https://nvd.nist.gov/vuln/detail/CVE-2026-3219
 CVE-2026-3219
 
+# pip 26.1 — fixed in 26.1.2. pip version in Poetry venvs is managed by the Docker
+# base image, not pyproject.toml. Resolved when Python base image is updated (#710-712).
+PYSEC-2026-196
+
 # starlette 0.52.1 — fixed in 1.0.1, but upgrading starlette requires FastAPI 1.x (major version).
 # FastAPI currently locked at 0.136.1; starlette>=1.0 needs explicit compatibility testing.
 # Track upgrade as a separate chore; remove this entry once FastAPI is bumped.
