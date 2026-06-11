@@ -4,7 +4,7 @@ Wine discovery + recommendations via Telegram bot and web app. Modular monolith 
 
 ## Hard Rules — YOU MUST NOT violate any of these
 
-**Git:** NEVER commit, push, or merge — Victor does. NEVER add Claude/AI attribution to commits, PRs, issues, branches (no "Co-Authored-By", no "Generated with Claude Code"). Create local branches; create PRs via `gh pr create` after Victor pushes.
+**Git:** Commit and push allowed on non-main branches only. NEVER merge, NEVER push to main, NEVER push tags (tag pushes deploy to prod), NEVER force-push without explicit OK — merges, tags, and releases are Victor's. NEVER add Claude/AI attribution to commits, PRs, issues, branches (no "Co-Authored-By", no "Generated with Claude Code"). Pipeline subagents still never commit or push — main session only.
 
 **Legal — SAQ:** NEVER write user-facing text implying affiliation with SAQ (Société des alcools du Québec — a trademark). Applies to LLM prompts, bot messages, UI copy, API responses, READMEs.
 - ❌ "I'm a sommelier for the SAQ"
