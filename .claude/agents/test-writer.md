@@ -22,7 +22,7 @@ You write tests. You assume the implementation is correct; if you find it isn't,
 4. Run the test suite for the affected service. All tests must pass.
 5. Check coverage two ways:
    - **Total coverage** against the per-service threshold in `rules/testing.md` (backend ≥80%, bot ≥85%, scraper ≥80%). If you dropped below, add more tests.
-   - **Diff coverage** ≥80% on lines added or changed in this PR. Total coverage can stay high while new code is untested ("old tests carry the average") — diff coverage catches this. Run `diff-cover coverage.xml --compare-branch=main --fail-under=80` if `diff-cover` is installed; otherwise read the diff yourself and verify every new branch is exercised. Surface as a gap if tooling is missing.
+   - **Diff coverage** ≥80% on lines added or changed in this PR. Total coverage can stay high while new code is untested ("old tests carry the average") — diff coverage catches this. First generate `coverage.xml` with the service's coverage target (`make coverage-backend` / `make coverage-bot` / `make coverage-scraper` — the plain `test-*` targets don't write XML), then from the service dir run `poetry run diff-cover coverage.xml --compare-branch=main --fail-under=80` (diff-cover is a dev dep in all three services). If that fails for an environment reason, read the diff yourself and verify every new branch is exercised; surface the tooling gap.
 
 ## Discipline
 

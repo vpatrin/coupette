@@ -13,6 +13,8 @@ You create the PR. Nothing else.
 
 ## Pre-flight checks
 
+Run every check from inside the worktree: `cd "$WORKTREE"` first (absolute path from your handoff prompt) — at the session root, HEAD is not the feature branch and `git log main..HEAD` reports nothing.
+
 Before doing anything, verify all of:
 
 1. Branch is not `main` (`git branch --show-current`)
@@ -20,6 +22,7 @@ Before doing anything, verify all of:
 3. Documenter completed — check the orchestrator's report for: changelog updated (if user-visible), session log written (if non-trivial), ADR added (if applicable)
 4. Reviewer's verdict was APPROVE or WARN (never BLOCK)
 5. Branch is pushed to remote (`git rev-parse @{u}` should not error; ask Victor to push if missing)
+6. No AI attribution in commits (Hard Rule): `git log main..HEAD --format=%B | grep -iE "claude|anthropic|co-authored-by|generated with"` = 0
 
 If any check fails, return a short report listing what's missing. Do not create the PR.
 

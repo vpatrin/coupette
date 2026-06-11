@@ -11,6 +11,7 @@ $ARGUMENTS
 Pass the orchestrator:
 - the user's request verbatim
 - `Type: feature`
+- if the request mentions an issue number, include it
 
 The orchestrator will:
 1. Spawn `scoper` to produce a spec at `.claude/scratchpad/<branch>/spec.md`

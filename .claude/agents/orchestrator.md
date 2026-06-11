@@ -18,7 +18,8 @@ You are the orchestrator. You drive the Coupette pipeline. You **never edit code
 7. **test-writer** — adds tests for the new behavior
 8. **reviewer** — reviews the full diff (implementation + tests) and the test-writer's Result block
 9. **documenter** — mandatory, blocking. Updates docs + writes session log
-10. **pr-creator** — final ship
+10. (checkpoint — you return to the main session: it reviews, then commits and pushes the worktree branch. Subagents never commit or push; the main session may, on non-main branches.)
+11. **pr-creator** — final ship
 
 ## How you spawn subagents (mechanism)
 
@@ -58,7 +59,7 @@ After the user approves the spec (between stages 2 and 3):
 # main repo regardless of cwd — the scratchpad lives HERE
 REPO=$(git worktree list --porcelain | head -1 | cut -d' ' -f2-)
 BRANCH="feat/api-wine-availability"            # <- substitute the spec's Branch: field
-WORKTREE="$HOME/.claude/worktrees/coupette/$BRANCH"
+WORKTREE="$HOME/.claude/worktrees/coupette/${BRANCH//\//-}"   # dashes — same naming as the scratchpad dir
 git worktree add "$WORKTREE" -b "$BRANCH"
 ```
 
@@ -73,7 +74,7 @@ mkdir -p "$SCRATCHPAD_DIR"
 # `ls .claude/scratchpad/*/spec.md` and move it here.
 
 # log.md — initialize with header, then paste the scoper's Result block under Stage results
-TITLE="Wine availability API"                  # <- substitute the spec's title
+TITLE='Wine availability API'                  # <- substitute the spec's title (single quotes — a title containing $ or backticks must not expand)
 cat > "$SCRATCHPAD_DIR/log.md" <<EOF
 # Pipeline log: $TITLE
 
@@ -160,6 +161,7 @@ Wait for the user's decision.
 
 After scoper: the spec path + a one-line summary, then "ready to proceed?"
 After implementer: a list of files changed and what each contains, then "ready to proceed?"
+After documenter: the worktree path + a suggested conventional commit message. The **main session** must now commit and push the branch — `git -C "$WORKTREE" add -A && git -C "$WORKTREE" commit -m "..." && git -C "$WORKTREE" push -u origin "$BRANCH"` — before you spawn pr-creator. You never run these yourself.
 After pr-creator: the PR URL + a one-line **Pipeline friction** note — anything that confused an agent this run (bad path, ambiguous instruction, missing tool), or "none".
 On any BLOCK from reviewer or any BLOCKED status from a subagent: stop, report the blocker, ask the user how to proceed.
 

@@ -15,7 +15,7 @@ You review. You **never edit**. Your output ends with one of three verdicts:
 
 - `.claude/scratchpad/<branch>/{spec,log}.md` (Contract + prior Stage results — your primary context)
 - The spec
-- The diff: `git diff main...HEAD`
+- The diff: `git diff main` (working tree vs main — commits usually don't exist yet at review time; the branch is committed after documenter)
 - `.claude/rules/*.md` for touched surfaces (path-scoped — auth, backend, frontend, rag, scraper, etc.)
 - CLAUDE.md (Hard Rules + DoD)
 - Each `.claude/commands/<advisor>.md` whose surface the diff touches (so you embody their checks):
@@ -59,7 +59,7 @@ You do not invoke those advisors as commands — you read their files and apply 
 17. **Diff coverage ≥80% on new/changed lines.** Check the test-writer's Result block: if `Diff coverage` is missing, below 80%, or "tooling missing", flag as BLOCK (missing) / WARN (below 80%) / NOTE (tooling missing). Total coverage above the per-service threshold is necessary but NOT sufficient — new code can be untested while the average stays high.
 
 **Git/Commit hygiene (Hard Rule):**
-18. No AI attribution: `git log main..HEAD --format=%B | grep -iE "claude|anthropic|co-authored-by|generated with"` = 0.
+18. No AI attribution: `git log main..HEAD --format=%B | grep -iE "claude|anthropic|co-authored-by|generated with"` = 0. (Usually vacuous at review time — commits land after documenter; pr-creator re-runs this check post-commit.)
 
 ### Semantic (judgment)
 

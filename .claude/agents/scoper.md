@@ -33,6 +33,7 @@ The orchestrator creates the branch later via `git worktree add -b <branch>` and
 **Surfaces:** backend | frontend | bot | scraper | core | cross-cutting
 **Needs migration:** yes | no
 **Branch:** type/short-description
+**Issue:** #NNN | none
 
 ## Goal
 

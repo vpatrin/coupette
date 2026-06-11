@@ -120,7 +120,7 @@ One folder, single source of truth. Each file has `paths:` frontmatter so it aut
 
 ## Worktree convention
 
-All pipeline runs use `~/.claude/worktrees/coupette/<branch>`. The orchestrator creates it after spec approval and removes it after the PR lands. Diffs can be viewed in VSCode by opening that path, or in any external diff viewer.
+All pipeline runs use `~/.claude/worktrees/coupette/<branch-with-slashes-as-dashes>`. The orchestrator creates it after spec approval and removes it after the PR lands. Diffs can be viewed in VSCode by opening that path, or in any external diff viewer.
 
 ## Session logs
 
