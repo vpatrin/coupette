@@ -19,7 +19,7 @@ The orchestrator will:
 4. Spawn `migrator` if the spec marks `Needs migration: yes`
 5. Spawn the right specialist (or `implementer`) to do the work in a worktree at `~/.claude/worktrees/coupette/<branch>`
 6. Return the diff, the user reviews, says proceed
-7. Spawn `test-writer` and `reviewer` in parallel
+7. Spawn `test-writer`, then `reviewer` (sequential — the reviewer checks the tests and diff coverage)
 8. Spawn `documenter` (mandatory blocking step)
 9. Spawn `pr-creator` to ship
 

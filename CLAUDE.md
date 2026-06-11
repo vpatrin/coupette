@@ -26,9 +26,11 @@ Wine discovery + recommendations via Telegram bot and web app. Modular monolith 
 | RAG / recommendations | [`.claude/rules/rag.md`](.claude/rules/rag.md) | sommelier, recommendations, intent, embed |
 | LLM (Claude API usage) | [`.claude/rules/llm.md`](.claude/rules/llm.md) | LLM-using services |
 | Scraper (legal + ethical rules) | [`.claude/rules/scraper.md`](.claude/rules/scraper.md) | `scraper/**/*.py` |
-| Migrations | [`.claude/rules/migrations.md`](.claude/rules/migrations.md) | `core/db/models/**`, `core/alembic/**` |
+| Migrations | [`.claude/rules/migrations.md`](.claude/rules/migrations.md) | `core/db/*.py`, `core/alembic/**` |
+| Telegram bot (API-only, handler conventions) | [`.claude/rules/bot.md`](.claude/rules/bot.md) | `bot/**/*.py` |
 | Testing | [`.claude/rules/testing.md`](.claude/rules/testing.md) | test files |
 | Deploy + infra | [`.claude/rules/deploy.md`](.claude/rules/deploy.md) | `docker-compose.yml`, `Dockerfile`, CI, Makefile |
+| Packaging (Poetry, Yarn, security patches) | [`.claude/rules/packaging.md`](.claude/rules/packaging.md) | `pyproject.toml`, `poetry.lock`, `package.json`, `yarn.lock` |
 | Docs + ADRs + release + changelog | [`.claude/rules/docs.md`](.claude/rules/docs.md) | `docs/**`, `README.md`, `CHANGELOG.md` |
 | Agentic pipeline | [`.claude/README.md`](.claude/README.md) | — |
 

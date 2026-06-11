@@ -129,7 +129,7 @@ If the scratchpad log (`.claude/scratchpad/<branch>/log.md`) is missing in a pip
 
 ## Result
 
-Print the block below and append it to the scratchpad log. Set `SCRATCHPAD_LOG=.claude/scratchpad/$(git branch --show-current | tr / -)/log.md` then `cat >> "$SCRATCHPAD_LOG" <<'EOF' ... EOF` (atomic, safe in the parallel stage). Keep under 80 lines.
+Print the block below and append it to the scratchpad log at `$SCRATCHPAD_LOG` — the orchestrator's prompt gives you this absolute path (it lives in the main repo, not the worktree); never derive it from `git branch`. Run `date -u +"%Y-%m-%dT%H:%M:%SZ"` first and type its output literally in the header, then `cat >> "$SCRATCHPAD_LOG" <<'EOF' ... EOF`. If invoked standalone (`/document`, no scratchpad), just print the block. Keep under 80 lines.
 
 ```markdown
 ### <UTC ISO timestamp> documenter

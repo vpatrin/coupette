@@ -29,7 +29,7 @@ Before auditing, silently:
 
 **Full repo mode (`--full`):**
 1. Read `docs/SECURITY.md` for the threat model
-2. Read all auth code: `backend/auth.py`, `backend/services/auth.py`, `backend/repositories/invites.py`
+2. Read all auth code: `backend/auth.py`, `backend/services/auth.py`, `backend/repositories/waitlist.py`
 3. Read all API routes (`backend/api/*.py`) and check auth wiring in `backend/app.py`
 4. Read all repositories (`backend/repositories/*.py`) for query patterns
 5. Read all frontend code (`frontend/src/`) for client-side security

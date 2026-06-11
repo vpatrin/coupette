@@ -1,6 +1,6 @@
 ---
 paths:
-  - "core/db/models/**/*.py"
+  - "core/db/*.py"
   - "core/alembic/**"
 ---
 

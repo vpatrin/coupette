@@ -1,6 +1,6 @@
 ---
 name: test-writer
-description: Use after the implementer to add tests covering the new behavior. Runs in parallel with the reviewer.
+description: Use after the implementer to add tests covering the new behavior. Runs before the reviewer, who checks the tests and the diff-coverage figure.
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: sonnet
 ---
@@ -44,7 +44,7 @@ If you cannot reach the required coverage threshold without testing the type sys
 
 ## Result
 
-Print the block below and append it to the scratchpad log. Set `SCRATCHPAD_LOG=.claude/scratchpad/$(git branch --show-current | tr / -)/log.md` then `cat >> "$SCRATCHPAD_LOG" <<'EOF' ... EOF` (atomic, safe in the parallel stage). Keep under 100 lines.
+Print the block below and append it to the scratchpad log at `$SCRATCHPAD_LOG` — the orchestrator's prompt gives you this absolute path (it lives in the main repo, not the worktree); never derive it from `git branch`. Run `date -u +"%Y-%m-%dT%H:%M:%SZ"` first and type its output literally in the header, then `cat >> "$SCRATCHPAD_LOG" <<'EOF' ... EOF`. Keep under 100 lines.
 
 ```markdown
 ### <UTC ISO timestamp> test-writer

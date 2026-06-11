@@ -27,7 +27,7 @@ backend/
 - **Dependency injection everywhere.** Use `Depends(get_db)`, `Depends(verify_auth)`, `Depends(verify_admin)`, `Depends(get_caller_user_id)`. Never instantiate sessions or auth checks inline.
 - **Route → service → repository.** Routes never query the DB directly. Services raise domain exceptions (`NotFoundError`, `ConflictError`, etc.), not `HTTPException` — `backend/errors.py` translates.
 - **Schemas separate from models.** `backend/schemas/` (Pydantic, API contract) is independent of `core/` (SQLAlchemy, persistence). One model maps to many schemas.
-- **Lifespan validation.** Production mode fails fast if any secret is missing. Add new secrets to the lifespan check in `backend/main.py`.
+- **Lifespan validation.** Production mode fails fast if any secret is missing. Add new secrets to the lifespan check in `backend/app.py`.
 - **Middleware stack.** SlowAPI (rate limit), CORS, Prometheus metrics. Add new middleware at the bottom unless ordering matters.
 
 ## Pydantic schema naming

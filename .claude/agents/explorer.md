@@ -20,7 +20,7 @@ A spec file path. Read it first.
 - One level of callers/dependencies for each touched file (`grep -r "from <module>"` etc.)
 - Existing tests that cover the touched surface
 - **Prior session logs for the touched surface.** Read `docs/session-logs/INDEX.md` first — it's tagged by surface, faster than grep. Open the 1-2 most recent logs tagged with this surface. Past dead ends + obstacles save the implementer from repeating them.
-- **`docs/architecture.md`** — only on cross-cutting changes that span multiple subsystems. For single-surface changes, the matching `docs/specs/<surface>.md` is enough.
+- **`docs/ARCHITECTURE.md`** — only on cross-cutting changes that span multiple subsystems. For single-surface changes, the matching `docs/specs/<surface>.md` (if one exists) is enough.
 
 ## Brief format
 
@@ -62,14 +62,13 @@ If the spec touches a surface you can't access (missing repo state, files don't 
 
 ## Result
 
-Write the full brief to the response. Also append the summary block below to the scratchpad log. Set `SCRATCHPAD_LOG=.claude/scratchpad/$(git branch --show-current | tr / -)/log.md` then `cat >> "$SCRATCHPAD_LOG" <<'EOF' ... EOF` (atomic, safe in the parallel stage). Keep total response under 200 lines.
+Write the full brief to the response. Also append the summary block below to the scratchpad log at `$SCRATCHPAD_LOG` — the orchestrator's prompt gives you this absolute path (it lives in the main repo, not the worktree); never derive it from `git branch`. Run `date -u +"%Y-%m-%dT%H:%M:%SZ"` first and type its output literally in the header, then `cat >> "$SCRATCHPAD_LOG" <<'EOF' ... EOF`. Keep total response under 200 lines.
 
 ```markdown
 ### <UTC ISO timestamp> explorer
 **Status:** OK | BLOCKED
 **Summary:** one line — what the implementer most needs to know
-**Patterns to load:** <list of .claude/rules/*.md files relevant to this work>
-**Domains to load:** <list of .claude/rules/*.md files relevant to this work>
+**Rules to load:** <list of .claude/rules/*.md files relevant to this work>
 **Reuse opportunities:** <count>
 **Gotchas:** <count> (highest-priority one inline)
 **Confidence:** high | medium | low
