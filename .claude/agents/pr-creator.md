@@ -37,7 +37,7 @@ If any pre-flight check fails, return Status: BLOCKED with the specific check an
 
 ## Result
 
-Print the block below and append it to the scratchpad log at `$SCRATCHPAD_LOG` — the orchestrator's prompt gives you this absolute path (it lives in the main repo, not the worktree); never derive it from `git branch`. Run `date -u +"%Y-%m-%dT%H:%M:%SZ"` first and type its output literally in the header, then `cat >> "$SCRATCHPAD_LOG" <<'EOF' ... EOF`. Keep under 30 lines.
+Print the block below and append it to the scratchpad log at `$SCRATCHPAD_LOG` — absolute path from your handoff prompt; never derive it from `git branch`. Append using the snippet from the prompt (defined in `orchestrator.md` → Append convention). Keep under 30 lines.
 
 ```markdown
 ### <UTC ISO timestamp> pr-creator

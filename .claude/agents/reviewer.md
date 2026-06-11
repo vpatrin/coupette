@@ -107,7 +107,7 @@ If the diff is so large you can't review it confidently, return Status: BLOCKED 
 
 ## Result
 
-Print your full review and append it to the scratchpad log at `$SCRATCHPAD_LOG` — the orchestrator's prompt gives you this absolute path (it lives in the main repo, not the worktree); never derive it from `git branch`. Run `date -u +"%Y-%m-%dT%H:%M:%SZ"` first and type its output literally in the header, then `cat >> "$SCRATCHPAD_LOG" <<'EOF' ... EOF`. Keep total under 300 lines.
+Print your full review and append it to the scratchpad log at `$SCRATCHPAD_LOG` — absolute path from your handoff prompt; never derive it from `git branch`. Append using the snippet from the prompt (defined in `orchestrator.md` → Append convention). Keep total under 300 lines.
 
 ```markdown
 ### <UTC ISO timestamp> reviewer

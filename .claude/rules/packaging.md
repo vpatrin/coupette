@@ -17,15 +17,15 @@ paths:
 - **Adding a direct dep:** `poetry add <pkg>` in the relevant service dir — updates both `pyproject.toml` and `poetry.lock`
 - **Bumping a specific dep:** `poetry update <pkg>` — never edit version constraints in `pyproject.toml` by hand for lockfile-managed versions
 - **Bumping a transitive dep:** `poetry update <pkg>` — do NOT add it as a direct dep just to pin it; Poetry's solver handles transitive versions
-- **Lock only (no version change):** `poetry lock` — since Poetry 2.0 this regenerates the lock from existing constraints without upgrading anything (`--no-update` was removed; the project pins Poetry 2.3.2)
-- **Python version:** `>=3.12,<4.0` across all services — do not introduce 3.13+ syntax until the Docker base image is updated
+- **Lock only (no version change):** `poetry lock` — since Poetry 2.0 this regenerates the lock from existing constraints without upgrading anything (`--no-update` was removed; the pinned Poetry version is `ARG POETRY_VERSION` in the service Dockerfiles + CI)
+- **Python version:** `>=3.12,<4.0` across all services — don't introduce syntax newer than the Docker base image's Python (see the service Dockerfiles)
 
 ## Security patches
 
 When pip-audit or Trivy flags a transitive dep:
 1. Try `poetry update <pkg>` first — if a fix exists, Poetry resolves it
 2. If the fix requires a major version of a transitive dep (e.g. starlette 1.x), evaluate the upgrade path before forcing it
-3. Add to `.pip-audit-ignore` or `.trivyignore` only when the fix is blocked by a hard dependency constraint — always include a comment explaining why and a reference to the blocking dep
+3. Only when the fix is blocked by a hard dependency constraint, add the CVE to the matching ignore file — `.pip-audit-ignore` for pip-audit findings (Python deps), `.trivyignore` for Trivy findings (Docker images); a CVE flagged by both scanners goes in both. Always include a comment explaining why and a reference to the blocking dep
 
 ## Frontend (Yarn)
 

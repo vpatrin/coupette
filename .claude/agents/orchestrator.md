@@ -46,7 +46,7 @@ Read the spec. Look at which directories the spec says will change.
 - Touches `scraper/` → `scraper-specialist`
 - Touches RAG surface (`backend/services/sommelier.py`, `backend/services/recommendations.py`, `backend/services/intent.py`, embedding pipeline) → `rag-specialist`
 - Touches JWT, OAuth, or waitlist → `auth-specialist`
-- Touches `backend/` (non-RAG, non-auth), `bot/`, `core/`, or cross-cuts → `implementer` (loads `.claude/rules/backend.md`, `rules/bot.md` etc. itself)
+- Touches `backend/` (non-RAG, non-auth), `bot/`, `core/`, or cross-cuts → `implementer` (loads `.claude/rules/backend.md`, `.claude/rules/bot.md` etc. itself)
 
 If two specialists would apply (e.g. backend + RAG), prefer the more specific one (rag-specialist).
 
@@ -55,8 +55,9 @@ If two specialists would apply (e.g. backend + RAG), prefer the more specific on
 After the user approves the spec (between stages 2 and 3):
 
 ```bash
-REPO=$(pwd)                                    # main repo — the scratchpad lives HERE
-BRANCH=<the spec's Branch: field>
+# main repo regardless of cwd — the scratchpad lives HERE
+REPO=$(git worktree list --porcelain | head -1 | cut -d' ' -f2-)
+BRANCH="feat/api-wine-availability"            # <- substitute the spec's Branch: field
 WORKTREE="$HOME/.claude/worktrees/coupette/$BRANCH"
 git worktree add "$WORKTREE" -b "$BRANCH"
 ```
@@ -68,11 +69,13 @@ SCRATCHPAD_DIR="$REPO/.claude/scratchpad/${BRANCH//\//-}"
 mkdir -p "$SCRATCHPAD_DIR"
 
 # spec.md — the scoper wrote it here (directory keyed on the spec's Branch: field).
-# If the scoper mis-derived the directory name, move spec.md here now.
+# Verify: ls "$SCRATCHPAD_DIR/spec.md" — if missing, locate it with
+# `ls .claude/scratchpad/*/spec.md` and move it here.
 
 # log.md — initialize with header, then paste the scoper's Result block under Stage results
+TITLE="Wine availability API"                  # <- substitute the spec's title
 cat > "$SCRATCHPAD_DIR/log.md" <<EOF
-# Pipeline log: <spec title>
+# Pipeline log: $TITLE
 
 **Branch:** $BRANCH
 **Started:** $(date -u +"%Y-%m-%dT%H:%M:%SZ")
@@ -100,19 +103,19 @@ They read **both** scratchpad files:
 
 They append their own Result block to `log.md` on completion. You update **Working notes** in `log.md` between stages with anything Victor said that the next subagent needs to know.
 
-**Append convention for subagents** (all worker agents follow this — repeated here as the source of truth):
+**Append convention for subagents** (defined here as the single source of truth — pass this snippet in every handoff prompt, with the agent's name substituted):
 
 ```bash
 # SCRATCHPAD_LOG comes from the handoff prompt (absolute path, main repo)
-date -u +"%Y-%m-%dT%H:%M:%SZ"          # run first, read the output
+TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+printf '### %s <agent-name>\n' "$TS" >> "$SCRATCHPAD_LOG"
 cat >> "$SCRATCHPAD_LOG" <<'EOF'
-### 2026-06-10T14:32:05Z <agent-name>   <- type the timestamp you just read, literally
 **Status:** ...
 ...
 EOF
 ```
 
-The heredoc is single-quoted (`<<'EOF'`) so `$variable` references inside appended markdown never expand — which also means a `$TS` shell variable would not expand either. Print the timestamp first, then type its value literally in the header line.
+The header goes through `printf` so `$TS` expands; the body heredoc is single-quoted (`<<'EOF'`) so `$variable` references inside appended markdown stay literal.
 
 Worktree cleanup is **your** job — pr-creator must not remove it. After pr-creator returns:
 
@@ -137,9 +140,10 @@ When spawning a subagent, the prompt you pass includes:
 
 1. **Worktree path** (absolute) + the instruction to `cd` there before any code work
 2. **Spec path + scratchpad log path** (absolute, in the main repo — every stage after scoper)
-3. **Prior stage's Result block** (verbatim, from `$SCRATCHPAD_DIR/log.md`) — or a 3-line summary if the prior block is large
-4. **What you want this subagent to do** (1-3 sentences)
-5. **Any user clarification** received since the prior stage
+3. **The append snippet** from [Append convention](#worktree--scratchpad) above (verbatim, `<agent-name>` filled in)
+4. **Prior stage's Result block** (verbatim, from `$SCRATCHPAD_DIR/log.md`) — or a 3-line summary if the prior block is large
+5. **What you want this subagent to do** (1-3 sentences)
+6. **Any user clarification** received since the prior stage
 
 Subagents don't inherit your conversation — they see only what you put in the prompt. Be explicit. Quote the spec's acceptance criteria rather than paraphrasing.
 

@@ -108,7 +108,7 @@ The scratchpad is for optimization (tight context, survives compaction). The ses
 | `auth-specialist` | JWT, OAuth (Google + GitHub), waitlist, bot secret |
 | `scraper-specialist` | `scraper/` — sitemap-only fetching, legal compliance |
 
-Backend and bot fall through to the generic `implementer` + `.claude/rules/backend.md` / `rules/bot.md`.
+Backend and bot fall through to the generic `implementer` + `.claude/rules/backend.md` / `.claude/rules/bot.md`.
 
 ## Context layer (`.claude/rules/`)
 

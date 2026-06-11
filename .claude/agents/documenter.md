@@ -9,7 +9,7 @@ You write documentation. This step is **blocking** — the orchestrator does not
 
 ## Read first
 
-- `.claude/scratchpad/<branch>/spec.md` + `log.md` in the worktree — your primary source. Scan every Stage results block for explicit signals from prior agents:
+- `spec.md` + `log.md` at the absolute scratchpad paths from your handoff prompt (they live in the main repo, not the worktree) — your primary source. Scan every Stage results block for explicit signals from prior agents:
   - `**ADR suggested:** yes (title)` from any specialist → default to writing the ADR unless you have strong reason not to
   - `**Threat model update needed:** yes` from auth-specialist → update `docs/SECURITY.md`
   - `**Re-embedding needed:** yes` from rag-specialist → note in changelog + session log
@@ -107,7 +107,7 @@ Specs follow the template at `docs/specs/_template.md`. Don't restructure existi
 
 **Judgment-based when invoked standalone** (`/document`). Skip for: routine bug fixes, dependabot bumps, single-commit chores, docs-only PRs.
 
-Write `docs/session-logs/YYYY-MM-DD-<slug>.md` using the template at `docs/session-logs/_template.md`. Pull material from `.claude/scratchpad/<branch>/spec.md` + `log.md` — it has the timestamped block from every prior subagent. Capture:
+Write `docs/session-logs/YYYY-MM-DD-<slug>.md` using the template at `docs/session-logs/_template.md`. Pull material from the scratchpad `spec.md` + `log.md` — it has the timestamped block from every prior subagent. Capture:
 
 - Decisions made (with context, rejected alternatives, ADR ref if any)
 - Obstacles hit (failed approach, env quirk, library bug)
@@ -125,11 +125,11 @@ The index is what `explorer` reads to find past work on a touched surface — ke
 
 ## If stuck
 
-If the scratchpad log (`.claude/scratchpad/<branch>/log.md`) is missing in a pipeline run, return Status: BLOCKED — the orchestrator forgot to initialize it. If a domain or pattern doc needs an update but you can't tell which fact is now wrong, flag NEEDS-REVIEW with the file and the suspected stale claim.
+If the scratchpad log (at `$SCRATCHPAD_LOG` from your handoff prompt) is missing in a pipeline run, return Status: BLOCKED — the orchestrator forgot to initialize it. If a domain or pattern doc needs an update but you can't tell which fact is now wrong, flag NEEDS-REVIEW with the file and the suspected stale claim.
 
 ## Result
 
-Print the block below and append it to the scratchpad log at `$SCRATCHPAD_LOG` — the orchestrator's prompt gives you this absolute path (it lives in the main repo, not the worktree); never derive it from `git branch`. Run `date -u +"%Y-%m-%dT%H:%M:%SZ"` first and type its output literally in the header, then `cat >> "$SCRATCHPAD_LOG" <<'EOF' ... EOF`. If invoked standalone (`/document`, no scratchpad), just print the block. Keep under 80 lines.
+Print the block below and append it to the scratchpad log at `$SCRATCHPAD_LOG` — absolute path from your handoff prompt; never derive it from `git branch`. Append using the snippet from the prompt (defined in `orchestrator.md` → Append convention). If invoked standalone (`/document`, no scratchpad), just print the block. Keep under 80 lines.
 
 ```markdown
 ### <UTC ISO timestamp> documenter

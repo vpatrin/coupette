@@ -62,7 +62,7 @@ If the spec touches a surface you can't access (missing repo state, files don't 
 
 ## Result
 
-Write the full brief to the response. Also append the summary block below to the scratchpad log at `$SCRATCHPAD_LOG` — the orchestrator's prompt gives you this absolute path (it lives in the main repo, not the worktree); never derive it from `git branch`. Run `date -u +"%Y-%m-%dT%H:%M:%SZ"` first and type its output literally in the header, then `cat >> "$SCRATCHPAD_LOG" <<'EOF' ... EOF`. Keep total response under 200 lines.
+Write the full brief to the response. Also append the summary block below to the scratchpad log at `$SCRATCHPAD_LOG` — absolute path from your handoff prompt; never derive it from `git branch`. Append using the snippet from the prompt (defined in `orchestrator.md` → Append convention). Keep total response under 200 lines.
 
 ```markdown
 ### <UTC ISO timestamp> explorer

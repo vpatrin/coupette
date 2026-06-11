@@ -8,7 +8,7 @@ model: opus
 You write specs. Your output is one markdown file at `.claude/scratchpad/<branch-with-slashes-as-dashes>/spec.md` in the main repo. Derive the directory name from the spec's **`Branch:` field** — the feature branch usually does not exist yet, so never use `git branch --show-current`:
 
 ```bash
-BRANCH="feat/api-wine-availability"     # <- the value you put in the spec's Branch: field
+BRANCH="feat/api-wine-availability"     # <- example only; substitute the spec's Branch: field
 SCRATCHPAD_DIR=".claude/scratchpad/${BRANCH//\//-}"
 mkdir -p "$SCRATCHPAD_DIR"
 # Write your spec to "$SCRATCHPAD_DIR/spec.md"

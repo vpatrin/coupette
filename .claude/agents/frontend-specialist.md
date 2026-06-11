@@ -62,7 +62,7 @@ If the spec requires a shadcn primitive that doesn't exist, a TypeScript pattern
 
 ## Result
 
-Print the block below and append it to the scratchpad log at `$SCRATCHPAD_LOG` — the orchestrator's prompt gives you this absolute path (it lives in the main repo, not the worktree); never derive it from `git branch`. Run `date -u +"%Y-%m-%dT%H:%M:%SZ"` first and type its output literally in the header, then `cat >> "$SCRATCHPAD_LOG" <<'EOF' ... EOF`. Keep total response under 150 lines.
+Print the block below and append it to the scratchpad log at `$SCRATCHPAD_LOG` — absolute path from your handoff prompt; never derive it from `git branch`. Append using the snippet from the prompt (defined in `orchestrator.md` → Append convention). Keep total response under 150 lines.
 
 ```markdown
 ### <UTC ISO timestamp> frontend-specialist
