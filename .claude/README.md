@@ -97,7 +97,7 @@ The scratchpad is for optimization (tight context, survives compaction). The ses
 | `test-writer` | Tests for the change | Tests only |
 | `reviewer` | BLOCK / WARN / APPROVE | No |
 | `documenter` | Docs + session log + ADR (mandatory) | Docs only |
-| `pr-creator` | Final ship via `/pr` | No |
+| `pr-creator` | Final ship — applies `commands/pr.md` | No |
 
 ### Specialists (preferred over `implementer` when surface matches)
 

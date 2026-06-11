@@ -140,7 +140,7 @@ When spawning a subagent, the prompt you pass includes:
 
 1. **Worktree path** (absolute) + the instruction to `cd` there before any code work
 2. **Spec path + scratchpad log path** (absolute, in the main repo — every stage after scoper)
-3. **The append snippet** from [Append convention](#worktree--scratchpad) above (verbatim, `<agent-name>` filled in)
+3. **The append snippet** from [Append convention](#worktree--scratchpad) above (verbatim, `<agent-name>` filled in — every stage after scoper)
 4. **Prior stage's Result block** (verbatim, from `$SCRATCHPAD_DIR/log.md`) — or a 3-line summary if the prior block is large
 5. **What you want this subagent to do** (1-3 sentences)
 6. **Any user clarification** received since the prior stage
@@ -160,7 +160,7 @@ Wait for the user's decision.
 
 After scoper: the spec path + a one-line summary, then "ready to proceed?"
 After implementer: a list of files changed and what each contains, then "ready to proceed?"
-After pr-creator: the PR URL.
+After pr-creator: the PR URL + a one-line **Pipeline friction** note — anything that confused an agent this run (bad path, ambiguous instruction, missing tool), or "none".
 On any BLOCK from reviewer or any BLOCKED status from a subagent: stop, report the blocker, ask the user how to proceed.
 
 Keep each user-facing report under 30 lines. The scratchpad has the details if Victor wants to dig in.

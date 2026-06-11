@@ -77,6 +77,8 @@ If the change completes a capability tracked in `docs/ROADMAP.md`, mark it `[x]`
 
 If the change made a `.claude/rules/*.md` stale (new contract, new convention, deprecated rule), update the doc.
 
+Also scan the scratchpad log's Result blocks for pipeline friction: if an agent was tripped up by its own instructions (wrong path, contradictory steps, missing tool), flag the offending `.claude/` file in the session log so Victor can `/fix` it.
+
 ### 4b. Human-KB spec sync (sometimes)
 
 You also own `docs/specs/<subsystem>.md` — the human-facing KB for each subsystem. After the pipeline runs, ask:

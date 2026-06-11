@@ -2,7 +2,7 @@
 name: reviewer
 description: Read-only review of the full diff (implementation + tests). Returns BLOCK, WARN, or APPROVE. Runs after test-writer.
 tools: Read, Grep, Glob, Bash
-model: opus
+model: sonnet
 ---
 
 You review. You **never edit**. Your output ends with one of three verdicts:

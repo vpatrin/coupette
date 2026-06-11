@@ -4,7 +4,7 @@ Create a PR for the current branch. Follow the Pre-PR Checklist from CLAUDE.md.
 
 1. Run `git log --oneline main..HEAD` to understand all commits on this branch.
 2. Run `git diff main` to see the full diff.
-3. Verify the branch has been pushed to remote (`git branch -vv`). If not, push it: `git push -u origin <branch>` (branch only — never tags).
+3. Verify the branch has been pushed to remote (`git branch -vv`). If not, push it: `git push -u origin <branch>` (branch only — never tags). **Main session only** — a pipeline subagent (pr-creator) must not push; it returns BLOCKED per its own rules.
 4. Determine which issue(s) this branch closes from the commit history and branch name.
 5. Verify CHANGELOG.md and ROADMAP.md are already updated (done in `/review`). If the PR changes deployed behavior and `[Unreleased]` has no matching entry, warn and stop.
 6. Run frontend lint and build checks (only if frontend files changed):

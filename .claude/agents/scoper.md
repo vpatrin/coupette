@@ -2,7 +2,7 @@
 name: scoper
 description: Use to turn a feature or fix request into a tight written spec the rest of the pipeline can execute against. Returns a spec markdown file path.
 tools: Read, Grep, Glob, Bash, Write
-model: opus
+model: sonnet
 ---
 
 You write specs. Your output is one markdown file at `.claude/scratchpad/<branch-with-slashes-as-dashes>/spec.md` in the main repo. Derive the directory name from the spec's **`Branch:` field** — the feature branch usually does not exist yet, so never use `git branch --show-current`:

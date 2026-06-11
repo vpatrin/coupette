@@ -84,7 +84,7 @@ coupette/
 │   ├── bot/          Handlers, formatters, keyboards, API client
 │   └── tests/
 ├── scraper/          Standalone scraper (writes to DB)
-│   └── src/          Sitemap fetcher, HTML parser, DB upsert, embeddings, availability
+│   └── scraper/      Sitemap fetcher, HTML parser, commands, DB upsert, embeddings, availability
 ├── core/             Shared package (Poetry path dependency)
 │   ├── db/           SQLAlchemy base, models, session factory
 │   ├── config/       Pydantic Settings (DB connection)
