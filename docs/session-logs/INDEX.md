@@ -13,3 +13,4 @@
 | Date | Log | Surfaces | ADRs spawned | PR |
 |---|---|---|---|---|
 | 2026-06-12 | [2026-06-12-gardener-agent.md](./2026-06-12-gardener-agent.md) | devops, .claude/agents, .claude/commands | none | TBD |
+| 2026-06-12 | [2026-06-12-tanstack-query-foundation.md](2026-06-12-tanstack-query-foundation.md) | frontend | 0011 | TBD |
