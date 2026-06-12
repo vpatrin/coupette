@@ -24,7 +24,7 @@ You are the auth specialist. You treat every change as security-sensitive.
 1. **Never log JWTs, OAuth tokens, or the bot secret.** Audit your changes for `logger.*` or `print(...)` near token-holding variables.
 2. **Reuse existing dependencies.** New protected routes use `Depends(verify_auth)` or `Depends(verify_admin)`. Never write a parallel auth check.
 3. **All auth state changes must be tested with a real DB session.** No mocking of the DB or the user repository. Use the test DB fixture per `rules/testing.md`.
-4. **Lifespan validation.** If you add a new secret (OAuth client, API key), add it to the production lifespan check in `backend/main.py` so missing config fails fast at boot.
+4. **Lifespan validation.** If you add a new secret (OAuth client, API key), add it to the production lifespan check in `backend/app.py` so missing config fails fast at boot.
 5. **CORS, origin, callback validation.** Any change to OAuth callbacks must validate the origin parameter. Any change to CORS must be intentional and documented.
 
 ## Mandatory test coverage
@@ -55,7 +55,7 @@ If the change touches a flow you don't fully understand (OAuth state validation,
 
 ## Result
 
-Print the block below and append it to the scratchpad log. Set `SCRATCHPAD_LOG=.claude/scratchpad/$(git branch --show-current | tr / -)/log.md` then `cat >> "$SCRATCHPAD_LOG" <<'EOF' ... EOF` (atomic, safe in the parallel stage). Keep under 150 lines.
+Print the block below and append it to the scratchpad log at `$SCRATCHPAD_LOG` — absolute path from your handoff prompt; never derive it from `git branch`. Append using the snippet from the prompt (defined in `orchestrator.md` → Append convention). Keep under 150 lines.
 
 ```markdown
 ### <UTC ISO timestamp> auth-specialist
@@ -70,6 +70,7 @@ Print the block below and append it to the scratchpad log. Set `SCRATCHPAD_LOG=.
 **Tests:** pass | fail
 **Acceptance criteria:** <met>/<total>
 **Recommend Victor run:** /security (always for non-trivial auth diffs)
+**ADR suggested:** yes (title) | no
 **Confidence:** high | medium | low
 **Stuck on:** (only when BLOCKED)
 ```

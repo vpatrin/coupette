@@ -37,7 +37,7 @@ Before reviewing, silently:
 3. Read all Pydantic schemas (`backend/schemas/*.py`) — model ↔ schema consistency
 4. Read `core/alembic/versions/` — recent migrations
 5. Read `backend/config.py` and `core/` for connection settings (pool size, timeouts)
-6. Read `docs/MIGRATIONS.md` for migration practices
+6. Read `.claude/rules/migrations.md` for migration practices
 
 ## Review checklist
 

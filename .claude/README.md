@@ -1,6 +1,6 @@
 # `.claude/` — Agentic Workflow
 
-A multi-agent pipeline for Coupette, inspired by Anthropic's orchestrator-worker pattern. Solo-dev sized: 13 agents, 4 entry commands, 8 domain docs, 5 pattern docs.
+A multi-agent pipeline for Coupette, inspired by Anthropic's orchestrator-worker pattern. Solo-dev sized: 13 agents, 4 entry commands, 12 path-scoped rules docs.
 
 ## Directory map
 
@@ -54,32 +54,34 @@ A multi-agent pipeline for Coupette, inspired by Anthropic's orchestrator-worker
 Orchestrator spawns Scoper → spec at .claude/scratchpad/<branch>/spec.md
   ↓  (Victor reviews, says proceed)
 Orchestrator: git worktree add ~/.claude/worktrees/coupette/<branch>
-              + initializes .claude/scratchpad/<branch>/log.md (Working notes + Stage results)
-  ↓  (every subsequent subagent runs in the worktree, reads spec.md + log.md first,
+              + initializes .claude/scratchpad/<branch>/log.md in the MAIN repo
+              (Working notes + Stage results)
+  ↓  (every subsequent subagent cd's into the worktree per its handoff prompt,
+       reads spec.md + log.md via the absolute scratchpad paths it was given,
        appends its Result block to Stage results on completion)
 Explorer → recon brief + reads prior session logs for the touched surface
 Migrator → only if spec says Needs migration: yes
 Specialist (or generic Implementer) → does the work (Plan → Execute → Verify)
   ↓  (Victor reviews diff, says proceed)
-Test-Writer ∥ Reviewer (parallel via two Agent calls in one message)
+Test-Writer → Reviewer (sequential — reviewer checks the tests + diff coverage)
   Reviewer reads .claude/commands/<advisor>.md and applies them itself
 Documenter (BLOCKING) → consumes spec.md + log.md → writes session log
               + changelog + ADR if applicable
-PR-Creator → invokes /pr
+PR-Creator → applies .claude/commands/pr.md
   ↓
-Orchestrator: git worktree remove (scratchpad dir persists locally for retrospection,
-              gitignored, manual cleanup via `make clean-scratchpad`)
+Orchestrator: git worktree remove (scratchpad dir lives in the main repo and persists
+              for retrospection, gitignored, manual cleanup via `make clean-scratchpad`)
 ```
 
 ## Three layers of memory
 
 | Artifact | Lives in | Lifetime | Audience |
 |---|---|---|---|
-| **Spec** | `.claude/scratchpad/<branch>/spec.md` | Local, gitignored — persists until manually cleaned | Pipeline input (scoper writes, agents read) |
-| **Pipeline log** | `.claude/scratchpad/<branch>/log.md` | Same — local, gitignored, persists | All subagents (primary trace) |
+| **Spec** | `.claude/scratchpad/<branch>/spec.md` (main repo, not the worktree) | Local, gitignored — persists until manually cleaned | Pipeline input (scoper writes, agents read) |
+| **Pipeline log** | `.claude/scratchpad/<branch>/log.md` (main repo, not the worktree) | Same — local, gitignored, persists | All subagents (primary trace) |
 | **Session log** | `docs/session-logs/` | Permanent (committed) | Future-you + future AI agents |
 
-The scratchpad is for optimization (tight context, survives compaction). The session log is for archaeology (decisions, dead ends, rejected alternatives — like ADRs but per-session). Pipeline runs always produce a session log; standalone work uses judgment.
+The scratchpad is for optimization (tight context, survives compaction). The session log is for archaeology (decisions, dead ends, rejected alternatives — like ADRs but per-session). Full pipeline runs always produce a session log; the trivial-case shortcut in `/feature`/`/fix` and standalone work use judgment.
 
 ## Agents
 
@@ -95,7 +97,7 @@ The scratchpad is for optimization (tight context, survives compaction). The ses
 | `test-writer` | Tests for the change | Tests only |
 | `reviewer` | BLOCK / WARN / APPROVE | No |
 | `documenter` | Docs + session log + ADR (mandatory) | Docs only |
-| `pr-creator` | Final ship via `/pr` | No |
+| `pr-creator` | Final ship — applies `commands/pr.md` | No |
 
 ### Specialists (preferred over `implementer` when surface matches)
 
@@ -106,19 +108,19 @@ The scratchpad is for optimization (tight context, survives compaction). The ses
 | `auth-specialist` | JWT, OAuth (Google + GitHub), waitlist, bot secret |
 | `scraper-specialist` | `scraper/` — sitemap-only fetching, legal compliance |
 
-Backend and bot fall through to the generic `implementer` + `domains/backend.md`.
+Backend and bot fall through to the generic `implementer` + `.claude/rules/backend.md` / `.claude/rules/bot.md`.
 
 ## Context layer (`.claude/rules/`)
 
 One folder, single source of truth. Each file has `paths:` frontmatter so it auto-loads in main-session work when matching files are touched. Subagents Read them explicitly per their system prompts.
 
-`auth.md` · `backend.md` · `deploy.md` · `frontend.md` · `llm.md` · `migrations.md` · `rag.md` · `scraper.md` · `testing.md`
+`auth.md` · `backend.md` · `bot.md` · `deploy.md` · `docs.md` · `frontend.md` · `llm.md` · `migrations.md` · `packaging.md` · `rag.md` · `scraper.md` · `testing.md`
 
 (Reviewer's project-specific invariants are inlined in `agents/reviewer.md` — they're reviewer-only and shouldn't auto-load into other sessions.)
 
 ## Worktree convention
 
-All pipeline runs use `~/.claude/worktrees/coupette/<branch>`. The orchestrator creates it after spec approval and removes it after the PR lands. Diffs can be viewed in VSCode by opening that path, or in any external diff viewer.
+All pipeline runs use `~/.claude/worktrees/coupette/<branch-with-slashes-as-dashes>`. The orchestrator creates it after spec approval and removes it after the PR lands. Diffs can be viewed in VSCode by opening that path, or in any external diff viewer.
 
 ## Session logs
 

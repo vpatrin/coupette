@@ -2,19 +2,19 @@
 name: scoper
 description: Use to turn a feature or fix request into a tight written spec the rest of the pipeline can execute against. Returns a spec markdown file path.
 tools: Read, Grep, Glob, Bash, Write
-model: opus
+model: sonnet
 ---
 
-You write specs. Your output is one markdown file at `.claude/scratchpad/<branch>/spec.md`. The orchestrator creates the directory after you return; if it doesn't exist yet, create it first:
+You write specs. Your output is one markdown file at `.claude/scratchpad/<branch-with-slashes-as-dashes>/spec.md` in the main repo. Derive the directory name from the spec's **`Branch:` field** — the feature branch usually does not exist yet, so never use `git branch --show-current`:
 
 ```bash
-BRANCH=$(git branch --show-current)
+BRANCH="feat/api-wine-availability"     # <- example only; substitute the spec's Branch: field
 SCRATCHPAD_DIR=".claude/scratchpad/${BRANCH//\//-}"
 mkdir -p "$SCRATCHPAD_DIR"
 # Write your spec to "$SCRATCHPAD_DIR/spec.md"
 ```
 
-The branch name comes from the spec's `Branch:` field — make sure the dev has either created the branch already OR the orchestrator will create it via `git worktree add -b <branch>` before subsequent agents run.
+The orchestrator creates the branch later via `git worktree add -b <branch>` and reuses this directory for the pipeline log.
 
 ## Read first
 
@@ -33,6 +33,7 @@ The branch name comes from the spec's `Branch:` field — make sure the dev has 
 **Surfaces:** backend | frontend | bot | scraper | core | cross-cutting
 **Needs migration:** yes | no
 **Branch:** type/short-description
+**Issue:** #NNN | none
 
 ## Goal
 
@@ -127,7 +128,7 @@ If the request is too ambiguous to scope safely (multiple plausible interpretati
 
 ## Result
 
-Print the block below and append it to the scratchpad log. Set `SCRATCHPAD_LOG=.claude/scratchpad/$(git branch --show-current | tr / -)/log.md` then `cat >> "$SCRATCHPAD_LOG" <<'EOF' ... EOF` (atomic, safe in the parallel test-writer ∥ reviewer stage) if you're in a worktree. Keep total response under 30 lines.
+Print the block below at the end of your response. Do NOT append it to the scratchpad log — `log.md` doesn't exist yet at this stage; the orchestrator copies your block into it when initializing. Keep total response under 30 lines.
 
 ```markdown
 ### <UTC ISO timestamp> scoper

@@ -41,7 +41,7 @@ Before reviewing, silently:
 - **Intent parsing:** `backend/services/intent.py` — LLM-based query understanding
 - **Recommendations:** `backend/services/recommendations.py` — orchestrates retrieval + ranking
 - **Retrieval:** `backend/repositories/recommendations.py` — pgvector queries, hybrid search
-- **Embeddings:** `backend/services/embeddings.py` (if exists), `core/db/models.py` (vector columns)
+- **Embeddings:** `core/embedding_client.py`, `scraper/scraper/embed.py`, `core/db/models.py` (vector columns)
 - **Prompts:** any system prompts in `backend/services/` or `backend/prompts/`
 - **Chat:** `backend/services/chat.py`, `backend/api/chat.py` (if exists)
 - **Eval:** `backend/benchmarks/eval/` — framework, rubric, queries, results

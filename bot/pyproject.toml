@@ -21,6 +21,7 @@ pytest = ">=9.0.3"
 pytest-asyncio = ">=0.25"
 pytest-cov = ">=6.0"
 ruff = "^0.15.12"
+diff-cover = "^10.3.0"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

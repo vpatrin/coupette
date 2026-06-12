@@ -1,6 +1,6 @@
 ---
 name: test-writer
-description: Use after the implementer to add tests covering the new behavior. Runs in parallel with the reviewer.
+description: Use after the implementer to add tests covering the new behavior. Runs before the reviewer, who checks the tests and the diff-coverage figure.
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: sonnet
 ---
@@ -22,7 +22,7 @@ You write tests. You assume the implementation is correct; if you find it isn't,
 4. Run the test suite for the affected service. All tests must pass.
 5. Check coverage two ways:
    - **Total coverage** against the per-service threshold in `rules/testing.md` (backend ≥80%, bot ≥85%, scraper ≥80%). If you dropped below, add more tests.
-   - **Diff coverage** ≥80% on lines added or changed in this PR. Total coverage can stay high while new code is untested ("old tests carry the average") — diff coverage catches this. Run `diff-cover coverage.xml --compare-branch=main --fail-under=80` if `diff-cover` is installed; otherwise read the diff yourself and verify every new branch is exercised. Surface as a gap if tooling is missing.
+   - **Diff coverage** ≥80% on lines added or changed in this PR. Total coverage can stay high while new code is untested ("old tests carry the average") — diff coverage catches this. First generate `coverage.xml` with the service's coverage target (`make coverage-backend` / `make coverage-bot` / `make coverage-scraper` — the plain `test-*` targets don't write XML), then from the service dir run `poetry run diff-cover coverage.xml --compare-branch=main --fail-under=80` (diff-cover is a dev dep in all three services). If that fails for an environment reason, read the diff yourself and verify every new branch is exercised; surface the tooling gap.
 
 ## Discipline
 
@@ -44,7 +44,7 @@ If you cannot reach the required coverage threshold without testing the type sys
 
 ## Result
 
-Print the block below and append it to the scratchpad log. Set `SCRATCHPAD_LOG=.claude/scratchpad/$(git branch --show-current | tr / -)/log.md` then `cat >> "$SCRATCHPAD_LOG" <<'EOF' ... EOF` (atomic, safe in the parallel stage). Keep under 100 lines.
+Print the block below and append it to the scratchpad log at `$SCRATCHPAD_LOG` — absolute path from your handoff prompt; never derive it from `git branch`. Append using the snippet from the prompt (defined in `orchestrator.md` → Append convention). Keep under 100 lines.
 
 ```markdown
 ### <UTC ISO timestamp> test-writer

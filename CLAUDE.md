@@ -4,7 +4,7 @@ Wine discovery + recommendations via Telegram bot and web app. Modular monolith 
 
 ## Hard Rules — YOU MUST NOT violate any of these
 
-**Git:** NEVER commit, push, or merge — Victor does. NEVER add Claude/AI attribution to commits, PRs, issues, branches (no "Co-Authored-By", no "Generated with Claude Code"). Create local branches; create PRs via `gh pr create` after Victor pushes.
+**Git:** Commit and push allowed on non-main branches only. NEVER merge, NEVER push to main, NEVER push tags (tag pushes deploy to prod), NEVER force-push without explicit OK — merges, tags, and releases are Victor's. NEVER add Claude/AI attribution to commits, PRs, issues, branches (no "Co-Authored-By", no "Generated with Claude Code"). Pipeline subagents still never commit or push — main session only.
 
 **Legal — SAQ:** NEVER write user-facing text implying affiliation with SAQ (Société des alcools du Québec — a trademark). Applies to LLM prompts, bot messages, UI copy, API responses, READMEs.
 - ❌ "I'm a sommelier for the SAQ"
@@ -26,9 +26,11 @@ Wine discovery + recommendations via Telegram bot and web app. Modular monolith 
 | RAG / recommendations | [`.claude/rules/rag.md`](.claude/rules/rag.md) | sommelier, recommendations, intent, embed |
 | LLM (Claude API usage) | [`.claude/rules/llm.md`](.claude/rules/llm.md) | LLM-using services |
 | Scraper (legal + ethical rules) | [`.claude/rules/scraper.md`](.claude/rules/scraper.md) | `scraper/**/*.py` |
-| Migrations | [`.claude/rules/migrations.md`](.claude/rules/migrations.md) | `core/db/models/**`, `core/alembic/**` |
+| Migrations | [`.claude/rules/migrations.md`](.claude/rules/migrations.md) | `core/db/*.py`, `core/alembic/**` |
+| Telegram bot (API-only, handler conventions) | [`.claude/rules/bot.md`](.claude/rules/bot.md) | `bot/**/*.py` |
 | Testing | [`.claude/rules/testing.md`](.claude/rules/testing.md) | test files |
 | Deploy + infra | [`.claude/rules/deploy.md`](.claude/rules/deploy.md) | `docker-compose.yml`, `Dockerfile`, CI, Makefile |
+| Packaging (Poetry, Yarn, security patches) | [`.claude/rules/packaging.md`](.claude/rules/packaging.md) | `pyproject.toml`, `poetry.lock`, `package.json`, `yarn.lock` |
 | Docs + ADRs + release + changelog | [`.claude/rules/docs.md`](.claude/rules/docs.md) | `docs/**`, `README.md`, `CHANGELOG.md` |
 | Agentic pipeline | [`.claude/README.md`](.claude/README.md) | — |
 

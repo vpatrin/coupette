@@ -110,7 +110,7 @@ Also read:
 
 - All Pydantic schemas (`backend/schemas/*.py`)
 - Recent migrations in `core/alembic/versions/`
-- `docs/MIGRATIONS.md` for migration practices
+- `.claude/rules/migrations.md` for migration practices
 
 Additional checks:
 

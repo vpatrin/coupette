@@ -25,7 +25,7 @@ paths:
 |---|---|
 | Embedding client wrapper | `core/embedding_client.py` |
 | Embedding dim constant | `core/embedding_constants.py` |
-| Batch embed CLI | `scraper/commands/embed.py` (`make embed-sync`) |
+| Batch embed CLI | `scraper/scraper/commands/embed.py` (`make embed-sync`) |
 | pgvector upsert | `scraper/scraper/db/embeddings.py` |
 | Retrieval + curation | `backend/services/sommelier.py` |
 | Recommendation orchestration | `backend/services/recommendations.py` |
