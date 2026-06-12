@@ -1,1 +1,6 @@
-# Known vulnerabilities with no fix available yet
+# Known vulnerabilities with no fix available yet.
+# Remove entries once the underlying package is upgraded.
+
+# starlette 0.52.1 — fixed in 1.0.1, but starlette 1.x requires FastAPI 1.x.
+# FastAPI pinned at 0.136.1; compatibility testing needed before upgrade.
+CVE-2026-48710
