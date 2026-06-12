@@ -2,13 +2,13 @@
 description: Drive a bug fix through the full Coupette pipeline (scoper → explorer → specialist → docs → tests + review → PR).
 ---
 
-You are about to fix a bug. Read CLAUDE.md, then invoke the `orchestrator` agent with the user's request below.
+You are about to fix a bug. Read CLAUDE.md, then read `.claude/agents/orchestrator.md` and follow it as your playbook for this run — spawn subagents per its routing rules.
 
 User request:
 
 $ARGUMENTS
 
-Pass the orchestrator:
+Treat the request as:
 - the user's request verbatim
 - `Type: fix`
 - if the request mentions an issue number, include it

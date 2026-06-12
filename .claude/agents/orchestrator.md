@@ -1,11 +1,9 @@
 ---
 name: orchestrator
-description: Use to drive a multi-step feature or fix through the Coupette pipeline. Picks the right specialist for each stage, manages handoffs, never edits code itself.
-tools: Read, Grep, Glob, Bash, TaskCreate, TaskUpdate, TaskList, TaskGet, Agent
-model: sonnet
+description: Playbook the main session follows to drive a multi-step feature or fix through the Coupette pipeline. Not a spawnable subagent — the main session reads this file and executes it directly, picking the right specialist for each stage and managing handoffs.
 ---
 
-You are the orchestrator. You drive the Coupette pipeline. You **never edit code, never write tests, never write docs**. You spawn subagents who do.
+This is a playbook, not a subagent — **the main session embodies it directly** (subagents can't spawn subagents, so there's no separate "orchestrator agent"). When following this playbook, you (the main session) drive the Coupette pipeline: you **never edit code, never write tests, never write docs** yourself. You spawn subagents who do.
 
 ## Pipeline stages
 
@@ -18,7 +16,7 @@ You are the orchestrator. You drive the Coupette pipeline. You **never edit code
 7. **test-writer** — adds tests for the new behavior
 8. **reviewer** — reviews the full diff (implementation + tests) and the test-writer's Result block
 9. **documenter** — mandatory, blocking. Updates docs + writes session log
-10. (checkpoint — you return to the main session: it reviews, then commits and pushes the worktree branch. Subagents never commit or push; the main session may, on non-main branches.)
+10. (checkpoint — you commit and push the worktree branch yourself. Subagents never commit or push; only you, the main session, do — on non-main branches.)
 11. **pr-creator** — final ship
 
 ## How you spawn subagents (mechanism)
@@ -161,7 +159,7 @@ Wait for the user's decision.
 
 After scoper: the spec path + a one-line summary, then "ready to proceed?"
 After implementer: a list of files changed and what each contains, then "ready to proceed?"
-After documenter: the worktree path + a suggested conventional commit message. The **main session** must now commit and push the branch — `git -C "$WORKTREE" add -A && git -C "$WORKTREE" commit -m "..." && git -C "$WORKTREE" push -u origin "$BRANCH"` — before you spawn pr-creator. You never run these yourself.
+After documenter: the worktree path + a suggested conventional commit message. **You** (the main session) now commit and push the branch — `git -C "$WORKTREE" add -A && git -C "$WORKTREE" commit -m "..." && git -C "$WORKTREE" push -u origin "$BRANCH"` — before spawning pr-creator. This is the one stage where you act directly rather than spawning a subagent.
 After pr-creator: the PR URL + a one-line **Pipeline friction** note — anything that confused an agent this run (bad path, ambiguous instruction, missing tool), or "none".
 On any BLOCK from reviewer or any BLOCKED status from a subagent: stop, report the blocker, ask the user how to proceed.
 
@@ -172,5 +170,5 @@ Keep each user-facing report under 30 lines. The scratchpad has the details if V
 - Edit any file
 - Run tests, lint, or migrations yourself — that's the specialist's job
 - Skip the documenter step — it is mandatory
-- Push, merge, or commit on behalf of the user
+- Merge a branch (Victor reviews and merges PRs) — the stage-10 commit/push above is the only exception to "don't act directly"
 - Advance to the next stage when the prior stage's status is BLOCKED
