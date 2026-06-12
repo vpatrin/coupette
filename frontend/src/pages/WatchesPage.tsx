@@ -1,6 +1,7 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { MagnifyingGlass, BookmarkSimple, X } from '@phosphor-icons/react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useApiClient, ApiError } from '@/lib/api'
@@ -8,6 +9,13 @@ import type { ProductOut, WatchWithProduct, UserStorePreferenceOut } from '@/lib
 import { formatOrigin, CATEGORY_DOT } from '@/lib/utils'
 import EmptyState from '@/components/EmptyState'
 import { useWineDetail } from '@/contexts/WineDetailContext'
+
+// Co-located query-key builders — keeps cache keys consistent between the
+// query and any code (handleRemove) that reads/writes the same cache entry.
+const watchesKeys = {
+  list: (userId: string) => ['watches', userId] as const,
+}
+const storePrefsKeys = ['storePreferences'] as const
 
 function AvailabilityStatus({
   product,
@@ -92,86 +100,64 @@ function WatchesPage() {
   const { t } = useTranslation()
   const { user } = useAuth()
   const apiClient = useApiClient()
+  const queryClient = useQueryClient()
   const navigate = useNavigate()
   const { selectedSku, setSelectedSku } = useWineDetail()
 
-  const [watches, setWatches] = useState<WatchWithProduct[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [removeError, setRemoveError] = useState<string | null>(null)
   const [removing, setRemoving] = useState<string | null>(null)
-  const [storeNames, setStoreNames] = useState<Map<string, string>>(new Map())
   const [expandedStores, setExpandedStores] = useState<Set<string>>(new Set())
   const [filter, setFilter] = useState('')
 
   const userId = `user:${user?.id}`
 
-  useEffect(() => {
-    let cancelled = false
+  const watchesQuery = useQuery({
+    queryKey: watchesKeys.list(userId),
+    queryFn: () => apiClient<WatchWithProduct[]>(`/watches?user_id=${encodeURIComponent(userId)}`),
+  })
 
-    async function fetchWatches() {
-      try {
-        const data = await apiClient<WatchWithProduct[]>(
-          `/watches?user_id=${encodeURIComponent(userId)}`,
-        )
-        if (!cancelled) {
-          setWatches(data)
-          setError(null)
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof ApiError ? err.detail : t('watches.failedToLoad'))
-        }
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
-    }
+  // Independent of the watches query — failure here degrades silently
+  // (storeNames just stays empty), so we don't surface isError/error.
+  const storePrefsQuery = useQuery({
+    queryKey: storePrefsKeys,
+    queryFn: () => apiClient<UserStorePreferenceOut[]>('/stores/preferences'),
+  })
 
-    // Non-blocking — store prefs failing shouldn't block the watch list
-    async function fetchStorePrefs() {
-      try {
-        const prefs = await apiClient<UserStorePreferenceOut[]>('/stores/preferences')
-        if (!cancelled) {
-          setStoreNames(new Map(prefs.map((p) => [p.saq_store_id, p.store.name])))
-        }
-      } catch {
-        // Supplementary data — silently degrade to no store matching
-      }
-    }
+  const watches = watchesQuery.data ?? []
+  const storeNames = new Map(
+    (storePrefsQuery.data ?? []).map((p) => [p.saq_store_id, p.store.name]),
+  )
 
-    fetchWatches()
-    fetchStorePrefs()
-
-    return () => {
-      cancelled = true
-    }
-  }, [userId, apiClient, t])
+  const loadError = watchesQuery.isError
+    ? watchesQuery.error instanceof ApiError
+      ? watchesQuery.error.detail
+      : t('watches.failedToLoad')
+    : null
 
   const handleRemove = useCallback(
     async (sku: string) => {
-      // Optimistic remove
-      setWatches((prev) => prev.filter((w) => w.watch.sku !== sku))
+      const key = watchesKeys.list(userId)
+      const previous = queryClient.getQueryData<WatchWithProduct[]>(key)
+
+      // Optimistic remove — write directly into the query cache so the UI
+      // (which reads from the same cache via useQuery) updates immediately.
+      queryClient.setQueryData<WatchWithProduct[]>(key, (prev) =>
+        (prev ?? []).filter((w) => w.watch.sku !== sku),
+      )
       setRemoving(sku)
       try {
         await apiClient(`/watches/${sku}?user_id=${encodeURIComponent(userId)}`, {
           method: 'DELETE',
         })
       } catch (err) {
-        // Roll back on failure
-        setError(err instanceof ApiError ? err.detail : t('watches.failedToRemove'))
-        // Re-fetch to restore correct state
-        try {
-          const data = await apiClient<WatchWithProduct[]>(
-            `/watches?user_id=${encodeURIComponent(userId)}`,
-          )
-          setWatches(data)
-        } catch {
-          // If refetch fails too, leave the error message
-        }
+        // Roll back to the pre-optimistic snapshot on failure
+        queryClient.setQueryData(key, previous)
+        setRemoveError(err instanceof ApiError ? err.detail : t('watches.failedToRemove'))
       } finally {
         setRemoving(null)
       }
     },
-    [apiClient, userId, t],
+    [apiClient, userId, t, queryClient],
   )
 
   const handleToggleExpand = useCallback((sku: string) => {
@@ -191,7 +177,7 @@ function WatchesPage() {
     ? watches.filter(({ product }) => product?.name?.toLowerCase().includes(query))
     : watches
 
-  if (loading) {
+  if (watchesQuery.isLoading) {
     return (
       <div className="p-8">
         <div className="mx-auto max-w-2xl">
@@ -224,13 +210,13 @@ function WatchesPage() {
             )}
           </div>
 
-          {error && (
+          {(loadError || removeError) && (
             <p className="text-destructive mb-4 text-[13px]">
-              {error}{' '}
+              {loadError || removeError}{' '}
               <button
                 type="button"
                 className="hover:text-destructive/80 underline underline-offset-4"
-                onClick={() => setError(null)}
+                onClick={() => setRemoveError(null)}
               >
                 {t('watches.failedToRemove')}
               </button>
