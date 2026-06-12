@@ -2,20 +2,20 @@
 description: Drive a new feature through the full Coupette pipeline (scoper → explorer → specialist → docs → tests + review → PR).
 ---
 
-You are about to start a feature. Read CLAUDE.md, then invoke the `orchestrator` agent with the user's request below.
+You are about to start a feature. Read CLAUDE.md, then read `.claude/agents/orchestrator.md` and follow it as your playbook for this run — spawn subagents per its routing rules.
 
 User request:
 
 $ARGUMENTS
 
-Pass the orchestrator:
+Treat the request as:
 - the user's request verbatim
 - `Type: feature`
 - if the request mentions an issue number, include it
 
-The orchestrator will:
+Following the playbook, you will:
 1. Spawn `scoper` to produce a spec at `.claude/scratchpad/<branch>/spec.md`
-2. Return the spec to you, the user reads it, says proceed
+2. Show the spec to the user, who reads it and says proceed
 3. Spawn `explorer` for read-only recon
 4. Spawn `migrator` if the spec marks `Needs migration: yes`
 5. Spawn the right specialist (or `implementer`) to do the work in a worktree at `~/.claude/worktrees/coupette/<branch>`
@@ -24,7 +24,7 @@ The orchestrator will:
 8. Spawn `documenter` (mandatory blocking step)
 9. Spawn `pr-creator` to ship
 
-After each subagent returns, the orchestrator reports back to the user and waits for go-ahead. Never auto-advance past a checkpoint.
+After each subagent returns, report back to the user and wait for go-ahead. Never auto-advance past a checkpoint.
 
 ## Trivial-case shortcut
 

@@ -51,25 +51,27 @@ A multi-agent pipeline for Coupette, inspired by Anthropic's orchestrator-worker
 ```
 /feature add wine pairing endpoint
   ↓
-Orchestrator spawns Scoper → spec at .claude/scratchpad/<branch>/spec.md
+Main session reads agents/orchestrator.md as its playbook, spawns Scoper
+  → spec at .claude/scratchpad/<branch>/spec.md
   ↓  (Victor reviews, says proceed)
-Orchestrator: git worktree add ~/.claude/worktrees/coupette/<branch>
+Main session: git worktree add ~/.claude/worktrees/coupette/<branch>
               + initializes .claude/scratchpad/<branch>/log.md in the MAIN repo
               (Working notes + Stage results)
   ↓  (every subsequent subagent cd's into the worktree per its handoff prompt,
        reads spec.md + log.md via the absolute scratchpad paths it was given,
        appends its Result block to Stage results on completion)
-Explorer → recon brief + reads prior session logs for the touched surface
-Migrator → only if spec says Needs migration: yes
-Specialist (or generic Implementer) → does the work (Plan → Execute → Verify)
+Main session spawns Explorer → recon brief + reads prior session logs for the touched surface
+Main session spawns Migrator → only if spec says Needs migration: yes
+Main session spawns Specialist (or generic Implementer) → does the work (Plan → Execute → Verify)
   ↓  (Victor reviews diff, says proceed)
-Test-Writer → Reviewer (sequential — reviewer checks the tests + diff coverage)
+Main session spawns Test-Writer → Reviewer (sequential — reviewer checks the tests + diff coverage)
   Reviewer reads .claude/commands/<advisor>.md and applies them itself
-Documenter (BLOCKING) → consumes spec.md + log.md → writes session log
+Main session spawns Documenter (BLOCKING) → consumes spec.md + log.md → writes session log
               + changelog + ADR if applicable
-PR-Creator → applies .claude/commands/pr.md
+Main session commits + pushes the branch
+Main session spawns PR-Creator → applies .claude/commands/pr.md
   ↓
-Orchestrator: git worktree remove (scratchpad dir lives in the main repo and persists
+Main session: git worktree remove (scratchpad dir lives in the main repo and persists
               for retrospection, gitignored, manual cleanup via `make clean-scratchpad`)
 ```
 
@@ -89,7 +91,7 @@ The scratchpad is for optimization (tight context, survives compaction). The ses
 
 | Agent | Role | Edits code? |
 |---|---|---|
-| `orchestrator` | Routes, manages handoffs | No |
+| `orchestrator` | Playbook the main session follows — routes stages, manages handoffs (not a spawnable agent) | No |
 | `scoper` | Request → spec | Spec file only |
 | `explorer` | Read-only recon brief | No |
 | `migrator` | Model change + suggests `make revision` | Models only |
