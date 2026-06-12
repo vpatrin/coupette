@@ -116,10 +116,12 @@ EOF
 
 The header goes through `printf` so `$TS` expands; the body heredoc is single-quoted (`<<'EOF'`) so `$variable` references inside appended markdown stay literal.
 
-Worktree cleanup is **your** job — pr-creator must not remove it. After pr-creator returns:
+Worktree cleanup is **your** job — pr-creator must not remove it. Keep the worktree until the PR **merges** (CI failures and review feedback get fixed there; removing it at PR creation just forces a re-add). After the merge:
 
 ```bash
 git worktree remove "$WORKTREE"
+# If a PR sat open across sessions, sweep merged leftovers anytime:
+#   git worktree list   # remove any whose branch is already merged
 # Scratchpad directory at $SCRATCHPAD_DIR persists (it lives in the main repo, not
 # the worktree) — gitignored, useful for retrospection. Manual cleanup via
 # `make clean-scratchpad` or `rm -rf` when no longer needed.
