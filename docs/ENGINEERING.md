@@ -216,7 +216,7 @@ Five actionables identified from a full frontend audit (2026-04-02). In priority
 2. **Kill silent failures** — replace `catch(() => {})` in `AppShell`, `TastingsPage`, and others with inline error state; users currently see a blank list with no explanation
 3. **Extract components from large pages** — `SearchPage.tsx` (720 lines) and `AppShell.tsx` (594 lines) are untestable as-is; extract `SearchFilters`, `SearchResults`, `CategoryChips`, `NavigationSidebar` — prerequisite for meaningful tests
 4. **Write tests for the API layer** — `lib/api.ts` (`ApiError`, `fetchAllPages`, `useApiClient`) is pure logic, easy to test; start here before touching components
-5. **Add `tanstack/react-query`** — eliminates manual cancellation token pattern, adds caching (no re-fetch on nav), deduplication, and retry; net code deletion
+5. ~~**Add `tanstack/react-query`**~~ — done (#763, ADR 0011). Provider + defaults + query-key convention established; `WatchesPage` migrated as the reference implementation. `SearchPage` (#764) and remaining pages + `useMutation` (#765) follow.
 
 **Testing — Frontend:**
 
@@ -364,7 +364,7 @@ Type-safe Claude responses with automatic validation and retry on schema mismatc
 
 ### TanStack Query — Server state for React
 
-Replaces manual `fetch + useState + useEffect` patterns with a cache-aware, deduplication-aware, retry-aware data layer. Already flagged in the Frontend Quality backlog above — worth learning as the canonical React data fetching pattern.
+Replaces manual `fetch + useState + useEffect` patterns with a cache-aware, deduplication-aware, retry-aware data layer. Done (#763, ADR 0011) — `QueryClientProvider` + defaults + query-key convention established, `WatchesPage` migrated as the reference implementation for `SearchPage` (#764) and remaining pages + `useMutation` (#765).
 
 ### SSE — Chat streaming
 
@@ -410,7 +410,7 @@ Lighter than Temporal for simple fire-and-forget jobs (Haiku signal extraction, 
 
 ### React Query Devtools
 
-Browser devtools panel that shows TanStack Query cache state, query status, stale/fresh indicators, and refetch counts in real time. Zero config, dev-only, ships as a floating panel in the corner. Add alongside TanStack Query — they're a package deal.
+Browser devtools panel that shows TanStack Query cache state, query status, stale/fresh indicators, and refetch counts in real time. Zero config, dev-only, ships as a floating panel in the corner. Done alongside TanStack Query (#763, ADR 0011) — rendered only when `import.meta.env.DEV`, tree-shaken out of production builds.
 
 ### Playwright — E2E tests
 

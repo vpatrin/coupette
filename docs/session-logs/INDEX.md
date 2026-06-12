@@ -12,4 +12,4 @@
 
 | Date | Log | Surfaces | ADRs spawned | PR |
 |---|---|---|---|---|
-| (no entries yet — populated by documenter on first pipeline run) | | | | |
+| 2026-06-12 | [2026-06-12-tanstack-query-foundation.md](2026-06-12-tanstack-query-foundation.md) | frontend | 0011 | TBD |
