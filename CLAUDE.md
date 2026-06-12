@@ -4,7 +4,7 @@ Wine discovery + recommendations via Telegram bot and web app. Modular monolith 
 
 ## Hard Rules — YOU MUST NOT violate any of these
 
-**Git:** Commit and push allowed on non-main branches only. NEVER merge, NEVER push to main, NEVER push tags (tag pushes deploy to prod), NEVER force-push without explicit OK — merges, tags, and releases are Victor's. NEVER add Claude/AI attribution to commits, PRs, issues, branches (no "Co-Authored-By", no "Generated with Claude Code"). Pipeline subagents still never commit or push — main session only.
+**Git:** Commit and push allowed on non-main branches only. NEVER merge, NEVER push to main, NEVER push tags (tag pushes deploy to prod), NEVER force-push without explicit OK — merges, tags, and releases are Victor's. NEVER add Claude/AI attribution to commits, PRs, issues, branches (no "Co-Authored-By", no "Generated with Claude Code"). Pipeline subagents still never commit or push — main session only. Exception — Dependabot auto-merge: the gardener agent (`/garden`) may run `gh pr merge --auto` (GitHub's native auto-merge queue, NOT an immediate merge) on Dependabot PRs that are semver-patch or semver-minor, once CI is green or passing. This only arms auto-merge — GitHub performs the merge later, automatically, once all required checks pass. The gardener must NEVER run `gh pr merge` without `--auto` to merge immediately, and must NEVER touch merge/auto-merge for any non-Dependabot PR. Every other "NEVER merge" restriction remains in force.
 
 **Legal — SAQ:** NEVER write user-facing text implying affiliation with SAQ (Société des alcools du Québec — a trademark). Applies to LLM prompts, bot messages, UI copy, API responses, READMEs.
 - ❌ "I'm a sommelier for the SAQ"

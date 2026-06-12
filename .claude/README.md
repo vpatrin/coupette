@@ -1,6 +1,6 @@
 # `.claude/` — Agentic Workflow
 
-A multi-agent pipeline for Coupette, inspired by Anthropic's orchestrator-worker pattern. Solo-dev sized: 13 agents, 4 entry commands, 12 path-scoped rules docs.
+A multi-agent pipeline for Coupette, inspired by Anthropic's orchestrator-worker pattern. Solo-dev sized: 14 agents, 5 entry commands, 12 path-scoped rules docs.
 
 ## Directory map
 
@@ -25,6 +25,7 @@ A multi-agent pipeline for Coupette, inspired by Anthropic's orchestrator-worker
 | `/fix <desc>` | Same pipeline, framed for bugs |
 | `/document` | Run the documenter standalone (docs + session log + ADR) |
 | `/po <desc>` | Break a feature into GitHub issues (stories + tasks) |
+| `/garden` | Triage red Dependabot PRs, manage CVE ignore-file entries, arm auto-merge — manual-invocation only |
 
 ### Advisors (review personas)
 
@@ -100,6 +101,7 @@ The scratchpad is for optimization (tight context, survives compaction). The ses
 | `reviewer` | BLOCK / WARN / APPROVE | No |
 | `documenter` | Docs + session log + ADR (mandatory) | Docs only |
 | `pr-creator` | Final ship — applies `commands/pr.md` | No |
+| `gardener` | Dependabot/CVE triage — manual via `/garden`, outside the `/feature`/`/fix` pipeline | Ignore files + prepares fix branches (never commits/pushes) |
 
 ### Specialists (preferred over `implementer` when surface matches)
 
