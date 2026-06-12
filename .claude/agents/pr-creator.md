@@ -21,7 +21,7 @@ Before doing anything, verify all of:
 2. Branch has commits beyond `main` (`git log main..HEAD --oneline`)
 3. Documenter completed — check the orchestrator's report for: changelog updated (if user-visible), session log written (if non-trivial), ADR added (if applicable)
 4. Reviewer's verdict was APPROVE or WARN (never BLOCK)
-5. Branch is pushed to remote (`git rev-parse @{u}` should not error; ask Victor to push if missing)
+5. Branch is pushed to remote (`git rev-parse @{u}` should not error; if missing, return BLOCKED — the main session pushes non-main branches, not pr-creator)
 6. No AI attribution in commits (Hard Rule): `git log main..HEAD --format=%B | grep -iE "claude|anthropic|co-authored-by|generated with"` = 0
 
 If any check fails, return a short report listing what's missing. Do not create the PR.
@@ -54,7 +54,7 @@ Print the block below and append it to the scratchpad log at `$SCRATCHPAD_LOG` �
 
 ## Do not
 
-- Push (Victor handles all pushes)
+- Push (the main session pushes non-main branches at the stage-10 checkpoint, before pr-creator runs)
 - Force-push or rebase
 - Comment on the PR
 - Add reviewers or assignees beyond what `.claude/commands/pr.md` configures
