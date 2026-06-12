@@ -12,4 +12,4 @@
 
 | Date | Log | Surfaces | ADRs spawned | PR |
 |---|---|---|---|---|
-| (no entries yet — populated by documenter on first pipeline run) | | | | |
+| 2026-06-12 | [2026-06-12-gardener-agent.md](./2026-06-12-gardener-agent.md) | devops, .claude/agents, .claude/commands | none | TBD |
