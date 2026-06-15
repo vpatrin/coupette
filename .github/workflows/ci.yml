@@ -166,7 +166,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           poetry-version: ${{ env.POETRY_VERSION }}
       - run: make coverage-backend
-      - uses: codecov/codecov-action@v6
+      - uses: codecov/codecov-action@v7
         with:
           files: backend/coverage.xml
           flags: backend
@@ -185,7 +185,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           poetry-version: ${{ env.POETRY_VERSION }}
       - run: make coverage-scraper
-      - uses: codecov/codecov-action@v6
+      - uses: codecov/codecov-action@v7
         with:
           files: scraper/coverage.xml
           flags: scraper
@@ -204,7 +204,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           poetry-version: ${{ env.POETRY_VERSION }}
       - run: make coverage-bot
-      - uses: codecov/codecov-action@v6
+      - uses: codecov/codecov-action@v7
         with:
           files: bot/coverage.xml
           flags: bot
@@ -224,7 +224,7 @@ jobs:
           cache-dependency-path: frontend/yarn.lock
       - run: cd frontend && yarn --frozen-lockfile
       - run: make coverage-frontend
-      - uses: codecov/codecov-action@v6
+      - uses: codecov/codecov-action@v7
         with:
           files: frontend/coverage.xml
           flags: frontend
