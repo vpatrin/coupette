@@ -54,15 +54,14 @@ Per `.claude/rules/packaging.md`:
 
 1. Fetch the `audit-frontend` CI log to get the npm advisory IDs (format: `npmjs.com/advisories/<id>`).
 2. Try `yarn upgrade <pkg>` in `frontend/` first — if a patched version resolves cleanly (no other CVEs surface), that's the answer.
-3. Only when the fix is blocked (e.g. patching one CVE exposes another and no single PR has both fixes, or the advisory is dev-only with zero production impact), add `--ignore-advisory <id>` to the `audit-frontend` Makefile target:
-   ```make
-   audit-frontend:
-       @echo "\n▶ Auditing frontend/"
-       # <advisory-id>: <pkg> <description> — <reason: dev-only / Windows-only / etc.>.
-       # Remove once <pkg> >=<fixed-version> is in yarn.lock (Dependabot PR #<N>).
-       cd frontend && yarn audit --ignore-advisory <id1> --ignore-advisory <id2>
+3. Only when the fix is blocked (e.g. patching one CVE exposes another and no single PR has both fixes, or the advisory is dev-only with zero production impact), add a `resolutions` override to `frontend/package.json` and run `yarn install` to update `yarn.lock`. Use the `_resolutions_comment` pattern already in the file:
+   ```json
+   "resolutions": {
+     "js-yaml": ">=4.2.0"
+   }
    ```
-4. Dev-only and Windows-only advisories are safe to ignore for this project (Linux production, no dev server in prod, no untrusted YAML/user input to build tools).
+   Note: yarn 1.x resolutions apply to transitive deps but NOT to packages listed as direct devDependencies in the same `package.json`. For direct deps, use `yarn upgrade <pkg>` instead — do NOT add `--ignore-advisory` to `make audit-frontend`; that flag does not exist in yarn 1.x and is silently ignored.
+4. Dev-only and Windows-only advisories are safe to suppress for this project (Linux production, no dev server in prod, no untrusted YAML/user input to build tools).
 5. **Do NOT add npm advisories to `.trivyignore`** — Trivy uses a separate scan; if Trivy also catches them, add them there too using CVE IDs, not npm advisory numbers.
 
 ### Post-triage rebase sweep
