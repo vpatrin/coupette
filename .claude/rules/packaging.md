@@ -43,12 +43,8 @@ When pip-audit or Trivy flags a transitive dep:
 
 `yarn audit` surfaces advisories using npm advisory IDs (not CVE numbers). When `audit-frontend` CI fails:
 
-1. Try `yarn upgrade <pkg>` first — if it resolves cleanly and all advisories clear, commit the updated `yarn.lock`.
-2. If the advisory affects only dev tooling (build tools, test runners, linters) or is platform-specific (Windows-only) with no runtime exposure, it can be suppressed via `--ignore-advisory` in the `Makefile` `audit-frontend` target instead of a `package.json` resolution:
-   ```make
-   # <advisory-id>: <pkg> <description> — <reason: dev-only / Windows-only>.
-   # Remove once <pkg> >=<fixed-version> is in yarn.lock (Dependabot PR #<N>).
-   cd frontend && yarn audit --ignore-advisory <id>
-   ```
-3. Never suppress advisories for packages that ship in the production bundle or process untrusted user input at runtime.
-4. Remove `--ignore-advisory` entries once the patched package version lands in `yarn.lock`.
+1. Try `yarn upgrade <pkg>` first — if it resolves cleanly and all advisories clear, commit the updated `yarn.lock`. For direct devDependencies, `yarn upgrade` is the correct tool (resolutions don't override direct deps in yarn 1.x).
+2. If the fix is blocked (e.g. Dependabot PRs each fix only one of two advisories, causing a circular dependency), add a `resolutions` override to `frontend/package.json` and run `yarn install` to update `yarn.lock`. Use the `_resolutions_comment` pattern already in the file. This is for **transitive** deps only — for direct devDependencies, use `yarn upgrade <pkg>`.
+3. Never suppress advisories for packages that ship in the production bundle or process untrusted user input at runtime. Dev-only and Windows-only advisories (build tools, test runners, linters) are safe to suppress for this project.
+4. **Do not add `--ignore-advisory` to the `Makefile`** — that flag does not exist in yarn 1.x (classic) and is silently ignored.
+5. Remove `resolutions` entries once the patched package version lands in `yarn.lock` naturally.
