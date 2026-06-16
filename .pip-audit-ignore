@@ -14,3 +14,14 @@ PYSEC-2026-196
 # FastAPI currently locked at 0.136.1; starlette>=1.0 needs explicit compatibility testing.
 # Track upgrade as a separate chore; remove this entry once FastAPI is bumped.
 CVE-2026-48710
+
+# starlette 0.52.1 — same FastAPI 1.x blocker as CVE-2026-48710 (2026-06-13).
+# poetry update starlette is a no-op while FastAPI is locked at 0.136.1.
+PYSEC-2026-161
+
+# starlette 0.52.1 — fixed in 1.1.0, same FastAPI 1.x blocker (2026-06-16).
+# Surfaced by redis 8.0.0 PR audit; unfixable without starlette 1.x migration.
+CVE-2026-48817
+
+# starlette 0.52.1 — fixed in 1.1.0, same FastAPI 1.x blocker (2026-06-16).
+CVE-2026-48818
