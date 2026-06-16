@@ -5,6 +5,10 @@ disable-model-invocation: true
 
 You are clearing the Dependabot backlog. Invoke the `gardener` agent to do the work, then drive the post-run steps yourself — the goal is zero manual intervention beyond approving decision cards.
 
+## Pre-flight: scan ALL open PRs for red CI
+
+Before invoking the gardener, run `gh pr list --state open --json number,title,author` and `gh pr checks <PR>` for every open PR. For any non-Dependabot PR with failing required checks, report it to Victor as a brief heads-up note **before** the gardener digest — do not triage it, just surface it. The gardener only handles Dependabot PRs; non-Dependabot red PRs are Victor's to fix.
+
 ## What this does
 
 1. Invokes the `gardener` agent for one full pass over open Dependabot PRs:
