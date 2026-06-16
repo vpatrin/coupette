@@ -3,23 +3,29 @@ description: Run an unattended Dependabot/CVE upkeep pass — triage red Dependa
 disable-model-invocation: true
 ---
 
-You are clearing the Dependabot backlog. Invoke the `gardener` agent to do the work; this command just kicks off a single run and surfaces its digest.
+You are clearing the Dependabot backlog. Invoke the `gardener` agent to do the work, then drive the post-run steps yourself — the goal is zero manual intervention beyond approving decision cards.
 
 ## What this does
 
 1. Invokes the `gardener` agent for one full pass over open Dependabot PRs:
-   - Triages every red Dependabot PR (`@dependabot rebase` for staleness, fix branch/PR for real breaks)
-   - Reviews CVE clusters that can't go green individually and updates `.trivyignore` / `.pip-audit-ignore` with justified, dated entries per `.claude/rules/packaging.md` — only after `poetry update`/`yarn upgrade` has been tried
+   - Triages every red Dependabot PR (`@dependabot rebase` for staleness, fix branch/PR for real breaks, comment for known-pattern blockers)
+   - Detects `audit-*` failures and handles them: tries `yarn upgrade`/`poetry update` first; if blocked, adds ignore entries to `.pip-audit-ignore`, `.trivyignore`, and/or `Makefile audit-frontend` (`--ignore-advisory`) with dated justification comments
    - Arms `gh pr merge --auto --squash` on Dependabot PRs that are semver-patch or semver-minor and have green/pending required checks
-2. Prints the gardener's end-of-run digest (triaged, ignore entries added, auto-merge armed on, still red)
+   - Surfaces green semver-major bumps as decision cards (changelog + risk + recommendation) for you to approve or hold — never auto-merged
+   - Produces a "needs rebase after commit" list of PRs whose CVE failures are now covered by the new ignore entries
+2. After the agent returns, the main session automatically:
+   - Commits any changes to `.pip-audit-ignore`, `.trivyignore`, and/or `Makefile` on a `chore/dependency-ignore-updates` branch and pushes it
+   - Creates a PR for those changes
+   - Comments `@dependabot rebase` on every PR in the "needs rebase after commit" list
+3. Prints the gardener's digest plus a summary of what was committed and which PRs were rebased
 
-## After the run
+## Decision cards — the only thing needing your input
 
-The gardener stages and prepares changes but does not commit or push. Review the digest and any ignore-file edits or fix branches it produced, then:
+For each **decision card** (green semver-major bump), read the recommendation and either:
+- Approve: `gh pr merge --squash <PR>` — your call; the gardener never merges majors
+- Hold: leave it for a later `/garden` run
 
-- If `.trivyignore` / `.pip-audit-ignore` were edited, commit those changes yourself on a non-main branch (e.g. `chore/dependency-ignore-updates`) and push
-- If a fix branch was prepared for a real breaking change, commit and push it from the main session, then run it through the normal pipeline (`/fix`) for review before merging
-- Anything still red is left for the next `/garden` run or manual investigation
+Anything still red after rebases is left for the next `/garden` run or manual investigation.
 
 ## Scope note
 
