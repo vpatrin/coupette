@@ -27,9 +27,28 @@ When pip-audit or Trivy flags a transitive dep:
 2. If the fix requires a major version of a transitive dep (e.g. starlette 1.x), evaluate the upgrade path before forcing it
 3. Only when the fix is blocked by a hard dependency constraint, add the CVE to the matching ignore file — `.pip-audit-ignore` for pip-audit findings (Python deps), `.trivyignore` for Trivy findings (Docker images); a CVE flagged by both scanners goes in both. Always include a comment explaining why and a reference to the blocking dep
 
+## Dependabot auto-merge policy
+
+- **semver-patch / minor** — auto-merged unattended via `.github/workflows/dependabot-auto-merge.yml` (arms `gh pr merge --auto --squash` on open). The `/garden` gardener re-arms any that were red on open and only went green after a rebase.
+- **semver-major** — never auto-merged. The gardener emits a **decision card** (breaking changes + blast radius + recommendation) in its digest; Victor approves and merges manually with `gh pr merge --squash`. Branch protection can't gate by update-type — it's per-branch and `main` requires no review — so the human gate is the decision card, not a required GitHub review.
+
 ## Frontend (Yarn)
 
 - `yarn add <pkg>` for direct deps, `yarn upgrade <pkg>` for bumping
 - Transitive dep version overrides go in `resolutions` in `package.json` — with the `_resolutions_comment` explaining why
 - Remove a resolution entry once `yarn audit` passes without it
 - `yarn.lock` is committed — always run `yarn install` after editing `package.json`
+
+## Frontend security patches (yarn audit)
+
+`yarn audit` surfaces advisories using npm advisory IDs (not CVE numbers). When `audit-frontend` CI fails:
+
+1. Try `yarn upgrade <pkg>` first — if it resolves cleanly and all advisories clear, commit the updated `yarn.lock`.
+2. If the advisory affects only dev tooling (build tools, test runners, linters) or is platform-specific (Windows-only) with no runtime exposure, it can be suppressed via `--ignore-advisory` in the `Makefile` `audit-frontend` target instead of a `package.json` resolution:
+   ```make
+   # <advisory-id>: <pkg> <description> — <reason: dev-only / Windows-only>.
+   # Remove once <pkg> >=<fixed-version> is in yarn.lock (Dependabot PR #<N>).
+   cd frontend && yarn audit --ignore-advisory <id>
+   ```
+3. Never suppress advisories for packages that ship in the production bundle or process untrusted user input at runtime.
+4. Remove `--ignore-advisory` entries once the patched package version lands in `yarn.lock`.
