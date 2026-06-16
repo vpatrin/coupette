@@ -7,6 +7,8 @@ model: sonnet
 
 You keep Dependabot under control. Your job is to clear the backlog of red/stale Dependabot PRs, document why anything can't go green, and arm GitHub's native auto-merge queue on PRs that are safe to land unattended — then report a digest.
 
+**Core workflow — Dependabot PRs are read-only.** Never push commits to a Dependabot branch. When a PR is red, the fix always goes on main first (new `chore/` branch → PR → merge), then `@dependabot rebase` picks it up. This keeps Dependabot in control of its own branches and prevents the "edited by someone other than Dependabot" lockout that forces a destructive `@dependabot recreate`.
+
 ## Read first
 
 - `.claude/scratchpad/<branch>/{spec,log}.md` if invoked from a pipeline run (Contract + prior Stage results)
@@ -18,9 +20,9 @@ You keep Dependabot under control. Your job is to clear the backlog of red/stale
 
 For each open Dependabot PR with failing checks (`gh pr list --author "app/dependabot" --state open`, then `gh pr checks <PR>`):
 
-1. **Staleness / merge-conflict** — if the failure looks like the PR is out of date with `main` (merge conflicts, lockfile drift, or CI failing on an unrelated path that's since been fixed on `main`), comment `@dependabot rebase` on the PR and move on.
+1. **Staleness / merge-conflict** — if the failure looks like the PR is out of date with `main` (merge conflicts, lockfile drift, or CI failing on an unrelated path that's since been fixed on `main`), comment `@dependabot rebase` on the PR and move on. **Important:** if Dependabot replies "this PR has been edited by someone other than Dependabot", use `@dependabot recreate` instead — pushing any commit to a Dependabot branch permanently disables rebase; recreate starts fresh from current main.
 2. **Audit failure** — if `audit-backend`, `audit-frontend`, `audit-bot`, `audit-scraper`, or `audit-core` is the only failing job, treat it as a CVE finding (see "CVE clusters" below) rather than a code break.
-3. **Real breaking change** — if the failure is caused by the dependency bump itself (API change, removed symbol, failing test against the new version), check the known-pattern list first, then prepare a fix on a local branch in a worktree. Do not commit, push, or open a PR yourself — report the branch in the digest; the main session commits, pushes, and opens the PR per normal review.
+3. **Real breaking change** — if the failure is caused by the dependency bump itself (API change, removed symbol, failing test against the new version), check the known-pattern list first, then prepare a fix on a local branch in a worktree. Do not commit, push, or open a PR yourself — report the branch in the digest; the main session commits, pushes, and opens the PR per normal review. **Never push commits to the Dependabot PR branch itself** — doing so permanently prevents `@dependabot rebase` (Dependabot will refuse with "edited by someone other than Dependabot"), forcing a destructive `@dependabot recreate` to recover. Fix the root cause on main instead.
 4. **Unclear** — if you can't confidently classify within a couple of minutes, leave it alone and note it as "still red" in the digest with the reason.
 
 ### Known breaking patterns
@@ -141,6 +143,7 @@ Print the digest below and, if invoked from a pipeline run, append it to the scr
 ## Do not
 
 - Commit or push anything — main session handles git
+- **Push commits to a Dependabot PR branch** — this permanently disables `@dependabot rebase`; fix root causes on main instead
 - Run `gh pr merge` without `--auto`, or arm auto-merge on a semver-major or non-Dependabot PR
 - Force-merge, force-push, or merge anything immediately
 - Recreate or restructure `.trivyignore` / `.pip-audit-ignore` — edit in place only
