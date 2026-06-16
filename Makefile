@@ -242,7 +242,9 @@ audit-bot:
 
 audit-frontend:
 	@echo "\n▶ Auditing frontend/"
-	cd frontend && yarn audit
+	# 1120792: js-yaml quadratic DoS — dev-only transitive dep of build tools; no runtime
+	# exposure. Remove once js-yaml >=4.2.0 is in yarn.lock (Dependabot PR #787).
+	cd frontend && yarn audit --ignore-advisory 1120792
 
 audit: audit-core audit-backend audit-scraper audit-bot audit-frontend
 
