@@ -394,7 +394,7 @@ function AppShell() {
               ))}
             </nav>
 
-            <div className="scrollbar-none flex min-h-0 flex-1 flex-col overflow-y-auto">
+            <div className="flex min-h-0 flex-1 scrollbar-none flex-col overflow-y-auto">
               <div className="group/recents flex shrink-0 items-center justify-between px-[var(--spacing-sidebar-x)] pt-2 pb-1">
                 <span className="text-muted-foreground/60 text-[length:var(--text-sidebar-xs)] font-medium tracking-wider uppercase">
                   {t('nav.recents')}
