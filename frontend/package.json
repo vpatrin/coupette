@@ -26,7 +26,7 @@
     }
   ],
   "dependencies": {
-    "@base-ui/react": "^1.5.0",
+    "@base-ui/react": "^1.6.0",
     "@fontsource-variable/jetbrains-mono": "^5.2.8",
     "@fontsource-variable/outfit": "^5.2.8",
     "@phosphor-icons/react": "^2.1.10",
