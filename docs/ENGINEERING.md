@@ -265,7 +265,7 @@ Five actionables identified from a full frontend audit (2026-04-02). In priority
 **Scraper:**
 
 - [ ] Batch embedding step to reduce memory usage (#390)
-- [ ] Monthly scrape refactor — SKU-set diff, new SKUs only (#291)
+- [ ] Monthly scrape refactor — SKU-set diff, new SKUs only. Design and rationale in [specs/scraper.md](specs/scraper.md) § Monthly scrape
 
 **AI/ML:**
 
