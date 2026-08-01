@@ -192,6 +192,8 @@ Phase 4 — Cloud benchmarks (#523):
 - [ ] Run k6 + evals on prod-like infra (real data, real latency, 14k vectors)
 - [ ] Upload results to S3, download as synthesized reports
 
+Terraform state: key `benchmarks/terraform.tfstate` in `s3://victorpatrin-terraform-state/` (same bucket and account-wide S3 credentials as infra DR state). Cloud run results go to `s3://victorpatrin-backups/benchmarks/`. k6 and evals run on the benchmark VPS itself, so measurements exclude network noise.
+
 ### AI quality
 
 Eval framework in `backend/benchmarks/eval/`, spec in [specs/rag.md](specs/rag.md). Measures recommendation relevance, diversity, and prompt adherence against a frozen test set.
@@ -253,7 +255,7 @@ Five actionables identified from a full frontend audit (2026-04-02). In priority
 - [ ] Add source identifier to recommendation logs (#340)
 - [x] Cron failure alerts — Uptime Kuma push monitors for backup + scraper (#350)
 - API request logging middleware → `api_request_logs` table (path, status, latency, user_id) — baseline for SLO tracking
-- [ ] Structured JSON logging — consistent fields (timestamp, level, service, message) across all services (#489)
+- [ ] Structured JSON logging — consistent fields (timestamp, level, service, message) across all services (#489). One JSON line per recommendation with `event`, `query`, `candidate_count`, `top_similarity`, `min_similarity`, `retrieval_ms`, `llm_ms`, `total_ms`, `tokens_in`, `tokens_out`, `model`, `status`, `error` — null/0 for missing, never omitted. Contract with the infra repo: Alloy collects and pushes to Loki (vpatrin/infra#63), dashboards in vpatrin/infra#64 and #65. No PII beyond session-level identifiers.
 - LLM cost tracking — token usage per request, daily budget cap alert
 
 **Bot:**
@@ -263,7 +265,7 @@ Five actionables identified from a full frontend audit (2026-04-02). In priority
 **Scraper:**
 
 - [ ] Batch embedding step to reduce memory usage (#390)
-- [ ] Monthly scrape refactor — SKU-set diff, new SKUs only (#291)
+- [ ] Monthly scrape refactor — SKU-set diff, new SKUs only. Design and rationale in [specs/scraper.md](specs/scraper.md) § Monthly scrape
 
 **AI/ML:**
 
@@ -271,7 +273,7 @@ Five actionables identified from a full frontend audit (2026-04-02). In priority
 
 **SRE:**
 
-- [ ] DB pool limits + httpx retries in scraper (#314)
+- [ ] DB pool limits + httpx retries in scraper (#314) — engines currently use SQLAlchemy defaults (`pool_size=5`, `max_overflow=10`); target `pool_size=3, max_overflow=2` in `backend/db.py` and `core/db/base.py:create_session_factory`, sized for a 4GB VPS sharing Postgres with other services. Scraper httpx client needs `AsyncHTTPTransport(retries=2)` so a single 5xx stops killing that product's scrape.
 - [ ] Move /metrics to a separate internal port (#501)
 - [ ] Load testing baseline — k6 tier runners, baseline snapshots, regression diffs (#502–#507)
 - `/health/detailed` endpoint — Postgres reachability, data freshness, disk space
