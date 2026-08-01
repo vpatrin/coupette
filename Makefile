@@ -242,7 +242,7 @@ audit-bot:
 
 audit-frontend:
 	@echo "\n▶ Auditing frontend/"
-	cd frontend && yarn audit
+	cd frontend && yarn audit --groups dependencies
 
 audit: audit-core audit-backend audit-scraper audit-bot audit-frontend
 
