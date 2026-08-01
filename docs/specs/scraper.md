@@ -39,6 +39,21 @@ After monthly scrape:
 
 Two external dependencies: Adobe Live Search (daily) + SAQ HTML (monthly). No Magento GraphQL, no AJAX.
 
+### Monthly scrape
+
+> Target design, not yet implemented — supersedes the lastmod-based approach. Was tracked in #291, now in Linear.
+
+The diff is computed on the **SKU set**, not on sitemap `lastmod`. SAQ bumps `lastmod` weekly whether or not anything changed, so a lastmod diff re-fetches the whole catalogue for nothing. Comparing SKU sets brings a typical run down from ~50–200 HTML fetches to ~0–20.
+
+Fetch HTML only for new SKUs plus any SKU where `description IS NULL` — the second case backfills rows a previous run failed on.
+
+Two fields the monthly scrape must *not* own:
+
+- **`availability`** — ignored even though the HTML carries it. SAQ pages are CDN-cached 24–48h, so that value is stale by construction. `--availability-check` owns `online_availability`.
+- **`price`** — written on first scrape only. SAQ prices are regulated and effectively static; rewriting them monthly is churn with no signal.
+
+Unchanged from the current implementation: sitemap fetch, delist detection, relist, exit codes, error handling.
+
 ### Data sources
 
 | Source | What it gives | What it can't | Cost per run |
