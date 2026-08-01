@@ -15,3 +15,4 @@
 | 2026-06-12 | [2026-06-12-gardener-agent.md](./2026-06-12-gardener-agent.md) | devops, .claude/agents, .claude/commands | none | TBD |
 | 2026-06-12 | [2026-06-12-orchestrator-main-session.md](2026-06-12-orchestrator-main-session.md) | cross-cutting (`.claude/` tooling) | none | TBD |
 | 2026-06-12 | [2026-06-12-tanstack-query-foundation.md](2026-06-12-tanstack-query-foundation.md) | frontend | 0011 | TBD |
+| 2026-05-20 | 2026-05-20-bot-deprecate-recommend.md | bot | none | TBD |
