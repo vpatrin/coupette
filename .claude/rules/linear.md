@@ -2,7 +2,7 @@
 
 > Read before creating or editing anything in Linear — issues, projects, comments.
 
-Team `VPA`. Initiative = product, project = deliverable. GitHub keeps PRs, Dependabot, and CI only — never open GitHub issues.
+Team `Vpatrin` (key `VPA` — issue ids are `VPA-NN`; MCP tools take the name `Vpatrin`). Initiative = product, project = deliverable. GitHub keeps PRs, Dependabot, and CI only — never open GitHub issues.
 
 ## Language
 
@@ -15,7 +15,8 @@ Everything in English: titles, descriptions, comments, project summaries. (The a
 ## Labels — every issue gets ≥2
 
 - Service: `api` · `scraper` · `bot` · `frontend` · `core` · `devops`
-- Type: `Feature` · `Bug` · `chore` · `refactor` · `docs`
+- Type: `Bug` · `Feature` · `chore` · `refactor` · `docs` — casing as it exists in the workspace (`Bug`/`Feature` are Linear defaults; rename them lowercase in the Linear UI if wanted — MCP has no rename, and until then agents must use the capitalized names)
+- `Improvement` exists in the workspace but is unused — don't apply it
 
 ## Issue templates
 
