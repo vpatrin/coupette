@@ -55,19 +55,6 @@ Wine discovery + recommendations via Telegram bot and web app. Modular monolith 
 - Caddy handles SSL + routing (in `infra/` repo)
 - Production domain: coupette.club
 
-```
-coupette/
-├── docker-compose.yml
-├── Makefile
-├── CHANGELOG.md
-├── core/         # Shared models, Alembic, settings, logging
-├── backend/      # FastAPI — api/, services/, repositories/, schemas/, tests/
-├── scraper/      # Sitemap scraper — commands/, db/, tests/
-├── bot/          # Telegram bot — handlers/, tests/
-├── frontend/     # React SPA — pages/, contexts/, components/, lib/, locales/
-└── .github/workflows/ci.yml
-```
-
 ## Definition of Done
 
 - CI green (lint, format, tests)
@@ -86,13 +73,11 @@ Issue → Branch → PR → Squash merge.
 - Verify you're on a non-main branch before any work; create one if needed.
 - Coverage badge SVG churn in diffs is expected, not noise.
 
-**Every GitHub issue needs ≥2 labels: one service + one type.**
-- Service: `api` · `scraper` · `bot` · `frontend` · `core` · `devops`
-- Type: `bug` · `feature` · `chore` · `refactor` · `docs`
+**Issues live in Linear, not GitHub** (team `Vpatrin`). GitHub keeps PRs, Dependabot, and CI only — do not open GitHub issues. Create issues via the Linear MCP tools.
 
-```
-gh issue create --title "..." --label api --label feature --milestone "Phase 10: Intent Router"
-```
+**Every issue needs ≥2 labels: one service + one type.**
+- Service: `api` · `scraper` · `bot` · `frontend` · `core` · `devops`
+- Type: `Bug` · `Feature` · `chore` · `refactor` · `docs` — casing as shown
 
 **Default workflow: incremental** (one feature = one PR to main). Use a feature branch only when ALL of: 3+ interdependent PRs, earlier PRs would ship dead code, main must stay deployable.
 
@@ -127,9 +112,8 @@ Default persona: senior engineer pair-programming with Victor — be honest, opi
 
 ## Developer Context
 
-Senior engineer (6 years — FastAPI, GCP, Kubernetes, Docker) rebuilding after a career break. Coming from Flask + Gunicorn — learning FastAPI, SQLAlchemy, Alembic, pgvector. Prior Node.js/yarn (2019–2021), first React project.
+Coming from Flask + Gunicorn — learning FastAPI, SQLAlchemy, Alembic, pgvector. Prior Node.js/yarn (2019–2021), first React project.
 
-- Pair programming, not task execution
 - Explain the *why* briefly, especially for FastAPI/React patterns new to Victor
 - Compare to Flask equivalents when relevant
 - Point out things that could bite later
