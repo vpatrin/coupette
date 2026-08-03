@@ -73,11 +73,13 @@ Issue → Branch → PR → Squash merge.
 - Verify you're on a non-main branch before any work; create one if needed.
 - Coverage badge SVG churn in diffs is expected, not noise.
 
-**Issues live in Linear, not GitHub** (team `Vpatrin`). GitHub keeps PRs, Dependabot, and CI only — do not open GitHub issues. Create issues via the Linear MCP tools.
-
-**Every issue needs ≥2 labels: one service + one type.**
+**Every GitHub issue needs ≥2 labels: one service + one type.**
 - Service: `api` · `scraper` · `bot` · `frontend` · `core` · `devops`
-- Type: `Bug` · `Feature` · `chore` · `refactor` · `docs` — casing as shown
+- Type: `bug` · `feature` · `chore` · `refactor` · `docs`
+
+```
+gh issue create --title "..." --label api --label feature --milestone "Phase 10: Intent Router"
+```
 
 **Default workflow: incremental** (one feature = one PR to main). Use a feature branch only when ALL of: 3+ interdependent PRs, earlier PRs would ship dead code, main must stay deployable.
 
