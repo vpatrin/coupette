@@ -17,9 +17,9 @@ Input: a phase name, topic, or flag. Use `$ARGUMENTS` as the input. If empty, as
 Before assessing, silently:
 
 1. Read `docs/ROADMAP.md` to understand planned phases and tasks
-2. Run `gh issue list --state all --limit 100` to see all issues (open and closed)
-3. Run `gh pr list --state merged --limit 50` to see what's been shipped
-4. Run `gh issue list --milestone "<active milestone>" --state all --limit 100` to check milestone progress
+2. List Linear issues (`list_issues`, team `Vpatrin`, include completed) to see all issues (open and closed) — issues live in Linear, not GitHub
+3. Run `gh pr list --state merged --limit 50` to see what's been shipped (PRs stay on GitHub)
+4. List issues for the active Linear project (`list_issues` filtered by project) to check project progress
 5. Run `git log --oneline -20` to understand recent momentum
 6. For focused mode: also read the relevant phase's spec in `docs/specs/` if one exists
 
@@ -40,7 +40,7 @@ For each phase, determine status:
 | Phase | Status | Issues (closed/open) | Last activity | Blocker |
 |-------|--------|---------------------|---------------|---------|
 | Phase 7: Auth | Done | 6/0 | 2026-02-XX | — |
-| Phase 9: Chat | In progress | 2/3 | 2026-03-XX | #YY |
+| Phase 9: Chat | In progress | 2/3 | 2026-03-XX | VPA-YY |
 
 ### 2. Inconsistencies
 
@@ -48,9 +48,9 @@ Mismatches between roadmap, issues, and actual code state:
 
 | Type | Detail | Suggested fix |
 |------|--------|---------------|
-| Roadmap says done, issue still open | Phase X claims completion but #YY is open | Close #YY or update roadmap |
+| Roadmap says done, issue still open | Phase X claims completion but VPA-YY is open | Close VPA-YY or update roadmap |
 | Work exists, no issue | Chat streaming implemented but no tracking issue | Create issue retroactively |
-| Issue on board, not in roadmap | #ZZ exists but doesn't map to any phase | Add to roadmap or close as out of scope |
+| Issue on board, not in roadmap | VPA-ZZ exists but doesn't map to any phase | Add to roadmap or close as out of scope |
 
 ### 3. Recommended next tasks
 

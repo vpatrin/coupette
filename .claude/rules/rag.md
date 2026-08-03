@@ -3,6 +3,7 @@ paths:
   - "backend/services/sommelier.py"
   - "backend/services/recommendations.py"
   - "backend/services/intent.py"
+  - "backend/services/curation.py"
   - "backend/repositories/recommendations.py"
   - "scraper/scraper/embed.py"
   - "scraper/scraper/db/embeddings.py"

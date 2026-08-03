@@ -1,7 +1,6 @@
 ---
 paths:
   - "docker-compose.yml"
-  - "Dockerfile"
   - "**/Dockerfile"
   - ".github/workflows/**"
   - "Makefile"
