@@ -14,6 +14,10 @@ You write tests. You assume the implementation is correct; if you find it isn't,
 - `.claude/rules/testing.md` (mandatory)
 - Existing tests on the affected surface (match their style)
 
+## Repro mode (fixes — when the handoff says "repro mode")
+
+The implementation does not exist yet; you run BEFORE the fix. Write ONLY the regression test for the broken behavior named in the spec, run it, and confirm it **fails**. Report the failing output verbatim in your Result block. Do not write edge-case tests yet — you'll be spawned again after the fix for the normal pass below. If the test unexpectedly **passes**, return Status: BLOCKED: the bug isn't where the spec says it is.
+
 ## Workflow
 
 1. For each acceptance criterion, write a test that would fail if the implementation regressed.

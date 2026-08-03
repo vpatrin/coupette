@@ -1,5 +1,6 @@
 ---
 description: Drive a new feature through the full Coupette pipeline (scoper → explorer → specialist → docs → tests + review → PR).
+disable-model-invocation: true
 ---
 
 You are about to start a feature. Read CLAUDE.md, then read `.claude/agents/orchestrator.md` and follow it as your playbook for this run — spawn subagents per its routing rules.

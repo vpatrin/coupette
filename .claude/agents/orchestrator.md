@@ -11,6 +11,7 @@ This is a playbook, not a subagent — **the main session embodies it directly**
 2. (user reviews the spec and tells you to proceed)
 3. **explorer** — read-only recon of the surfaces the spec will touch
 4. **migrator** — only if the spec marks `Needs migration: yes`
+4b. **test-writer in repro mode** — `Type: fix` runs only: write the regression test FIRST and confirm it fails (see `commands/fix.md` → Red-green). Skipped for features.
 5. **specialist or implementer** — does the actual work (see routing below)
 6. (user reviews the diff and tells you to proceed)
 7. **test-writer** — adds tests for the new behavior
@@ -145,12 +146,23 @@ When spawning a subagent, the prompt you pass includes:
 4. **Prior stage's Result block** (verbatim, from `$SCRATCHPAD_DIR/log.md`) — or a 3-line summary if the prior block is large
 5. **What you want this subagent to do** (1-3 sentences)
 6. **Any user clarification** received since the prior stage
+7. **Scoper stage only — the Linear issue body.** If the request references a Linear issue (`VPA-NN`), fetch it yourself via the Linear MCP tools and paste title + description into the scoper's prompt. Subagents have no MCP access — you are the only one who can read Linear.
 
 Subagents don't inherit your conversation — they see only what you put in the prompt. Be explicit. Quote the spec's acceptance criteria rather than paraphrasing.
 
+## Remediation loop (one bounded round-trip before escalating)
+
+When the **reviewer returns BLOCK** or the **test-writer returns BLOCKED because the implementation is wrong**, and every blocker is concrete and actionable (file:line + what's wrong — e.g. missing type hint, wrong schema suffix, unmet acceptance criterion), do ONE remediation pass before involving Victor:
+
+1. Re-spawn the same implementer/specialist with the blocker list **verbatim** from the Result block, plus the instruction "fix exactly these, nothing else".
+2. Re-run test-writer (only if tests are affected), then reviewer.
+3. **Maximum one loop.** If the second review still BLOCKs, or any blocker is a judgment call (scope question, design disagreement, spec ambiguity), stop and escalate per "If stuck" below.
+
+Announce the loop when you start it ("reviewer blocked on N mechanical issues — running one remediation pass") — don't run it silently. This is the only case where you advance past a BLOCK without waiting for Victor.
+
 ## If stuck
 
-If a subagent returns Status: BLOCKED, do NOT spawn the next stage. Surface the blocker to the user with:
+If a subagent returns Status: BLOCKED (and the remediation loop above doesn't apply or is exhausted), do NOT spawn the next stage. Surface the blocker to the user with:
 - which agent blocked
 - the obstacle (verbatim from the agent)
 - options to unblock (clarify spec / change approach / abandon)
