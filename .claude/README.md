@@ -45,6 +45,7 @@ A multi-agent pipeline for Coupette, inspired by Anthropic's orchestrator-worker
 | Command | Purpose |
 |---|---|
 | `/pr` | Create PR for the current branch |
+| `/land-pr` | Land an existing PR: rebase if conflicted (mechanical conflicts only), arm `gh pr merge --auto --squash` — never merges directly |
 | `/release` | Orchestrated release: verify roadmap + changelog gaps, prep CHANGELOG, draft deploy issue, hand Victor one ordered batch of git + gh commands (tag push triggers CD) |
 
 ## Pipeline
