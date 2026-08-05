@@ -18,6 +18,7 @@ The orchestrator creates the branch later via `git worktree add -b <branch>` and
 
 ## Read first
 
+- The Linear issue body, if the handoff prompt includes one — it is the request's full context; the one-line request is just the trigger. (You have no Linear access yourself; the orchestrator pastes it.)
 - `CLAUDE.md` (project meta + DoD)
 - Any `.claude/rules/*.md` matching the surface the request mentions
 - The relevant `docs/adrs/*.md` if the request touches an ADR'd surface
@@ -33,7 +34,7 @@ The orchestrator creates the branch later via `git worktree add -b <branch>` and
 **Surfaces:** backend | frontend | bot | scraper | core | cross-cutting
 **Needs migration:** yes | no
 **Branch:** type/short-description
-**Issue:** #NNN | none
+**Issue:** VPA-NN | none
 
 ## Goal
 

@@ -38,6 +38,7 @@ A multi-agent pipeline for Coupette, inspired by Anthropic's orchestrator-worker
 | `/ux` | UX designer — spec + audit |
 | `/roadmap-status` | Program manager — progress + cleanup |
 | `/health` | CTO — periodic project health |
+| `/audit-rules` | Meta — periodic audit of `.claude/` itself (dead globs, stale claims, accumulated pipeline friction) |
 | `/eval-pipeline` | ML engineer — RAG score tuning |
 
 ### Actions
