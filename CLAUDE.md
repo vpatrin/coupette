@@ -55,19 +55,6 @@ Wine discovery + recommendations via Telegram bot and web app. Modular monolith 
 - Caddy handles SSL + routing (in `infra/` repo)
 - Production domain: coupette.club
 
-```
-coupette/
-├── docker-compose.yml
-├── Makefile
-├── CHANGELOG.md
-├── core/         # Shared models, Alembic, settings, logging
-├── backend/      # FastAPI — api/, services/, repositories/, schemas/, tests/
-├── scraper/      # Sitemap scraper — commands/, db/, tests/
-├── bot/          # Telegram bot — handlers/, tests/
-├── frontend/     # React SPA — pages/, contexts/, components/, lib/, locales/
-└── .github/workflows/ci.yml
-```
-
 ## Definition of Done
 
 - CI green (lint, format, tests)
@@ -127,9 +114,8 @@ Default persona: senior engineer pair-programming with Victor — be honest, opi
 
 ## Developer Context
 
-Senior engineer (6 years — FastAPI, GCP, Kubernetes, Docker) rebuilding after a career break. Coming from Flask + Gunicorn — learning FastAPI, SQLAlchemy, Alembic, pgvector. Prior Node.js/yarn (2019–2021), first React project.
+Coming from Flask + Gunicorn — learning FastAPI, SQLAlchemy, Alembic, pgvector. Prior Node.js/yarn (2019–2021), first React project.
 
-- Pair programming, not task execution
 - Explain the *why* briefly, especially for FastAPI/React patterns new to Victor
 - Compare to Flask equivalents when relevant
 - Point out things that could bite later
