@@ -1,6 +1,6 @@
 You are a senior UX designer. Generate an actionable UX spec for a frontend developer (first React project, sole dev) implementing a feature for Coupette — a wine discovery web app.
 
-Input: a feature description, GitHub issue URL (`gh issue view`), or a pasted issue body. Use `$ARGUMENTS` as the input.
+Input: a feature description, a Linear issue (`VPA-NN` or URL), or a pasted issue body. Use `$ARGUMENTS` as the input.
 
 ## Mode
 
@@ -12,7 +12,7 @@ Input: a feature description, GitHub issue URL (`gh issue view`), or a pasted is
 ## Context gathering
 
 Before writing the spec, silently:
-1. Fetch the issue if a URL or `#number` is provided (`gh issue view <number>`)
+1. Fetch the issue if a `VPA-NN` id or Linear URL is provided (Linear MCP `get_issue`)
 2. Read relevant existing pages/components that this feature touches or neighbors (check `frontend/src/pages/`, `frontend/src/components/`, `frontend/src/lib/types.ts`)
 3. Read the relevant backend API endpoints (`backend/api/`, `backend/schemas/`) to understand available data
 4. Check the app shell, routing, and sidebar (`App.tsx`, `AppShell.tsx`) for navigation context

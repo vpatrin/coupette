@@ -38,6 +38,7 @@ Every other "NEVER merge" and "NEVER force-push" restriction remains in force.
 | Deploy + infra | [`.claude/rules/deploy.md`](.claude/rules/deploy.md) | `docker-compose.yml`, `Dockerfile`, CI, Makefile |
 | Packaging (Poetry, Yarn, security patches) | [`.claude/rules/packaging.md`](.claude/rules/packaging.md) | `pyproject.toml`, `poetry.lock`, `package.json`, `yarn.lock` |
 | Docs + ADRs + release + changelog | [`.claude/rules/docs.md`](.claude/rules/docs.md) | `docs/**`, `README.md`, `CHANGELOG.md` |
+| Linear (language, titles, labels, issue templates) | [`.claude/rules/linear.md`](.claude/rules/linear.md) | — |
 | Agentic pipeline | [`.claude/README.md`](.claude/README.md) | — |
 
 ## Stack
@@ -79,13 +80,7 @@ Issue → Branch → PR → Squash merge.
 - Verify you're on a non-main branch before any work; create one if needed.
 - Coverage badge SVG churn in diffs is expected, not noise.
 
-**Every GitHub issue needs ≥2 labels: one service + one type.**
-- Service: `api` · `scraper` · `bot` · `frontend` · `core` · `devops`
-- Type: `bug` · `feature` · `chore` · `refactor` · `docs`
-
-```
-gh issue create --title "..." --label api --label feature --milestone "Phase 10: Intent Router"
-```
+**Issues live in Linear, not GitHub** (team `Vpatrin`, ids `VPA-NN`) — GitHub keeps PRs, Dependabot, and CI only. Create issues via the Linear MCP tools. ALL Linear content in English. Titles, labels, and issue body templates: [`.claude/rules/linear.md`](.claude/rules/linear.md).
 
 **Default workflow: incremental** (one feature = one PR to main). Use a feature branch only when ALL of: 3+ interdependent PRs, earlier PRs would ship dead code, main must stay deployable.
 

@@ -24,7 +24,7 @@ A multi-agent pipeline for Coupette, inspired by Anthropic's orchestrator-worker
 | `/feature <desc>` | Drive a new feature through the full pipeline |
 | `/fix <desc>` | Same pipeline, framed for bugs |
 | `/document` | Run the documenter standalone (docs + session log + ADR) |
-| `/po <desc>` | Break a feature into GitHub issues (stories + tasks) |
+| `/po <desc>` | Break a feature into Linear issues (stories + tasks) |
 | `/garden` | Triage red Dependabot PRs, manage CVE ignore-file entries, arm auto-merge — manual-invocation only |
 
 ### Advisors (review personas)

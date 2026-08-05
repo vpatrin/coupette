@@ -3,6 +3,7 @@ paths:
   - "backend/services/sommelier.py"
   - "backend/services/intent.py"
   - "backend/services/recommendations.py"
+  - "backend/services/curation.py"
 ---
 
 # LLM (Claude API usage)
@@ -11,14 +12,15 @@ paths:
 
 ## Model
 
-Claude Haiku 4.5 (`claude-haiku-4-5-20251001`) — the only model in use. Chosen for cost + latency.
+Claude Haiku 4.5 (`claude-haiku-4-5-20251001`) for all runtime surfaces. Chosen for cost + latency. The eval judge (`backend/benchmarks/eval/judge.py`) pins its own model separately — not a runtime surface.
 
 ## Surfaces
 
 | Surface | File | Purpose |
 |---|---|---|
 | Intent parsing | `backend/services/intent.py` | NL → structured query (color, region, price, food pairing) |
-| Curation / recommendation | `backend/services/sommelier.py` | Rank + explain candidate wines from RAG retrieval |
+| Sommelier | `backend/services/sommelier.py` | Rank + explain candidate wines from RAG retrieval |
+| Curation | `backend/services/curation.py` | LLM-backed catalog curation |
 
 ## Hard rule — SAQ impersonation (also in CLAUDE.md)
 

@@ -4,11 +4,11 @@ description: End-to-end release coordinator. Verify ROADMAP + CHANGELOG fully be
 
 You are the release coordinator. **All verification happens UP FRONT** — by the time Victor runs the first command, every gap is closed. No re-runs.
 
-You do NOT run `git commit`, `git tag`, `git push`, `gh release create`, or `gh issue create` — those are Victor's. You DO modify `CHANGELOG.md`.
+You do NOT run `git commit`, `git tag`, `git push`, or `gh release create` — those are Victor's. You DO modify `CHANGELOG.md`, and you DO create the deploy issue in Linear (step 6, after Victor's explicit go).
 
 ## Read first
 
-- `.claude/rules/docs.md` — semver, changelog format, deploy issue template (#347)
+- `.claude/rules/docs.md` — semver, changelog format, deploy issue conventions (Linear)
 - `docs/ROADMAP.md` — current phase state
 - `CHANGELOG.md` — `[Unreleased]` content + comparison links at bottom
 - `.github/workflows/cd.yml` — CD fires on `push: tags: ["v*"]` (FYI; don't edit)
@@ -77,7 +77,7 @@ Modify `CHANGELOG.md` only:
 
 ### Step 5 — Deploy issue body
 
-Draft per the template (issue #347 is the reference). Fill from changelog + commit log:
+Draft per the template below (historical GitHub issue #347 was the original reference). Fill from changelog + commit log:
 
 ```markdown
 ## Pre-deploy checks
@@ -135,24 +135,11 @@ gh release create vX.Y.Z \
   --title "vX.Y.Z" \
   --notes "$(awk '/^## \[x.y.z\]/{flag=1;next}/^## \[/{flag=0}flag' CHANGELOG.md)"
 
-# Create the deploy issue (paste the body block printed below)
-gh issue create \
-  --title "Release vX.Y.Z deploy" \
-  --label devops --label chore \
-  --milestone "<current-phase-milestone>" \
-  --body "$(cat <<'BODY'
-<the body from step 5 here>
-BODY
-)"
 ```
 
 **3. CD trigger:** `git push --tags` fires `.github/workflows/cd.yml` automatically. Watch it in GitHub Actions.
 
-**4. Deploy issue body** (paste into the `gh issue create` above):
-
-```markdown
-<full body from step 5>
-```
+**4. Deploy issue:** once Victor confirms the commands above ran, create it in Linear via the MCP `save_issue` tool — team `Vpatrin`, title `Release vX.Y.Z deploy`, labels `devops` + `chore`, description = the full body from step 5. Report the created VPA-NN and URL. (Issues live in Linear — never `gh issue create`.)
 
 ## Hard rules
 
