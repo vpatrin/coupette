@@ -11,7 +11,7 @@ Create a PR for the current branch. Follow the Pre-PR Checklist from CLAUDE.md.
    - `cd frontend && yarn lint` — must pass with 0 errors (warnings are OK if pre-existing on main)
    - `cd frontend && yarn build` — must succeed. If either fails, stop and fix before creating the PR.
 7. Create the PR using `gh pr create` with:
-   - Title in conventional commits format: `type: description (#issue)`
+   - Title in conventional commits format: `type: description (VPA-NN)` — take the id from the branch name (`type/vpa-NN-…`); omit the suffix if the branch carries no issue id
    - Body following `.github/pull_request_template.md` (Summary, Related issue(s), Changes, How to test if applicable)
    - Reference each Linear issue as `VPA-NN` in the Related issue(s) section (issues live in Linear; `Closes #XX` GitHub syntax no longer applies). If nothing to reference, write "none".
    - If "How to test" includes curl commands, use port 8001 (backend runs on 8001, not 8000)

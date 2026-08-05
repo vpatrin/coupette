@@ -74,7 +74,7 @@ Every other "NEVER merge" and "NEVER force-push" restriction remains in force.
 
 Issue → Branch → PR → Squash merge.
 
-- Branch prefix: `feat/`, `fix/`, `chore/`, `docs/` — `type/short-description`
+- Branch prefix: `feat/`, `fix/`, `chore/`, `docs/` — `type/short-description`; when a Linear issue exists, `type/vpa-NN-short-description` (auto-links the PR via the Linear GitHub integration)
 - Commit prefix: `feat`, `fix`, `chore`, `docs`, `refactor` (Conventional Commits)
 - One branch = one PR. Target under ~200 lines changed.
 - Verify you're on a non-main branch before any work; create one if needed.

@@ -88,3 +88,9 @@ Who hits it, how often, workaround or not.
 ### Chore / refactor / docs
 
 No template — `## Context` + `## Tasks` checklist (+ references). No user story ever.
+
+## Branches & PRs — linking
+
+- Branch naming when an issue exists: `type/vpa-NN-short-description` (e.g. `feat/vpa-12-wine-availability`). The Linear GitHub integration auto-links the PR to the issue from the branch name; the statusline TICKET row lights up too. No issue → plain `type/short-description`.
+- PR title carries the id: `type: description (VPA-NN)`.
+- Magic words in the PR body (`Fixes VPA-12`, `Closes VPA-12`) move the issue to Done on squash merge — requires the Linear GitHub integration (Linear → Settings → Integrations → GitHub, connect `vpatrin/coupette`).
