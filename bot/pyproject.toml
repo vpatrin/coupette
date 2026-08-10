@@ -11,7 +11,7 @@ package-mode = false
 [tool.poetry.dependencies]
 python-telegram-bot = {version = "^22.8", extras = ["job-queue"]}
 httpx = ">=0.28"
-pydantic-settings = "^2.14"
+pydantic-settings = "^2.15"
 loguru = ">=0.7"
 coupette-core = {path = "../core", develop = true}
 
@@ -20,8 +20,8 @@ pip-audit = ">=2.10.1"
 pytest = ">=9.1.1"
 pytest-asyncio = ">=1.4.0"
 pytest-cov = ">=6.0"
-ruff = "^0.16.1"
-diff-cover = "^10.4.1"
+ruff = "^0.16.2"
+diff-cover = "^10.4.2"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
