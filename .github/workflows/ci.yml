@@ -123,15 +123,15 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
-      - uses: hadolint/hadolint-action@v3.3.0
+      - uses: hadolint/hadolint-action@v3.4.0
         with:
           dockerfile: backend/Dockerfile
           ignore: DL3008,DL4006
-      - uses: hadolint/hadolint-action@v3.3.0
+      - uses: hadolint/hadolint-action@v3.4.0
         with:
           dockerfile: scraper/Dockerfile
           ignore: DL3008,DL4006
-      - uses: hadolint/hadolint-action@v3.3.0
+      - uses: hadolint/hadolint-action@v3.4.0
         with:
           dockerfile: bot/Dockerfile
           ignore: DL3008,DL4006
