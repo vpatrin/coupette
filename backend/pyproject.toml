@@ -18,7 +18,7 @@ greenlet = "^3.5.4"
 anthropic = ">=0.120.2"
 loguru = ">=0.7"
 coupette-core = {path = "../core", develop = true, extras = ["embeddings"]}
-pyjwt = "^2.12.0"
+pyjwt = "^2.15.0"
 prometheus-client = "^0.26.0"
 prometheus-fastapi-instrumentator = "^8.1.0"
 email-validator = "^2.3.0"
