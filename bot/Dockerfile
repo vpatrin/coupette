@@ -39,7 +39,7 @@ COPY bot/bot/ bot/bot/
 
 # Run as non-root user
 RUN useradd --no-create-home --uid 1000 appuser
-USER appuser
+USER 1000
 
 WORKDIR /app/bot
 
