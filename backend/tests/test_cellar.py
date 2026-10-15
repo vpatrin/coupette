@@ -91,11 +91,15 @@ class TestAddBottleStmt:
 class TestAddToCellar:
     async def test_returns_201_with_entry_and_product(self, client):
         with (
-            patch(f"{REPO}.add_bottle", new_callable=AsyncMock),
             patch(
-                f"{REPO}.find_one",
+                f"{REPO}.add_bottle",
                 new_callable=AsyncMock,
-                return_value=(_fake_entry(), _fake_product()),
+                return_value=_fake_entry(),
+            ),
+            patch(
+                "backend.services.cellar.products_repo.find_by_sku",
+                new_callable=AsyncMock,
+                return_value=_fake_product(),
             ),
         ):
             resp = await client.post("/api/cellar", json={"sku": "SKU001"})
@@ -107,11 +111,15 @@ class TestAddToCellar:
 
     async def test_duplicate_add_returns_incremented_quantity(self, client):
         with (
-            patch(f"{REPO}.add_bottle", new_callable=AsyncMock),
             patch(
-                f"{REPO}.find_one",
+                f"{REPO}.add_bottle",
                 new_callable=AsyncMock,
-                return_value=(_fake_entry(quantity=2), _fake_product()),
+                return_value=_fake_entry(quantity=2),
+            ),
+            patch(
+                "backend.services.cellar.products_repo.find_by_sku",
+                new_callable=AsyncMock,
+                return_value=_fake_product(),
             ),
         ):
             resp = await client.post("/api/cellar", json={"sku": "SKU001"})
