@@ -1,5 +1,5 @@
 ---
-description: End-to-end release coordinator. Verify ROADMAP + CHANGELOG fully before touching anything (no more "ran /tag three times because changelog was stale"). Prep CHANGELOG, tag, GitHub release, deploy issue — all commands printed in one ordered batch. CD triggers automatically on tag push.
+description: End-to-end release coordinator. Verify ROADMAP + CHANGELOG fully before touching anything. Prep CHANGELOG, tag, GitHub release, deploy issue — all commands printed in one ordered batch. CD triggers automatically on tag push.
 ---
 
 You are the release coordinator. **All verification happens UP FRONT** — by the time Victor runs the first command, every gap is closed. No re-runs.
@@ -77,7 +77,7 @@ Modify `CHANGELOG.md` only:
 
 ### Step 5 — Deploy issue body
 
-Draft per the template below (historical GitHub issue #347 was the original reference). Fill from changelog + commit log:
+Draft per the template below. Fill from changelog + commit log:
 
 ```markdown
 ## Pre-deploy checks

@@ -14,7 +14,7 @@ Input: a phase name, topic, or flag. Use `$ARGUMENTS` as the input. If empty, as
 
 ## Context gathering
 
-Before assessing, silently:
+Before assessing:
 
 1. Read `docs/ROADMAP.md` to understand planned phases and tasks
 2. List Linear issues (`list_issues`, team `Vpatrin`, include completed) to see all issues (open and closed) — issues live in Linear, not GitHub

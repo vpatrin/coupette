@@ -22,7 +22,7 @@ The implementation does not exist yet; you run BEFORE the fix. Write ONLY the re
 
 1. For each acceptance criterion, write a test that would fail if the implementation regressed.
 2. Add edge cases beyond the spec: input boundaries, empty/null, auth failure, concurrent paths if relevant.
-3. Use factory helpers where they exist; create new ones in the existing `tests/factories/` or equivalent rather than inlining literals.
+3. Use factory helpers where they exist; add new ones next to the existing helpers (the service's `conftest.py` or the test module) rather than inlining literals.
 4. Run the test suite for the affected service. All tests must pass.
 5. Check coverage two ways:
    - **Total coverage** against the per-service threshold in `rules/testing.md` (backend ≥80%, bot ≥85%, scraper ≥80%). If you dropped below, add more tests.
@@ -48,7 +48,7 @@ If you cannot reach the required coverage threshold without testing the type sys
 
 ## Result
 
-Print the block below and append it to the scratchpad log at `$SCRATCHPAD_LOG` — absolute path from your handoff prompt; never derive it from `git branch`. Append using the snippet from the prompt (defined in `orchestrator.md` → Append convention). Keep under 100 lines.
+Print the block below and append it to the scratchpad log at `$SCRATCHPAD_LOG` — absolute path from your handoff prompt; never derive it from `git branch`. Append using the snippet from the prompt (defined in `orchestrator.md` → Append convention).
 
 ```markdown
 ### <UTC ISO timestamp> test-writer

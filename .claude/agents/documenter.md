@@ -131,7 +131,7 @@ If the scratchpad log (at `$SCRATCHPAD_LOG` from your handoff prompt) is missing
 
 ## Result
 
-Print the block below and append it to the scratchpad log at `$SCRATCHPAD_LOG` — absolute path from your handoff prompt; never derive it from `git branch`. Append using the snippet from the prompt (defined in `orchestrator.md` → Append convention). If invoked standalone (`/document`, no scratchpad), just print the block. Keep under 80 lines.
+Print the block below and append it to the scratchpad log at `$SCRATCHPAD_LOG` — absolute path from your handoff prompt; never derive it from `git branch`. Append using the snippet from the prompt (defined in `orchestrator.md` → Append convention). If invoked standalone (`/document`, no scratchpad), just print the block.
 
 ```markdown
 ### <UTC ISO timestamp> documenter

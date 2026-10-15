@@ -28,7 +28,7 @@ If any check fails, return a short report listing what's missing. Do not create 
 
 ## Create the PR
 
-Read `.claude/commands/pr.md` and apply its steps yourself — subagents can't invoke slash commands. It knows the title convention, body template, label rules, and milestone assignment. Feed it:
+Read `.claude/commands/pr.md` and apply its steps yourself — subagents can't invoke slash commands. It defines the title convention, the body template, and how Linear issues are referenced. Feed it:
 
 - The spec title (becomes the PR title prefix)
 - The issue number if the spec referenced one
@@ -40,7 +40,7 @@ If any pre-flight check fails, return Status: BLOCKED with the specific check an
 
 ## Result
 
-Print the block below and append it to the scratchpad log at `$SCRATCHPAD_LOG` — absolute path from your handoff prompt; never derive it from `git branch`. Append using the snippet from the prompt (defined in `orchestrator.md` → Append convention). Keep under 30 lines.
+Print the block below and append it to the scratchpad log at `$SCRATCHPAD_LOG` — absolute path from your handoff prompt; never derive it from `git branch`. Append using the snippet from the prompt (defined in `orchestrator.md` → Append convention).
 
 ```markdown
 ### <UTC ISO timestamp> pr-creator

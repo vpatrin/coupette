@@ -15,7 +15,7 @@ The bot has **no database access**. It calls the backend API via `bot/bot/api_cl
 
 | File/folder | Purpose |
 |---|---|
-| `bot/bot/handlers/` | One file per command/flow — `start.py`, `recommend.py`, `watch.py`, etc. |
+| `bot/bot/handlers/` | One file per command/flow — `start.py`, `watch.py`, `mystores.py`, etc. |
 | `bot/bot/api_client.py` | Single httpx client — all backend calls go through here |
 | `bot/bot/formatters.py` | Message formatting — keep presentation out of handlers |
 | `bot/bot/keyboards.py` | Reply keyboards (`MAIN_MENU`, location prompt) + `InlineKeyboardMarkup` builders |

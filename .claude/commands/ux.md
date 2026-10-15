@@ -11,7 +11,7 @@ Input: a feature description, a Linear issue (`VPA-NN` or URL), or a pasted issu
 
 ## Context gathering
 
-Before writing the spec, silently:
+Before writing the spec:
 1. Fetch the issue if a `VPA-NN` id or Linear URL is provided (Linear MCP `get_issue`)
 2. Read relevant existing pages/components that this feature touches or neighbors (check `frontend/src/pages/`, `frontend/src/components/`, `frontend/src/lib/types.ts`)
 3. Read the relevant backend API endpoints (`backend/api/`, `backend/schemas/`) to understand available data
@@ -75,7 +75,7 @@ Table format: scenario | what happens | implementation note. Cover:
 - Very long text, very large lists
 
 ### 8. What NOT to build
-Apply CLAUDE.md's UX anti-patterns. Additionally, cut anything that's technically possible but not worth the complexity for this specific feature. Be explicit about what you're deferring and why.
+Apply the UX anti-patterns in `.claude/rules/frontend.md`. Additionally, cut anything that's technically possible but not worth the complexity for this specific feature. Be explicit about what you're deferring and why.
 
 ### 9. Mobile flags
 Desktop-first, but flag anything that will obviously break on smaller screens. Don't solve it — just note it for a future responsive pass.

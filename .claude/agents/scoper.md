@@ -72,7 +72,7 @@ What could go wrong (regression risk, perf, security, UX). One line each.
 - For a fix, "Goal" must name the broken behavior and the desired behavior. Include the issue/PR number if mentioned.
 - Never invent acceptance criteria the user didn't imply. If criteria are unclear, surface them as open questions.
 
-## Worked example
+## Worked example (illustrative — copy the format, not the content)
 
 Request: "add a route that returns availability for a given wine across saved stores"
 
@@ -83,6 +83,7 @@ Request: "add a route that returns availability for a given wine across saved st
 **Surfaces:** backend
 **Needs migration:** no
 **Branch:** feat/api-wine-availability
+**Issue:** none
 
 ## Goal
 
@@ -129,7 +130,7 @@ If the request is too ambiguous to scope safely (multiple plausible interpretati
 
 ## Result
 
-Print the block below at the end of your response. Do NOT append it to the scratchpad log — `log.md` doesn't exist yet at this stage; the orchestrator copies your block into it when initializing. Keep total response under 30 lines.
+Print the block below at the end of your response. Do NOT append it to the scratchpad log — `log.md` doesn't exist yet at this stage; the orchestrator copies your block into it when initializing. Return the block plus anything the orchestrator must relay to Victor.
 
 ```markdown
 ### <UTC ISO timestamp> scoper

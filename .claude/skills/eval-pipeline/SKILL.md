@@ -23,7 +23,7 @@ Requirements: local PostgreSQL with embedded products must be running.
 
 ## Context gathering
 
-Before starting, silently read the implementation files you may need to modify:
+Before starting, read the implementation files you may need to modify:
 
 1. `backend/services/intent.py` — intent parsing prompts and logic
 2. `backend/services/recommendations.py` — recommendation orchestration
@@ -34,7 +34,7 @@ Before starting, silently read the implementation files you may need to modify:
 ## Steps
 
 1. Run `make eval` and read the full output (console + latest JSON in `backend/benchmarks/eval/results/`).
-   - This runs the **train split only** (14 queries) with deterministic judging (temp=0, 1 run).
+   - This runs the **train split only** with deterministic judging (temp=0, 1 run).
 2. Analyze the results:
    - Sort queries by overall score, focus on bottom quartile.
    - Check **tag averages** to identify weak categories (e.g. "pairing" scores low → focus there).
@@ -57,8 +57,6 @@ Run up to **5 iterations** (or as specified by the user via `$ARGUMENTS`). Stop 
 - 3 consecutive iterations show no improvement (< 0.05 gain each) — the pipeline has plateaued
 - All viable levers have been tried
 
-Do NOT stop just because one change worked. Keep going — stack improvements.
-
 ## Rules
 
 - Change ONE lever at a time — never change intent prompt AND retrieval query simultaneously.
@@ -68,7 +66,7 @@ Do NOT stop just because one change worked. Keep going — stack improvements.
 - Show the score diff after each iteration in a clear table.
 - Check that improvements are **distributed** across queries, not concentrated in 1-2 queries while others regress.
 - If a prompt change adds a rule that maps 1:1 to a specific test query, that's overfitting — the rule should help 3+ unseen queries.
-- If a lever requires re-embedding (`compose_embedding_text()`), warn before proceeding — it's expensive and takes ~30 min.
+- If a lever requires re-embedding (`build_embedding_text()` in `scraper/scraper/embed.py`), warn before proceeding — it's expensive and takes ~30 min.
 - Track which levers you've tried and their effect — don't repeat a failed approach.
 
 ## Target
@@ -80,7 +78,7 @@ Default target: weighted average ≥ 4 (or as specified by the user via $ARGUMEN
 ```
 make eval                                    # train split, temp=0, 1 judge run (default)
 make eval SPLIT=holdout                      # holdout split only
-make eval SPLIT=all                          # all 19 queries
+make eval SPLIT=all                          # all queries (train + holdout)
 make eval JUDGE_RUNS=2 JUDGE_TEMP=1.0        # multi-run with variance
 make eval QUERY=4                            # single query (ignores split)
 ```

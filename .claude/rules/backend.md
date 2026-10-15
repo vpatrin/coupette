@@ -11,7 +11,7 @@ paths:
 
 ```
 backend/
-├── api/             # Route handlers (13 routers, one per resource)
+├── api/             # Route handlers (one router per resource)
 ├── services/        # Business logic (sommelier, recommendations, intent, auth, oauth, ...)
 ├── repositories/    # Data access — async SQLAlchemy queries
 ├── schemas/         # Pydantic *In / *Out models (separate from SQLAlchemy)
