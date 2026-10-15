@@ -67,11 +67,11 @@ Automated personalized summary of new/restocked wines matching user's taste prof
 Track wines you have at home. SAQ catalog wines only. "Add to cellar" action on product cards. Quantity management on dedicated "My Cellar" page. Auto-remove when quantity hits 0. Cellar data feeds back into taste profile for richer signals.
 
 - [x] CellarEntry model + migration — user_id, sku (FK), quantity, added_at (VPA-17)
-- [ ] Cellar CRUD endpoints — add, list, update quantity, remove
-- [ ] "Add to cellar" button on product cards
-- [ ] My Cellar page — list with quantity +1/−1 controls
-- [ ] Surface "In your cellar (×2)" on product cards in search results
-- [ ] Remove bottle flow — "Tu l'as bue?" → journal prompt or just remove
+- [x] Cellar CRUD endpoints — add, list, update quantity, remove (VPA-18)
+- [x] "Add to cellar" button on product cards (VPA-19)
+- [x] My Cellar page — list with quantity +1/−1 controls (VPA-20)
+- [x] Surface "In your cellar (×2)" on product cards in search results (VPA-21)
+- [x] Remove bottle flow — "Tu l'as bue?" → journal prompt or just remove (VPA-22)
 
 Design reference: `ui/cellar/cellar.html`, `ui/cellar/add-bottle.html`, `ui/cellar/remove-bottle.html`
 
