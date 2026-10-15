@@ -53,6 +53,8 @@ jobs:
             migrations:
               - 'core/db/models*.py'
               - 'core/alembic/**'
+              - 'core/pyproject.toml'
+              - 'core/poetry.lock'
 
   # ── Lint ──────────────────────────────────────────────────────
 
