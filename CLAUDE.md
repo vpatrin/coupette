@@ -78,7 +78,7 @@ Issue → Branch → PR → Squash merge.
 
 - Branch prefix: `feat/`, `fix/`, `chore/`, `docs/` — `type/short-description`; when a Linear issue exists, `type/vpa-NN-short-description` (auto-links the PR via the Linear GitHub integration)
 - Commit prefix: `feat`, `fix`, `chore`, `docs`, `refactor` (Conventional Commits)
-- One branch = one PR. Target under ~200 lines changed.
+- One branch = one PR = one user-visible slice. Tests, locales, lockfiles, and generated files don't count toward size. Split when review gets hard, not at a line count.
 - Verify you're on a non-main branch before any work; create one if needed.
 - Coverage badge SVG churn in diffs is expected, not noise.
 

@@ -189,7 +189,7 @@ Quick check: does the current codebase state match what the roadmap says is done
 
 ### 5. Recommended next sprint
 
-Based on the findings, suggest 3-5 concrete tasks for the next work session, ordered by impact. Each task should be scoped to a single PR (~200 lines).
+Based on the findings, suggest 3-5 concrete tasks for the next work session, ordered by impact. Each task should be scoped to a single PR (one user-visible slice).
 
 ### 6. Cost estimate (full mode only)
 

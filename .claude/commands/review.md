@@ -24,7 +24,7 @@ Do NOT run `make lint` or `make test` separately — git hooks handle those. Run
 1. Run `git diff main --stat` and `git diff main` to see all changes on this branch.
 2. Run `git log --oneline main..HEAD` to see all commits.
 3. Check `git status` for untracked or unstaged files that should be included.
-4. Check PR size: flag if significantly over ~200 lines changed (excluding auto-generated files like migrations and coverage badges). A high file count is fine if each file has small, focused changes (1-3 lines per file). The concern is large changes concentrated in few files, not file count itself.
+4. Check PR size: one PR = one user-visible slice. Tests, locales, lockfiles, and generated files (migrations, coverage badges) don't count toward size. Flag a split when review gets hard, not at a line count. A high file count is fine if each file has small, focused changes (1-3 lines per file). The concern is large changes concentrated in few files, not file count itself.
 5. Review against the Pre-PR Checklist and Definition of Done from CLAUDE.md.
 6. **AI smell check** — flag any over-engineering a senior engineer would never commit:
    - Defensive fallbacks guarding against states the code already prevents (dead branches)
