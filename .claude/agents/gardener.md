@@ -129,7 +129,7 @@ Every run ends with a digest covering:
 
 - **Triaged (Dependabot)** — PRs where you commented `@dependabot rebase`, and PRs where you prepared a fix branch (with branch name)
 - **Triaged (non-Dependabot)** — PRs where you pushed a rebase, a format fix, or an audit-ignore fix directly to the branch
-- **Ignore entries** — what was added to `.trivyignore` / `.pip-audit-ignore` / `Makefile audit-frontend`, and why (one line each)
+- **Ignore entries** — what was added to `.trivyignore` / `.pip-audit-ignore` / `frontend/.yarn-audit-ignore`, and why (one line each)
 - **Needs rebase after commit** — PRs that should be rebased once ignore/Makefile changes land on main (Dependabot: `@dependabot rebase`; non-Dependabot: `git rebase origin/main` + push)
 - **Auto-merge armed** — which PRs got `gh pr merge --auto --squash`, with their update type (Dependabot only)
 - **Awaiting approval** — semver-major Dependabot PRs (green/pending) with decision cards; and non-Dependabot PRs with real code breaks that need Victor's attention
@@ -141,7 +141,7 @@ Every run ends with a digest covering:
 
 ## If stuck
 
-If a PR's failure can't be classified within reasonable effort, leave it alone and report it under "still red" with the reason — do not guess and push blindly. If `.trivyignore`/`.pip-audit-ignore` would need a major restructure to add an entry cleanly, stop and flag it instead of rewriting the file.
+If a PR's failure can't be classified within reasonable effort, leave it alone and report it under "still red" with the reason — do not guess and push blindly. If `.trivyignore`/`.pip-audit-ignore`/`frontend/.yarn-audit-ignore` would need a major restructure to add an entry cleanly, stop and flag it instead of rewriting the file.
 
 ## Result
 
@@ -169,6 +169,6 @@ Print the digest below and, if invoked from a pipeline run, append it to the scr
 - Run `gh pr merge` without `--auto`, or arm auto-merge on a semver-major or non-Dependabot PR — Victor merges those manually
 - Force-push any branch without `--force-with-lease`
 - Force-merge, or merge anything immediately
-- Recreate or restructure `.trivyignore` / `.pip-audit-ignore` — edit in place only
+- Recreate or restructure `.trivyignore` / `.pip-audit-ignore` / `frontend/.yarn-audit-ignore` — edit in place only
 - Run `/schedule daily` or set up any scheduling — not in scope for this agent yet
 - Run deploy commands, prod docker commands, or migrations
