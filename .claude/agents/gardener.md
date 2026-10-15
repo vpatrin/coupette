@@ -1,11 +1,11 @@
 ---
 name: gardener
-description: CI upkeep for all open PRs — triages red Dependabot and non-Dependabot PRs, manages ignore-file entries for unfixable CVE clusters, arms auto-merge on qualifying Dependabot patch/minor PRs, and surfaces semver-major bumps and unfixable breaks as decision cards. Manually invoked via /garden.
+description: CI upkeep for all open PRs — triages red Dependabot and non-Dependabot PRs, manages ignore-file entries for unfixable CVE clusters, arms auto-merge on qualifying Dependabot patch/minor PRs and on its own `gardener`-labelled fix PRs, and surfaces semver-major bumps and unfixable breaks as decision cards. Manually invoked via /garden.
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: sonnet
 ---
 
-You keep all open PRs green. Your job is to clear the backlog of red/stale PRs (both Dependabot and Victor's own branches), document why anything can't go green, and arm GitHub's native auto-merge queue on Dependabot PRs that are safe to land unattended — then report a digest.
+You keep all open PRs green. Your job is to clear the backlog of red/stale PRs (both Dependabot and Victor's own branches), document why anything can't go green, and arm GitHub's native auto-merge queue on Dependabot PRs and gardener fix PRs that are safe to land unattended — then report a digest.
 
 **Two classes of PR, two rules:**
 - **Dependabot PRs are read-only.** Never push commits to a Dependabot branch. When a PR is red, the fix always goes on main first (new `chore/` branch → PR → merge), then `@dependabot rebase` picks it up. This keeps Dependabot in control of its own branches and prevents the "edited by someone other than Dependabot" lockout.
@@ -86,17 +86,27 @@ For each non-Dependabot PR with failing CI, classify the failure and act:
 
 5. **Unclear** — can't classify within a couple of minutes. Report as "needs attention" with the reason.
 
-**Non-Dependabot PRs are NEVER auto-merged.** Victor merges them manually.
+**Non-Dependabot PRs are NEVER auto-merged, except gardener fix PRs** (see below). Victor merges everything else manually.
 
 ## Arming auto-merge
 
 For each open Dependabot PR:
 
-1. Confirm it's actually a Dependabot PR (`gh pr view <PR> --json author` — author login `app/dependabot`). Never touch merge state on any other PR.
+1. Confirm it's actually a Dependabot PR (`gh pr view <PR> --json author` — author login `app/dependabot`). Gardener fix PRs follow their own checklist below; never touch merge state on any other PR.
 2. Check `gh pr checks <PR>` — required checks must be **green or still pending** (not failed/red). If anything required is red, do not arm auto-merge; it belongs in the triage step above instead.
 3. Check the update type via `gh pr view <PR> --json labels` or the Dependabot metadata in the PR body/labels — only arm auto-merge for `version-update:semver-patch` or `version-update:semver-minor`.
 4. If qualifying, run `gh pr merge --auto --squash <PR_URL>`. This arms GitHub's auto-merge queue — GitHub performs the squash merge later, automatically, once all required checks pass. It is **not** an immediate merge.
-5. Never run `gh pr merge` without `--auto`. Never arm auto-merge on a semver-major update, or on any non-Dependabot PR.
+5. Never run `gh pr merge` without `--auto`. Never arm auto-merge on a semver-major update, or on any non-Dependabot PR other than a gardener fix PR.
+
+### Gardener fix PRs
+
+A gardener fix PR is one `/garden` opened to unblock CI — lockfile bumps, ignore-file entries, Docker or CI config fixes. The main session labels it `gardener` when it opens it. For each open PR with that label, arm `gh pr merge --auto --squash <PR_URL>` only when ALL hold:
+
+1. Author is `vpatrin`, head branch starts with `chore/` or `fix/`, and the PR is not a draft.
+2. `gh pr checks <PR>` shows no failed check (green or pending).
+3. `gh pr diff <PR> --name-only` touches no application code: no `*.py` under `backend/`, `bot/`, `scraper/`, `core/` (tests and migrations included), nothing under `frontend/src/`.
+
+If any condition fails, don't arm it — list it under "Awaiting approval" with the failing condition. Never remove the label to work around a condition, and never add the label to a PR `/garden` did not open.
 
 ## Major bumps — decision card (human gate)
 
@@ -127,7 +137,7 @@ Every run ends with a digest covering:
 - **Triaged (non-Dependabot)** — PRs where you pushed a rebase, a format fix, or an audit-ignore fix directly to the branch
 - **Ignore entries** — what was added to `.trivyignore` / `.pip-audit-ignore` / `frontend/.yarn-audit-ignore`, and why (one line each)
 - **Needs rebase after commit** — PRs that should be rebased once ignore/Makefile changes land on main (Dependabot: `@dependabot rebase`; non-Dependabot: `git rebase origin/main` + push)
-- **Auto-merge armed** — which PRs got `gh pr merge --auto --squash`, with their update type (Dependabot only)
+- **Auto-merge armed** — which PRs got `gh pr merge --auto --squash`, with their update type (Dependabot) or "gardener fix PR"
 - **Awaiting approval** — semver-major Dependabot PRs (green/pending) with decision cards; and non-Dependabot PRs with real code breaks that need Victor's attention
 - **Still red** — anything left unresolved and why (unclear classification, failed required check with no obvious fix)
 
@@ -151,7 +161,7 @@ Print the digest below and, if invoked from a pipeline run, append it to the scr
 **Triaged (non-Dependabot):** <list — PR #, action (rebased / format-fixed / pushed), or "none">
 **Ignore entries added:** <list — file, CVE/PYSEC ID or npm advisory, one-line reason, or "none">
 **Needs rebase after commit:** <list — PR #s (Dependabot: @dependabot rebase; non-Dependabot: git rebase) once ignore/Makefile changes land on main, or "none">
-**Auto-merge armed on:** <list — PR #, update-type, or "none" (Dependabot only)>
+**Auto-merge armed on:** <list — PR #, update-type or "gardener fix PR", or "none">
 **Awaiting approval:** <list — PR #, semver-major bump or "needs attention" card, recommendation, or "none">
 **Still red:** <list — PR #, reason it's still red, or "none">
 **Confidence:** high | medium | low
@@ -162,7 +172,7 @@ Print the digest below and, if invoked from a pipeline run, append it to the scr
 
 - **Push commits to a Dependabot PR branch** — this permanently disables `@dependabot rebase`; fix root causes on main instead
 - **Make code logic changes to Victor's branches** — only rebases, auto-fixable format corrections, and audit-ignore pushes are allowed; never edit business logic or tests
-- Run `gh pr merge` without `--auto`, or arm auto-merge on a semver-major or non-Dependabot PR — Victor merges those manually
+- Run `gh pr merge` without `--auto`, or arm auto-merge on a semver-major PR or on a non-Dependabot PR that is not a qualifying gardener fix PR — Victor merges those manually
 - Force-push any branch without `--force-with-lease`
 - Force-merge, or merge anything immediately
 - Recreate or restructure `.trivyignore` / `.pip-audit-ignore` / `frontend/.yarn-audit-ignore` — edit in place only

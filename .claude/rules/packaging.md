@@ -31,6 +31,7 @@ When pip-audit or Trivy flags a transitive dep:
 
 - **semver-patch / minor** — auto-merged unattended via `.github/workflows/dependabot-auto-merge.yml` (arms `gh pr merge --auto --squash` on open). The `/garden` gardener re-arms any that were red on open and only went green after a rebase.
 - **semver-major** — never auto-merged. The gardener emits a **decision card** (breaking changes + blast radius + recommendation) in its digest; Victor approves and merges manually with `gh pr merge --squash`. Branch protection can't gate by update-type — it's per-branch and `main` requires no review — so the human gate is the decision card, not a required GitHub review.
+- **Gardener fix PRs** (label `gardener`) — the CI-unblocking PRs that `/garden` opens itself (lockfiles, ignore files, Docker/CI config, no application code). `/garden` arms `gh pr merge --auto --squash` on them once no check fails. Checklist in `.claude/agents/gardener.md` → Gardener fix PRs.
 
 ## Frontend (Yarn)
 

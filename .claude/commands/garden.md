@@ -1,5 +1,5 @@
 ---
-description: Run an unattended CI upkeep pass — triage red PRs (Dependabot and non-Dependabot), manage ignore-file entries, arm auto-merge on qualifying Dependabot PRs, and surface real breaks for human review.
+description: Run an unattended CI upkeep pass — triage red PRs (Dependabot and non-Dependabot), manage ignore-file entries, arm auto-merge on qualifying Dependabot PRs and on its own fix PRs, and surface real breaks for human review.
 disable-model-invocation: true
 ---
 
@@ -14,7 +14,9 @@ You are clearing the PR backlog. Invoke the `gardener` agent to do the work, the
 2. After the agent returns, the main session automatically:
    - Commits any new `.pip-audit-ignore` / `.trivyignore` / `frontend/.yarn-audit-ignore` entries on a `chore/dependency-ignore-updates` branch and pushes it
    - Creates a PR for those changes
-   - Rebases PRs in the "needs rebase after commit" list (`@dependabot rebase` for Dependabot; `git rebase origin/main` + push for non-Dependabot)
+   - Commits, pushes, and opens a PR for each fix branch the gardener prepared
+   - Labels every PR it opened `gardener` and arms `gh pr merge --auto --squash` on it when it qualifies (checklist: `.claude/agents/gardener.md` → Gardener fix PRs). PRs that touch application code stay for Victor
+   - Rebases PRs in the "needs rebase after commit" list (`@dependabot rebase` for Dependabot; `git rebase origin/main` + push for non-Dependabot) — but only once the fix they depend on has landed on main. Before that, a rebase only burns CI; the next `/garden` run picks them up
 3. Prints the gardener's digest plus a summary of what was fixed and which PRs were rebased
 
 ## Decision cards and attention notes — the only things needing your input
