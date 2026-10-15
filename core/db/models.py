@@ -353,6 +353,44 @@ class Watch(Base):
         return f"<Watch(user_id={self.user_id!r}, sku={self.sku!r})>"
 
 
+class CellarEntry(Base):
+    """Bottles a user owns at home — one row per (user_id, sku), quantity tracks count."""
+
+    __tablename__ = "cellar_entries"
+
+    # A given user can hold SKU A once, with quantity tracking how many bottles
+    __table_args__ = (
+        UniqueConstraint("user_id", "sku", name="uq_cellar_entries_user_sku"),
+        CheckConstraint("quantity > 0", name="ck_cellar_entries_quantity"),
+    )
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    # No index=True — the (user_id, sku) unique constraint covers user_id-only lookups.
+    user_id = Column(
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        comment="Owning user",
+    )
+    sku = Column(
+        String,
+        ForeignKey("products.sku"),
+        nullable=False,
+        index=True,
+        comment="Cellared product SKU",
+    )
+    quantity = Column(Integer, nullable=False, default=1, comment="Bottles owned")
+    added_at = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        nullable=False,
+        comment="When this entry was added",
+    )
+
+    def __repr__(self) -> str:
+        return f"<CellarEntry(user_id={self.user_id!r}, sku={self.sku!r})>"
+
+
 class UserStorePreference(Base):
     """Per-user preferred SAQ store — used to scope in-store restock alerts."""
 

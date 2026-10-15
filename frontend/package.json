@@ -43,7 +43,7 @@
     "react-router": "^8.3.0",
     "tailwind-merge": "^3.6.0"
   },
-  "_resolutions_comment": "Pinned until upstreams (shadcn, vitest) bump their transitive deps — remove each entry when yarn audit passes without it",
+  "_resolutions_comment": "Pinned until upstreams (shadcn, vitest, @tailwindcss/typography) bump their transitive deps — remove each entry when yarn audit passes without it",
   "resolutions": {
     "hono": ">=4.12.27",
     "@hono/node-server": ">=2.0.5",
@@ -56,7 +56,8 @@
     "**/@ts-morph/common/**/brace-expansion": ">=5.0.9",
     "ip-address": ">=10.1.1",
     "js-yaml": ">=4.3.1",
-    "@babel/core": ">=7.29.6"
+    "@babel/core": ">=7.29.6",
+    "@tailwindcss/typography/postcss-selector-parser": ">=7.1.6"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

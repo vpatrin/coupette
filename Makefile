@@ -223,6 +223,8 @@ coverage: coverage-backend coverage-scraper coverage-bot coverage-frontend
 # --- Audit ---
 
 PIP_AUDIT_IGNORE := $(shell grep -v '^\#' .pip-audit-ignore 2>/dev/null | sed '/^$$/d' | sed 's/^/--ignore-vuln /')
+# yarn 1 audit has no ignore flag — IDs from frontend/.yarn-audit-ignore go to a jq filter as a JSON array
+YARN_AUDIT_IGNORE := [$(shell grep -v '^\#' frontend/.yarn-audit-ignore 2>/dev/null | sed '/^$$/d' | paste -sd, -)]
 
 audit-core:
 	@echo "\n▶ Auditing core/"
@@ -242,7 +244,7 @@ audit-bot:
 
 audit-frontend:
 	@echo "\n▶ Auditing frontend/"
-	cd frontend && yarn audit
+	cd frontend && yarn audit --json | jq -rs --argjson ignore '$(YARN_AUDIT_IGNORE)' -f ../scripts/yarn_audit_filter.jq
 
 audit: audit-core audit-backend audit-scraper audit-bot audit-frontend
 

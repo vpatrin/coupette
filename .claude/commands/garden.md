@@ -12,7 +12,7 @@ You are clearing the PR backlog. Invoke the `gardener` agent to do the work, the
    - **Non-Dependabot PRs (Victor's branches):** triages red CI — rebases onto main when stale, pushes auto-fixable lint/format corrections, handles audit CVE failures via the same ignore-file workflow; never merges these PRs, never edits business logic
    - Produces a "needs rebase after commit" list for PRs whose audit failures are now covered by new ignore entries
 2. After the agent returns, the main session automatically:
-   - Commits any new `.pip-audit-ignore` / `.trivyignore` entries on a `chore/dependency-ignore-updates` branch and pushes it
+   - Commits any new `.pip-audit-ignore` / `.trivyignore` / `frontend/.yarn-audit-ignore` entries on a `chore/dependency-ignore-updates` branch and pushes it
    - Creates a PR for those changes
    - Rebases PRs in the "needs rebase after commit" list (`@dependabot rebase` for Dependabot; `git rebase origin/main` + push for non-Dependabot)
 3. Prints the gardener's digest plus a summary of what was fixed and which PRs were rebased
