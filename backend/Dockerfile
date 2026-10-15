@@ -46,7 +46,7 @@ ENV PROMETHEUS_MULTIPROC_DIR=/tmp/prometheus_multiproc
 
 # Run as non-root user
 RUN useradd --no-create-home --uid 1000 appuser
-USER appuser
+USER 1000
 
 EXPOSE 8001
 
