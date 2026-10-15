@@ -69,7 +69,7 @@ Per `.claude/rules/packaging.md`:
    }
    ```
    Note: yarn 1.x resolutions apply to transitive deps but NOT to packages listed as direct devDependencies in the same `package.json`. For direct deps, use `yarn upgrade <pkg>` instead — do NOT add `--ignore-advisory` to `make audit-frontend`; that flag does not exist in yarn 1.x and is silently ignored.
-4. Dev-only and Windows-only advisories are safe to suppress for this project (Linux production, no dev server in prod, no untrusted YAML/user input to build tools).
+4. Dev-only and Windows-only advisories are safe to suppress for this project (Linux production, no dev server in prod, no untrusted YAML/user input to build tools). When no patched version exists at all (so no resolution can help), add the npm advisory ID to `frontend/.yarn-audit-ignore` with a dated comment — same conventions as `.pip-audit-ignore`.
 5. **Do NOT add npm advisories to `.trivyignore`** — Trivy uses a separate scan; if Trivy also catches them, add them there too using CVE IDs, not npm advisory numbers.
 
 ### Post-triage rebase sweep
