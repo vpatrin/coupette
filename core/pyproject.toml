@@ -10,6 +10,8 @@ packages = [{include = "core", from = ".."}]
 
 [tool.poetry.dependencies]
 sqlalchemy = "^2.1"
+# greenlet: Required by SQLAlchemy for async operations (manages coroutine context switching)
+greenlet = "^3.5.6"
 alembic = "^1.20"
 psycopg2-binary = "^2.9"
 pgvector = ">=0.5.1"
