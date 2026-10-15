@@ -1,0 +1,7 @@
+# npm advisories with no fix available yet — dev-only packages only (see .claude/rules/packaging.md).
+# Remove entries once a patched version is released.
+# Format: one npm advisory ID per line, comments start with #.
+
+# braces 3.0.3 — GHSA-vfj7-8cjw-p6xm, no patched version as of 2026-10-14 (3.0.3 is the latest release).
+# Dev-only: shadcn (devDependency) > fast-glob > micromatch > braces, build tooling never shipped.
+1240992
