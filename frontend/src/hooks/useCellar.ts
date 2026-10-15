@@ -10,7 +10,6 @@ export const MAX_CELLAR_QUANTITY = 999
 // User-scoped like watchesKeys: the cache survives logout, so an unscoped key
 // would briefly show the previous user's cellar after switching accounts.
 export const cellarKeys = {
-  all: ['cellar'] as const,
   list: (userId: number | undefined) => ['cellar', userId] as const,
 }
 
@@ -57,7 +56,7 @@ function useOptimisticCellarMutation<TVars>(
       queryClient.setQueryData(key, context?.previous)
     },
     // Success or failure, refetch so the cache converges on the server's truth
-    onSettled: () => queryClient.invalidateQueries({ queryKey: cellarKeys.all }),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: key }),
   })
 }
 

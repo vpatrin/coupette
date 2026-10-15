@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useAuth } from '@/contexts/AuthContext'
 import { useApiClient, ApiError } from '@/lib/api'
 import { useCellarQuantities } from '@/hooks/useCellar'
-import { product } from '@/tests/factories'
+import { cellarEntry, product } from '@/tests/factories'
 import type { CellarEntryOut } from '@/lib/types'
 import WineCard from './WineCard'
 import AddToCellarButton from './AddToCellarButton'
@@ -25,17 +25,6 @@ vi.mock('@/lib/api', () => ({
 }))
 
 const mockApiClient = vi.fn()
-
-function entry(overrides: Partial<CellarEntryOut> = {}): CellarEntryOut {
-  return {
-    id: 1,
-    sku: 'SKU001',
-    quantity: 1,
-    added_at: '2026-01-01T00:00:00Z',
-    product: product(),
-    ...overrides,
-  }
-}
 
 // Wired exactly like SearchPage: the badge reads the same cache the button writes
 function CardWithCellar() {
@@ -104,7 +93,7 @@ beforeEach(() => {
 describe('AddToCellarButton', () => {
   it('increments the badge to ×2 before the server responds', async () => {
     const user = userEvent.setup()
-    apiWithPendingPost([entry({ quantity: 1 })])
+    apiWithPendingPost([cellarEntry({ quantity: 1 })])
     renderCard()
     expect(await screen.findByText('In your cellar')).toBeInTheDocument()
 
@@ -114,7 +103,7 @@ describe('AddToCellarButton', () => {
   })
 
   it('rolls the badge back to ×1 when the add fails', async () => {
-    const pending = apiWithPendingPost([entry({ quantity: 1 })], { hangRefetch: true })
+    const pending = apiWithPendingPost([cellarEntry({ quantity: 1 })], { hangRefetch: true })
     renderCard()
 
     await clickAddThenFail(pending)
@@ -124,7 +113,7 @@ describe('AddToCellarButton', () => {
   })
 
   it('shows a retry label on the button when the add fails', async () => {
-    const pending = apiWithPendingPost([entry({ quantity: 1 })])
+    const pending = apiWithPendingPost([cellarEntry({ quantity: 1 })])
     renderCard()
 
     await clickAddThenFail(pending)

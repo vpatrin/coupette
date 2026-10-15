@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import {
@@ -19,12 +18,35 @@ import {
   useSetCellarQuantity,
 } from '@/hooks/useCellar'
 import EmptyState from '@/components/EmptyState'
-import TastingForm from '@/components/TastingForm'
+import TastingFormModal from '@/components/TastingFormModal'
 import { useWineDetail } from '@/contexts/WineDetailContext'
 
 type Row = { entry: CellarEntryOut; removed: boolean }
 
 const byNewest = (a: Row, b: Row) => b.entry.added_at.localeCompare(a.entry.added_at)
+
+function ErrorLine({
+  message,
+  actionLabel,
+  onAction,
+}: {
+  message: string
+  actionLabel: string
+  onAction: () => void
+}) {
+  return (
+    <p className="text-destructive mb-4 text-[13px]">
+      {message}{' '}
+      <button
+        type="button"
+        className="hover:text-destructive/80 underline underline-offset-4"
+        onClick={onAction}
+      >
+        {actionLabel}
+      </button>
+    </p>
+  )
+}
 
 function CellarPage() {
   const { t, i18n } = useTranslation()
@@ -132,29 +154,19 @@ function CellarPage() {
           </div>
 
           {cellarQuery.isError && (
-            <p className="text-destructive mb-4 text-[13px]">
-              {t('cellar.failedToLoad')}{' '}
-              <button
-                type="button"
-                className="hover:text-destructive/80 underline underline-offset-4"
-                onClick={() => cellarQuery.refetch()}
-              >
-                {t('cellar.retry')}
-              </button>
-            </p>
+            <ErrorLine
+              message={t('cellar.failedToLoad')}
+              actionLabel={t('cellar.retry')}
+              onAction={() => cellarQuery.refetch()}
+            />
           )}
 
           {actionError && (
-            <p className="text-destructive mb-4 text-[13px]">
-              {actionError}{' '}
-              <button
-                type="button"
-                className="hover:text-destructive/80 underline underline-offset-4"
-                onClick={() => setActionError(null)}
-              >
-                {t('cellar.dismissError')}
-              </button>
-            </p>
+            <ErrorLine
+              message={actionError}
+              actionLabel={t('cellar.dismissError')}
+              onAction={() => setActionError(null)}
+            />
           )}
 
           {rows.length === 0 && !cellarQuery.isError ? (
@@ -200,9 +212,7 @@ function CellarPage() {
                   )
                 }
 
-                const dotColor = product?.category
-                  ? (CATEGORY_DOT[product.category] ?? 'bg-muted-foreground/30')
-                  : 'bg-muted-foreground/30'
+                const dotColor = CATEGORY_DOT[product?.category ?? ''] ?? 'bg-muted-foreground/30'
                 const meta = product
                   ? [formatOrigin(product), product.vintage].filter(Boolean).join(' · ')
                   : null
@@ -281,28 +291,16 @@ function CellarPage() {
         </div>
       </div>
 
-      {/* Same portaled host as TastingsPage's add-note modal */}
-      {tastingProduct &&
-        createPortal(
-          <div className="fixed inset-0 z-50 flex items-center justify-center">
-            <div
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-              onClick={() => setTastingProduct(null)}
-            />
-            <div className="border-border relative mx-4 w-full max-w-lg rounded-xl border bg-[#0e0e12] p-6 shadow-2xl">
-              <p className="mb-4 text-[14px] font-medium">{t('tastingForm.addTitle')}</p>
-              <TastingForm
-                initialProduct={tastingProduct}
-                onSave={() => {
-                  dismissPrompt(tastingProduct.sku)
-                  setTastingProduct(null)
-                }}
-                onCancel={() => setTastingProduct(null)}
-              />
-            </div>
-          </div>,
-          document.body,
-        )}
+      {tastingProduct && (
+        <TastingFormModal
+          initialProduct={tastingProduct}
+          onSave={() => {
+            dismissPrompt(tastingProduct.sku)
+            setTastingProduct(null)
+          }}
+          onClose={() => setTastingProduct(null)}
+        />
+      )}
     </div>
   )
 }

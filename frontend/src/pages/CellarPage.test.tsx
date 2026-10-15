@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useAuth } from '@/contexts/AuthContext'
 import { useApiClient, ApiError } from '@/lib/api'
 import { WineDetailProvider } from '@/contexts/WineDetailContext'
-import { product } from '@/tests/factories'
+import { cellarEntry } from '@/tests/factories'
 import type { CellarEntryOut } from '@/lib/types'
 import CellarPage from './CellarPage'
 
@@ -25,17 +25,6 @@ vi.mock('@/lib/api', () => ({
 }))
 
 const mockApiClient = vi.fn()
-
-function entry(overrides: Partial<CellarEntryOut> = {}): CellarEntryOut {
-  return {
-    id: 1,
-    sku: 'SKU001',
-    quantity: 1,
-    added_at: '2026-01-15T12:00:00Z',
-    product: product(),
-    ...overrides,
-  }
-}
 
 // Stateful fake of the cellar API: mutations change what the next GET returns
 function fakeCellarApi(initial: CellarEntryOut[], { failDelete = false } = {}) {
@@ -87,7 +76,7 @@ describe('CellarPage', () => {
   })
 
   it('renders a row with the wine name, quantity and added date', async () => {
-    fakeCellarApi([entry({ quantity: 3 })])
+    fakeCellarApi([cellarEntry({ quantity: 3 })])
     renderPage()
     expect(await screen.findByText('Château Test')).toBeInTheDocument()
     expect(screen.getByText('×3')).toBeInTheDocument()
@@ -106,7 +95,7 @@ describe('CellarPage', () => {
 
   it('decrements to ×1 without prompting when quantity is 2', async () => {
     const user = userEvent.setup()
-    fakeCellarApi([entry({ quantity: 2 })])
+    fakeCellarApi([cellarEntry({ quantity: 2 })])
     renderPage()
     await screen.findByText('×2')
 
@@ -118,7 +107,7 @@ describe('CellarPage', () => {
 
   it('removes the row and shows the inline prompt when −1 brings quantity to 0', async () => {
     const user = userEvent.setup()
-    fakeCellarApi([entry({ quantity: 1 })])
+    fakeCellarApi([cellarEntry({ quantity: 1 })])
     renderPage()
     await screen.findByText('×1')
 
@@ -131,7 +120,7 @@ describe('CellarPage', () => {
 
   it('opens the tasting form with the removed wine preselected on Log tasting', async () => {
     const user = userEvent.setup()
-    fakeCellarApi([entry({ quantity: 1 })])
+    fakeCellarApi([cellarEntry({ quantity: 1 })])
     renderPage()
     await user.click(await screen.findByRole('button', { name: 'Remove from my cellar' }))
 
@@ -144,7 +133,7 @@ describe('CellarPage', () => {
 
   it('clears the prompt and shows the empty state on No thanks', async () => {
     const user = userEvent.setup()
-    fakeCellarApi([entry({ quantity: 1 })])
+    fakeCellarApi([cellarEntry({ quantity: 1 })])
     renderPage()
     await user.click(await screen.findByRole('button', { name: 'Remove from my cellar' }))
 
@@ -156,7 +145,7 @@ describe('CellarPage', () => {
 
   it('restores the row and drops the prompt when the removal fails', async () => {
     const user = userEvent.setup()
-    fakeCellarApi([entry({ quantity: 1 })], { failDelete: true })
+    fakeCellarApi([cellarEntry({ quantity: 1 })], { failDelete: true })
     renderPage()
     await user.click(await screen.findByRole('button', { name: 'Remove from my cellar' }))
 

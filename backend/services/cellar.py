@@ -19,6 +19,15 @@ def _to_out(entry: CellarEntry, product: Product | None) -> CellarEntryOut:
     )
 
 
+async def _get_entry(
+    db: AsyncSession, user_id: int, sku: str
+) -> tuple[CellarEntry, Product | None]:
+    row = await repo.find_one(db, user_id, sku)
+    if row is None:
+        raise NotFoundError("CellarEntry", sku)
+    return row
+
+
 async def add_bottle(db: AsyncSession, user_id: int, sku: str) -> CellarEntryOut:
     """Add one bottle — creates the entry or increments its quantity. NotFoundError on bad SKU."""
     try:
@@ -43,10 +52,7 @@ async def set_quantity(
     db: AsyncSession, user_id: int, sku: str, quantity: int
 ) -> CellarEntryOut | None:
     """Set the bottle count. quantity=0 deletes the entry and returns None."""
-    row = await repo.find_one(db, user_id, sku)
-    if row is None:
-        raise NotFoundError("CellarEntry", sku)
-    entry, product = row
+    entry, product = await _get_entry(db, user_id, sku)
     if quantity == 0:
         await repo.delete(db, entry)
         return None
@@ -55,7 +61,5 @@ async def set_quantity(
 
 
 async def remove(db: AsyncSession, user_id: int, sku: str) -> None:
-    row = await repo.find_one(db, user_id, sku)
-    if row is None:
-        raise NotFoundError("CellarEntry", sku)
-    await repo.delete(db, row[0])
+    entry, _ = await _get_entry(db, user_id, sku)
+    await repo.delete(db, entry)

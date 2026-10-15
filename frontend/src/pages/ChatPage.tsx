@@ -213,13 +213,14 @@ function AssistantMessage({
   storeNames,
   selectedSku,
   setSelectedSku,
+  cellarQuantities,
 }: {
   content: string | RecommendationOut
   storeNames: Map<string, string>
   selectedSku: string | null
   setSelectedSku: (sku: string | null) => void
+  cellarQuantities: Map<string, number>
 }) {
-  const cellarQuantities = useCellarQuantities()
   const proseClass =
     'prose prose-sm prose-invert max-w-none text-foreground/80 font-light [&_p]:leading-relaxed [&_ul]:mt-1 [&_ol]:mt-1 [&_li]:my-0.5 [&_strong]:text-foreground [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-sm'
 
@@ -371,6 +372,8 @@ function ChatPage() {
   const navigate = useNavigate()
   const { sessionId: urlSessionId } = useParams<{ sessionId: string }>()
   const { selectedSku, setSelectedSku } = useWineDetail()
+  // One cellar subscription for the whole thread, not one per message
+  const cellarQuantities = useCellarQuantities()
   const {
     refreshSessions,
     sessions,
@@ -689,6 +692,7 @@ function ChatPage() {
                       storeNames={storeNames}
                       selectedSku={selectedSku}
                       setSelectedSku={setSelectedSku}
+                      cellarQuantities={cellarQuantities}
                     />
                   </div>
                   <AssistantMessageActions

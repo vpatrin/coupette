@@ -191,6 +191,7 @@ function WineDetailPanel({ sku, onClose }: WineDetailPanelProps) {
     const dotColor = p.category ? (CATEGORY_DOT[p.category] ?? 'bg-muted-foreground/30') : null
     const origin = formatOrigin(p)
     const grapes = p.grape ?? null
+    const cellarQuantity = cellarQuantities.get(p.sku)
 
     const details: { label: string; value: string }[] = []
     if (origin) details.push({ label: t('wineDetail.region'), value: origin })
@@ -253,9 +254,9 @@ function WineDetailPanel({ sku, onClose }: WineDetailPanelProps) {
 
         <div className="border-border/50 flex items-center gap-3 border-b px-5 py-3">
           <AddToCellarButton product={p} />
-          {!!cellarQuantities.get(p.sku) && (
+          {!!cellarQuantity && (
             <span className="text-primary/70 font-mono text-[11px]">
-              {t('cellar.inCellar', { count: cellarQuantities.get(p.sku) })}
+              {t('cellar.inCellar', { count: cellarQuantity })}
             </span>
           )}
         </div>

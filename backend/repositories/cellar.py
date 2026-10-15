@@ -49,8 +49,7 @@ async def find_one(
         .where(CellarEntry.user_id == user_id, CellarEntry.sku == sku)
     )
     result = await db.execute(stmt)
-    row = result.one_or_none()
-    return (row[0], row[1]) if row else None
+    return result.one_or_none()
 
 
 async def set_quantity(db: AsyncSession, entry: CellarEntry, quantity: int) -> CellarEntry:

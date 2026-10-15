@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useAuth } from '@/contexts/AuthContext'
 import { useApiClient, ApiError } from '@/lib/api'
-import { product } from '@/tests/factories'
+import { cellarEntry, product } from '@/tests/factories'
 import type { CellarEntryOut } from '@/lib/types'
 import WineDetailPanel from './WineDetailPanel'
 
@@ -48,7 +48,7 @@ function apiReturning(
     if (url.includes('/watches')) return Promise.resolve([])
     if (url.includes('/stores/preferences')) return Promise.resolve([])
     if (url === '/cellar' && opts?.method === 'POST') {
-      cellar = [{ id: 1, sku: p.sku, quantity: 1, added_at: '2026-01-01T00:00:00Z', product: p }]
+      cellar = [cellarEntry({ sku: p.sku, product: p })]
       return Promise.resolve(cellar[0])
     }
     if (url === '/cellar') return Promise.resolve(cellar)
