@@ -1,5 +1,5 @@
 ---
-description: Drive a new feature through the full Coupette pipeline (scoper → explorer → specialist → docs → tests + review → PR).
+description: Drive a new feature through the full Coupette pipeline (scoper → explorer → specialist → tests → review → docs → PR).
 disable-model-invocation: true
 ---
 
@@ -36,6 +36,6 @@ Examples of trivial:
 - "Add a `LoadingSpinner` component using shadcn primitives"
 
 Examples that need the full pipeline:
-- Anything touching `auth/`, `services/sommelier.py`, `services/recommendations.py`
+- Anything touching auth (`backend/auth.py`, `backend/services/auth.py`, the OAuth services), `services/sommelier.py`, `services/recommendations.py`
 - Anything with a schema change
 - Anything that spans more than one service

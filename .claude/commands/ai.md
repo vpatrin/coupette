@@ -21,7 +21,7 @@ Input: a feature description, architecture question, or branch to review. Use `$
 
 ## Context gathering
 
-Before reviewing, silently:
+Before reviewing:
 
 **Branch mode (default):**
 
@@ -42,7 +42,7 @@ Before reviewing, silently:
 - **Recommendations:** `backend/services/recommendations.py` — orchestrates retrieval + ranking
 - **Retrieval:** `backend/repositories/recommendations.py` — pgvector queries, hybrid search
 - **Embeddings:** `core/embedding_client.py`, `scraper/scraper/embed.py`, `core/db/models.py` (vector columns)
-- **Prompts:** any system prompts in `backend/services/` or `backend/prompts/`
+- **Prompts:** system prompts and tool definitions in `backend/services/` (`intent.py`, `curation.py`, `sommelier.py`) and the judge prompt in `backend/benchmarks/eval/judge.py`
 - **Chat:** `backend/services/chat.py`, `backend/api/chat.py` (if exists)
 - **Eval:** `backend/benchmarks/eval/` — framework, rubric, queries, results
 - **Bot AI integration:** `bot/bot/handlers/` — how the bot calls the AI pipeline
@@ -62,7 +62,7 @@ Before reviewing, silently:
 ### RAG pipeline
 
 - [ ] Retrieval quality: does the query capture user intent? Is the search query derived from the parsed intent, not raw user input?
-- [ ] Embedding strategy: what text is embedded? Are important attributes weighted correctly in `compose_embedding_text()`?
+- [ ] Embedding strategy: what text is embedded? Are important attributes weighted correctly in `build_embedding_text()` (`scraper/scraper/embed.py`)?
 - [ ] Hybrid search: is the balance between semantic (vector) and lexical (keyword) search appropriate?
 - [ ] Result count: how many candidates are retrieved? Too few = missed relevant items. Too many = noise and latency.
 - [ ] Re-ranking: are retrieved results re-ranked or filtered before presenting to the user?
@@ -83,7 +83,7 @@ Before reviewing, silently:
 - [ ] Streaming: for user-facing responses, is SSE streaming used? Token-by-token rendering?
 - [ ] Cost awareness: estimated cost per query? Any unnecessary API calls (e.g., calling LLM when a regex would suffice)?
 - [ ] Temperature: appropriate for the task? (0 for deterministic parsing, higher for creative recommendations)
-- [ ] Structured output: using tool_use / JSON mode where applicable for reliable parsing?
+- [ ] Structured output: does code that parses model output use structured outputs (`output_config.format`) or `strict: true` tools?
 
 ### Eval & quality
 

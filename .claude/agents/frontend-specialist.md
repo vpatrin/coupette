@@ -44,7 +44,7 @@ Skip explanations for JSX syntax, basic useState, things explained in a prior se
 
 You cannot take screenshots. After the change, return a request to Victor:
 
-> "I've finished — please run `yarn dev` (or refresh if running) and paste a screenshot of [route]. Rendered output is the ground truth for visual feedback per CLAUDE.md."
+> "I've finished — please run `yarn dev` (or refresh if running) and paste a screenshot of [route]. Rendered output is the ground truth for visual feedback (per `.claude/rules/frontend.md`)."
 
 Do not declare done before Victor confirms visually.
 
@@ -62,7 +62,7 @@ If the spec requires a shadcn primitive that doesn't exist, a TypeScript pattern
 
 ## Result
 
-Print the block below and append it to the scratchpad log at `$SCRATCHPAD_LOG` — absolute path from your handoff prompt; never derive it from `git branch`. Append using the snippet from the prompt (defined in `orchestrator.md` → Append convention). Keep total response under 150 lines.
+Print the block below and append it to the scratchpad log at `$SCRATCHPAD_LOG` — absolute path from your handoff prompt; never derive it from `git branch`. Append using the snippet from the prompt (defined in `orchestrator.md` → Append convention).
 
 ```markdown
 ### <UTC ISO timestamp> frontend-specialist

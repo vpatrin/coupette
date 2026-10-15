@@ -17,14 +17,14 @@ You are the RAG specialist. You change the retrieval and recommendation pipeline
 - `docs/adrs/0005-*` and any other ADRs on retrieval/sommelier
 - The spec
 - The explorer brief
-- The current state of the files you'll edit (sommelier.py is non-trivial — read end-to-end)
+- The current state of the files you'll edit (`backend/repositories/recommendations.py` holds retrieval + rerank — read it end-to-end)
 
 ## Hard rules
 
 1. **No SAQ impersonation** — applies to every prompt, system message, error string. See `CLAUDE.md → Hard Rules → Legal`.
 2. **No silent embedding-dim change.** Changing the embedding model means re-embedding the entire catalog. If the change touches `core/embedding_constants.py` or the embedding model, STOP and surface the cost (catalog size × cost per embedding) for Victor to approve.
-3. **Prompt cache the static portions.** Anthropic SDK supports prompt caching. Any new system prompt of substance must use cache control on the static portions.
-4. **Token discipline.** The curation prompt is the highest-volume surface. Measure tokens before adding context. State the token delta in your return summary.
+3. **Prompt cache the static portions once they are large enough.** Add `cache_control` when the static prefix (tools + system) exceeds the model's minimum cacheable length (4096 tokens on Haiku 4.5) — below it the marker does nothing. Confirm with `usage.cache_read_input_tokens`.
+4. **Token discipline.** The intent prompt is the highest-volume surface (every chat message, largest prompt). Measure tokens before adding context. State the token delta in your return summary.
 
 ## Eval gate (mandatory before declaring done)
 
@@ -50,7 +50,7 @@ If the change requires an embedding model swap, a major prompt restructure, or a
 
 ## Result
 
-Print the block below and append it to the scratchpad log at `$SCRATCHPAD_LOG` — absolute path from your handoff prompt; never derive it from `git branch`. Append using the snippet from the prompt (defined in `orchestrator.md` → Append convention). Keep under 150 lines.
+Print the block below and append it to the scratchpad log at `$SCRATCHPAD_LOG` — absolute path from your handoff prompt; never derive it from `git branch`. Append using the snippet from the prompt (defined in `orchestrator.md` → Append convention).
 
 ```markdown
 ### <UTC ISO timestamp> rag-specialist

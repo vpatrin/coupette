@@ -27,4 +27,4 @@ SAQ scraping is a legal grey zone in Canada. Approach chosen: sitemap-first (mos
 
 - Commands live in `scraper/scraper/commands/<name>.py`, dispatched from `__main__.py`
 - New CLI command → new file in `commands/`, register in `__main__.py`, add a Make target if interactively run
-- Embedding ingestion in `scraper/scraper/embed.py` + `scraper/scraper/db/embeddings.py` — coordinate with `backend/services/sommelier.py` if the contract changes
+- Embedding ingestion in `scraper/scraper/embed.py` + `scraper/scraper/db/embeddings.py` — coordinate with `backend/repositories/recommendations.py` (retrieval) if the contract changes

@@ -19,7 +19,7 @@ Input: a branch name, issue number, migration, or topic. Use `$ARGUMENTS` as the
 
 ## Context gathering
 
-Before reviewing, silently:
+Before reviewing:
 
 **Branch mode (default):**
 

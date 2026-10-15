@@ -35,11 +35,7 @@ For each open Dependabot PR with failing checks:
 
 These failures have a diagnosed root cause and a standard response — don't re-investigate, just apply the template:
 
-**fastapi 0.137+ with prometheus-fastapi-instrumentator (any version ≤8.0.0)**
-Symptom: `AttributeError: '_IncludedRouter' object has no attribute 'path'` in `test-backend` (`routing.py:55`).
-Cause: FastAPI 0.137.0 changed `router.routes` from a flat list to a tree containing `_IncludedRouter` container nodes; instrumentator's `get_route_name` assumes every element in that list is a real route with a `.path` attribute. This is unfixed in instrumentator 7.x AND 8.0.0 — 8.0.0 only migrated to starlette 1.x, it did not fix the router-tree traversal.
-Fix: wait for instrumentator ≥8.1.0 (or equivalent) to handle `_IncludedRouter` nodes, OR remove instrumentator and expose metrics via a lighter alternative.
-Action: post a comment on the PR with this explanation: "Blocked: prometheus-fastapi-instrumentator is incompatible with FastAPI 0.137.x (`_IncludedRouter` AttributeError). Not fixed in 8.0.0 — waiting for upstream fix. Leaving open for tracking." Report under "still red".
+None open. Add an entry when a diagnosed upstream break blocks several bumps.
 
 ## CVE clusters that can't go green individually
 
