@@ -8,10 +8,20 @@ interface WineCardProps {
   reason?: string
   storeNames?: Map<string, string>
   watchSlot?: ReactNode
+  cellarSlot?: ReactNode
   userRating?: TastingRatingOut | null
+  cellarQuantity?: number
 }
 
-function WineCard({ product, reason, storeNames, watchSlot, userRating }: WineCardProps) {
+function WineCard({
+  product,
+  reason,
+  storeNames,
+  watchSlot,
+  cellarSlot,
+  userRating,
+  cellarQuantity,
+}: WineCardProps) {
   const { t } = useTranslation()
   const origin = formatOrigin(product)
   const hasOnline = product.online_availability === true
@@ -80,7 +90,7 @@ function WineCard({ product, reason, storeNames, watchSlot, userRating }: WineCa
           </div>
         </div>
 
-        {/* Middle: region + grapes + user rating */}
+        {/* Middle: region + grapes + user rating + cellar badge */}
         <div className="ml-[18px] flex min-w-0 flex-col gap-1">
           {origin && (
             <span
@@ -98,9 +108,10 @@ function WineCard({ product, reason, storeNames, watchSlot, userRating }: WineCa
               {product.grape}
             </p>
           )}
-          {userRating && (
-            <p className="text-primary/70 font-mono text-[11px]">
-              {t('wineCard.yourRating', { rating: userRating.rating })}
+          {(userRating || !!cellarQuantity) && (
+            <p className="text-primary/70 flex gap-2 font-mono text-[11px]">
+              {userRating && <span>{t('wineCard.yourRating', { rating: userRating.rating })}</span>}
+              {!!cellarQuantity && <span>{t('cellar.inCellar', { count: cellarQuantity })}</span>}
             </p>
           )}
         </div>
@@ -112,7 +123,7 @@ function WineCard({ product, reason, storeNames, watchSlot, userRating }: WineCa
           </p>
         )}
 
-        {/* Bottom row: availability left, user rating + watch right */}
+        {/* Bottom row: availability left, cellar + watch actions right */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2">
             {hasOnline && (
@@ -123,7 +134,12 @@ function WineCard({ product, reason, storeNames, watchSlot, userRating }: WineCa
             )}
             {storeNode}
           </div>
-          {watchSlot}
+          {(cellarSlot || watchSlot) && (
+            <div className="flex shrink-0 items-center gap-2">
+              {cellarSlot}
+              {watchSlot}
+            </div>
+          )}
         </div>
       </div>
     </div>

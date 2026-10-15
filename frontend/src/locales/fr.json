@@ -377,7 +377,7 @@
     "collapseSidebar": "Réduire la barre latérale",
     "expandSidebar": "Agrandir la barre latérale",
     "journal": "Journal de dégustation",
-    "cellar": "Cellier"
+    "cellar": "Ma cave"
   },
   "userMenu": {
     "anonymous": "Anonyme",
@@ -429,5 +429,30 @@
     "pastWeek": "Cette semaine",
     "pastMonth": "Ce mois",
     "pastYear": "Cette année"
+  },
+  "cellar": {
+    "title": "Ma cave",
+    "add": "Ajouter à ma cave",
+    "addFailed": "Échec — réessayer",
+    "inCellar_one": "Dans ta cave",
+    "inCellar_other": "Dans ta cave (×{{count}})",
+    "bottles_one": "{{count}} bouteille",
+    "bottles_other": "{{count}} bouteilles",
+    "addedOn": "Ajoutée le {{date}}",
+    "increment": "Ajouter une bouteille",
+    "decrement": "Retirer une bouteille",
+    "remove": "Retirer de ma cave",
+    "removed": "{{name}} a quitté ta cave.",
+    "drankIt": "Tu l'as bue ?",
+    "logTasting": "Noter la dégustation",
+    "dismiss": "Non merci",
+    "emptyTitle": "Ta cave est vide",
+    "emptyDesc": "Ajoute les bouteilles que tu as à la maison depuis le catalogue ou une discussion.",
+    "emptyCta": "Parcourir le catalogue",
+    "delisted": "Produit retiré du catalogue (SKU : {{sku}})",
+    "failedToLoad": "Impossible de charger ta cave",
+    "retry": "Réessayer",
+    "failedToUpdate": "Impossible de mettre à jour ta cave",
+    "dismissError": "Fermer"
   }
 }

@@ -62,4 +62,19 @@ describe('WineCard', () => {
     render(<WineCard product={product()} userRating={{ rating: 88, note_id: 1 }} />)
     expect(screen.getByText(/88/)).toBeInTheDocument()
   })
+
+  it('renders the cellar badge with ×3 when cellarQuantity is 3', () => {
+    render(<WineCard product={product()} cellarQuantity={3} />)
+    expect(screen.getByText('In your cellar (×3)')).toBeInTheDocument()
+  })
+
+  it('renders the cellar badge without a count when cellarQuantity is 1', () => {
+    render(<WineCard product={product()} cellarQuantity={1} />)
+    expect(screen.getByText('In your cellar')).toBeInTheDocument()
+  })
+
+  it('omits the cellar badge when the SKU is not in the cellar', () => {
+    render(<WineCard product={product()} cellarQuantity={undefined} />)
+    expect(screen.queryByText(/In your cellar/)).not.toBeInTheDocument()
+  })
 })

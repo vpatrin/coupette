@@ -5,13 +5,14 @@ import {
   ArrowSquareOutIcon as ArrowSquareOut,
   HeartIcon as Heart,
   NotePencilIcon as NotePencil,
-  ChartDonutIcon as ChartDonut,
   ArrowLeftIcon as ArrowLeft,
 } from '@phosphor-icons/react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useApiClient, ApiError } from '@/lib/api'
 import type { ProductOut, UserStorePreferenceOut, WatchWithProduct } from '@/lib/types'
 import { CATEGORY_DOT, formatOrigin } from '@/lib/utils'
+import AddToCellarButton from '@/components/AddToCellarButton'
+import { useCellarQuantities } from '@/hooks/useCellar'
 
 interface WineDetailPanelProps {
   sku: string | null
@@ -27,6 +28,7 @@ function WineDetailPanel({ sku, onClose }: WineDetailPanelProps) {
   const { t } = useTranslation()
   const { user } = useAuth()
   const apiClient = useApiClient()
+  const cellarQuantities = useCellarQuantities()
 
   const userId = `user:${user?.id}`
 
@@ -245,16 +247,17 @@ function WineDetailPanel({ sku, onClose }: WineDetailPanelProps) {
             title={t('userMenu.soon')}
             className="border-border text-muted-foreground/20 flex h-7 w-7 cursor-not-allowed items-center justify-center rounded-lg border"
           >
-            <ChartDonut size={13} />
-          </button>
-          <button
-            type="button"
-            disabled
-            title={t('userMenu.soon')}
-            className="border-border text-muted-foreground/20 flex h-7 w-7 cursor-not-allowed items-center justify-center rounded-lg border"
-          >
             <NotePencil size={13} />
           </button>
+        </div>
+
+        <div className="border-border/50 flex items-center gap-3 border-b px-5 py-3">
+          <AddToCellarButton product={p} />
+          {!!cellarQuantities.get(p.sku) && (
+            <span className="text-primary/70 font-mono text-[11px]">
+              {t('cellar.inCellar', { count: cellarQuantities.get(p.sku) })}
+            </span>
+          )}
         </div>
 
         {details.length > 0 && (
