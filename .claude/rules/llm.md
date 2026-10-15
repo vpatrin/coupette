@@ -19,8 +19,8 @@ Claude Haiku 4.5 (`claude-haiku-4-5-20251001`) for all runtime surfaces. Chosen 
 | Surface | File | Purpose |
 |---|---|---|
 | Intent parsing | `backend/services/intent.py` | NL → structured query (color, region, price, food pairing) |
-| Sommelier | `backend/services/sommelier.py` | Rank + explain candidate wines from RAG retrieval |
-| Curation | `backend/services/curation.py` | LLM-backed catalog curation |
+| Sommelier | `backend/services/sommelier.py` | Freeform wine Q&A (`wine_chat` intent) — no retrieval, no product names |
+| Curation | `backend/services/curation.py` | Per-wine reasons + summary for a retrieved recommendation set |
 
 ## Hard rule — SAQ impersonation (also in CLAUDE.md)
 
@@ -31,8 +31,8 @@ Never write user-facing text implying affiliation with SAQ. Applies to system pr
 
 ## Cost discipline
 
-- Curation prompt is the highest-volume surface. Measure tokens before adding context.
-- Use prompt caching (`anthropic` SDK) for the static portions of system prompts.
+- Intent parsing is the highest-volume surface: it runs on every chat message and carries the largest prompt. Measure tokens before adding context to any prompt.
+- Prompt caching only works once the static prefix (tools + system) exceeds the model's minimum cacheable length — 4096 tokens on Haiku 4.5; today's prompts are below it. Add `cache_control` when a prompt crosses that line and confirm `usage.cache_read_input_tokens` > 0.
 - Track per-request token usage in logs.
 
 ## Evaluation

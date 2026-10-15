@@ -44,7 +44,7 @@ Read the spec. Look at which directories the spec says will change.
 
 - Touches `frontend/src/` → `frontend-specialist`
 - Touches `scraper/` → `scraper-specialist`
-- Touches RAG surface (`backend/services/sommelier.py`, `backend/services/recommendations.py`, `backend/services/intent.py`, embedding pipeline) → `rag-specialist`
+- Touches RAG surface (`backend/services/sommelier.py`, `backend/services/recommendations.py`, `backend/services/intent.py`, `backend/services/curation.py`, embedding pipeline) → `rag-specialist`
 - Touches JWT, OAuth, or waitlist → `auth-specialist`
 - Touches `backend/` (non-RAG, non-auth), `bot/`, `core/`, or cross-cuts → `implementer` (loads `.claude/rules/backend.md`, `.claude/rules/bot.md` etc. itself)
 
@@ -177,7 +177,7 @@ After documenter: the worktree path + a suggested conventional commit message. *
 After pr-creator: the PR URL + a one-line **Pipeline friction** note — anything that confused an agent this run (bad path, ambiguous instruction, missing tool), or "none".
 On any BLOCK from reviewer or any BLOCKED status from a subagent: stop, report the blocker, ask the user how to proceed.
 
-Keep each user-facing report under 30 lines. The scratchpad has the details if Victor wants to dig in.
+Keep each user-facing report scannable: decisions and blockers first. The scratchpad has the details if Victor wants to dig in.
 
 ## Do not
 

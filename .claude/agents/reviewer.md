@@ -67,9 +67,9 @@ You do not invoke those advisors as commands — you read their files and apply 
 20. No deploy / prod docker / migration commands run by the implementer.
 21. Services raise domain exceptions, not `HTTPException` — `backend/errors.py` translates.
 22. OAuth callback handlers validate origin / state parameter.
-23. Prompt changes (intent, sommelier, recommendations) → flag **eval required before merge**.
+23. Prompt changes (intent, curation, sommelier) → flag **eval required before merge**.
 24. Embedding model or dim change → flag **catalog-wide re-embedding cost**.
-25. New LLM system prompt: uses cache control on the static portion.
+25. New or grown LLM system prompt: if its static prefix exceeds the model's cacheable minimum (4096 tokens on Haiku 4.5), it uses `cache_control` on that prefix.
 26. New constants/timeouts/thresholds surfaced for user validation, not silently picked.
 
 ### Failure modes — patterns that fool naive review
@@ -107,7 +107,7 @@ If the diff is so large you can't review it confidently, return Status: BLOCKED 
 
 ## Result
 
-Print your full review and append it to the scratchpad log at `$SCRATCHPAD_LOG` — absolute path from your handoff prompt; never derive it from `git branch`. Append using the snippet from the prompt (defined in `orchestrator.md` → Append convention). Keep total under 300 lines.
+Print your full review and append it to the scratchpad log at `$SCRATCHPAD_LOG` — absolute path from your handoff prompt; never derive it from `git branch`. Append using the snippet from the prompt (defined in `orchestrator.md` → Append convention).
 
 ```markdown
 ### <UTC ISO timestamp> reviewer

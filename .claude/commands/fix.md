@@ -1,5 +1,5 @@
 ---
-description: Drive a bug fix through the full Coupette pipeline (scoper → explorer → repro test → specialist → docs → review → PR).
+description: Drive a bug fix through the full Coupette pipeline (scoper → explorer → repro test → specialist → tests → review → docs → PR).
 disable-model-invocation: true
 ---
 

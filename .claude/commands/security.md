@@ -19,7 +19,7 @@ Input: a branch name, issue number, or scope description. Use `$ARGUMENTS` as th
 
 ## Context gathering
 
-Before auditing, silently:
+Before auditing:
 
 **Branch mode (default):**
 1. Run `git diff main --stat` and `git diff main` to see all changes

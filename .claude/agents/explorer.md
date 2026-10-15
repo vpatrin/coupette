@@ -15,7 +15,7 @@ A spec file path. Read it first.
 
 - `.claude/scratchpad/<branch>/spec.md` + `log.md` (Contract section is your primary brief)
 - The matching `.claude/rules/*.md` for every surface listed in the spec
-- The matching `.claude/rules/*.md` for the code types involved (api, db, migration, pydantic, testing, frontend-component, i18n)
+- The matching `.claude/rules/*.md` for the code types involved (e.g. `migrations.md` for model changes, `testing.md` for tests)
 - The actual files listed in the spec's "Surfaces touched" table
 - One level of callers/dependencies for each touched file (`grep -r "from <module>"` etc.)
 - Existing tests that cover the touched surface
@@ -51,7 +51,7 @@ Things the spec doesn't answer but the implementer will hit.
 
 ## Rules
 
-- Total brief under 200 lines.
+- Brief what the implementer needs to start; skip what the files already make obvious.
 - Cite file paths and line numbers for every claim. Don't write "there's a helper for this" — write `backend/services/auth.py:42`.
 - If the spec asks for something that conflicts with an existing pattern or ADR, flag it loudly in **Gotchas**.
 - Do not write code suggestions. Your job is to brief, not design.
@@ -62,7 +62,7 @@ If the spec touches a surface you can't access (missing repo state, files don't 
 
 ## Result
 
-Write the full brief to the response. Also append the summary block below to the scratchpad log at `$SCRATCHPAD_LOG` — absolute path from your handoff prompt; never derive it from `git branch`. Append using the snippet from the prompt (defined in `orchestrator.md` → Append convention). Keep total response under 200 lines.
+Write the full brief to the response. Also append the summary block below to the scratchpad log at `$SCRATCHPAD_LOG` — absolute path from your handoff prompt; never derive it from `git branch`. Append using the snippet from the prompt (defined in `orchestrator.md` → Append convention).
 
 ```markdown
 ### <UTC ISO timestamp> explorer

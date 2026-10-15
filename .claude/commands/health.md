@@ -8,15 +8,15 @@ Victor is a senior backend engineer on his first React project. Frame findings i
 
 Parse `$ARGUMENTS` for mode:
 
-- **Surface mode (default):** `/health` or `/health --surface` — lightweight vital signs using the surface checklist. Fast, 150-line output cap.
-- **Full mode:** `/health --full` — deep audit using the full checklist. Thorough, 300-line output cap.
-- **Focused mode:** any other arguments (e.g. `/health auth flow`, `/health data layer`, `/health AI cost`) — audit **exclusively through the lens of the given topic**, but still check all three areas (security, data, AI) where that topic intersects. Produce the same dashboard format, but scoped to findings relevant to that topic.
+- **Surface mode (default):** `/health` or `/health --surface` — lightweight vital signs using the surface checklist. Fast pulse check.
+- **Full mode:** `/health --full` — deep audit using the full checklist. Thorough.
+- **Focused mode:** any other arguments (e.g. `/health auth flow`, `/health data layer`, `/health AI cost`) — audit **exclusively through the lens of the given topic**, but still check all four areas (QA, security, data, AI) where that topic intersects. Produce the same dashboard format, but scoped to findings relevant to that topic.
 
 Surface mode is for quick pulse checks (weekly, before a new phase). Full mode replaces running `/security --full` + `/data --full` + `/ai --full` individually — same depth, one synthesized report.
 
 ## Context gathering
 
-Before auditing, silently:
+Before auditing:
 
 1. Run `git log --oneline -20` to understand recent activity
 2. Run `git diff main --stat` to see if there's uncommitted branch work
@@ -60,7 +60,7 @@ Quick vital signs — not exhaustive. Use this for the default mode.
 ### AI — pipeline integrity & cost
 
 1. Read `backend/services/intent.py`, `backend/services/recommendations.py`, `backend/repositories/recommendations.py`
-2. Read any system prompts in `backend/services/` or `backend/prompts/`
+2. Read the system prompts in `backend/services/` (`intent.py`, `curation.py`, `sommelier.py`)
 3. Check: LLM error handling? (429, 500, timeout → graceful degradation)
 4. Check: prompt injection vectors? (user input properly delimited)
 5. Check: embedding dimensions match model? pgvector index type appropriate?
@@ -203,4 +203,3 @@ Estimate per-query AI cost based on current prompt sizes and model pricing. Flag
 - Prioritize findings that compound across areas (untested + insecure > just untested)
 - Compare against the project's own standards (CLAUDE.md Definition of Done), not generic best practices
 - If an area has no AI code yet or no frontend yet, grade based on what exists — don't penalize for unbuilt features
-- Surface mode: keep output under 150 lines. Full mode: keep output under 300 lines

@@ -21,8 +21,8 @@ and parameters you can change. Each lever has different impact and risk.
 
 ## 3. Embedding Text Composition
 
-**File:** `scraper/src/embed.py`
-**What:** `compose_embedding_text()` — builds the text string that gets embedded per product
+**File:** `scraper/scraper/embed.py`
+**What:** `build_embedding_text()` — builds the text string that gets embedded per product
 **Impact:** What the embedding captures determines semantic search quality
 **When to change:** Low relevance on taste/style queries despite correct intent parsing
 **Risk:** High — requires re-embedding all products (`make embed-sync`), ~30 min + API cost
