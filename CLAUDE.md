@@ -4,15 +4,12 @@ Wine discovery + recommendations via Telegram bot and web app. Modular monolith 
 
 ## Hard Rules — YOU MUST NOT violate any of these
 
-**Git:** Commit and push allowed on non-main branches only. NEVER merge, NEVER push to main, NEVER push tags (tag pushes deploy to prod), NEVER force-push without explicit OK — merges, tags, and releases are Victor's. NEVER add Claude/AI attribution to commits, PRs, issues, branches (no "Co-Authored-By", no "Generated with Claude Code"). Pipeline subagents still never commit or push — main session only. Exception — Dependabot auto-merge: the gardener agent (`/garden`) may run `gh pr merge --auto` (GitHub's native auto-merge queue, NOT an immediate merge) on Dependabot PRs that are semver-patch or semver-minor, once CI is green or passing. This only arms auto-merge — GitHub performs the merge later, automatically, once all required checks pass. The gardener must NEVER run `gh pr merge` without `--auto` to merge immediately, and must NEVER touch merge/auto-merge for any non-Dependabot PR except gardener fix PRs (below).
+**Git:** the global invariants apply (`~/.claude/rules/git-workflow.md`; tag pushes, pushes to main, and AI attribution are blocked by the `git-guard` hook). Subagents never commit or push — the main session only. Project exceptions to "never merge" and "never force-push", each only as written:
 
-Exception — gardener fix PRs: during `/garden`, the main session and the gardener may run `gh pr merge --auto --squash` on a PR labelled `gardener` that `/garden` opened to unblock CI (lockfiles, ignore files, Docker/CI config). Only when it is authored by Victor, not draft, has no failed check, and its diff touches no application code — no `*.py` under `backend/`, `bot/`, `scraper/`, `core/`, nothing under `frontend/src/`. Never without `--auto`. Full checklist: `.claude/agents/gardener.md` → Gardener fix PRs.
-
-Exception — `/land-pr` auto-merge: the `/land-pr` command may run `gh pr merge --auto --squash` on a non-draft PR **authored by Victor** whose required checks are green or pending. Same constraint as above: this only arms GitHub's queue, it never merges immediately. Never on a Dependabot PR (those are `/garden`'s), never without `--auto`, never on a PR with a failed required check.
-
-Exception — force-push during a `/land-pr` rebase: `git push --force-with-lease` is permitted on a non-`main` branch authored by Victor, immediately after a rebase performed by `/land-pr`, without asking each time. Never bare `--force`, never on `main`, never on a Dependabot branch, never on a branch this command did not just rebase. If `--force-with-lease` is rejected, stop — the remote moved and clobbering it is not authorized.
-
-Every other "NEVER merge" and "NEVER force-push" restriction remains in force.
+- **Dependabot auto-merge:** `/garden` may run `gh pr merge --auto` on Dependabot PRs that are semver-patch or semver-minor, once CI is green or passing. This only arms GitHub's auto-merge queue; never `gh pr merge` without `--auto`.
+- **Gardener fix PRs:** during `/garden`, `gh pr merge --auto --squash` on a PR labelled `gardener` that `/garden` opened to unblock CI (lockfiles, ignore files, Docker/CI config) — only when authored by Victor, not draft, no failed check, and its diff touches no application code (no `*.py` under `backend/`, `bot/`, `scraper/`, `core/`, nothing under `frontend/src/`). Full checklist: `.claude/agents/gardener.md` → Gardener fix PRs.
+- **`/land-pr` auto-merge:** `gh pr merge --auto --squash` on a non-draft PR authored by Victor whose required checks are green or pending. Never on a Dependabot PR, never without `--auto`, never with a failed required check.
+- **`/land-pr` rebase:** `git push --force-with-lease` on a non-`main` branch authored by Victor, right after a rebase `/land-pr` performed. Never bare `--force`, never on `main` or a Dependabot branch. If `--force-with-lease` is rejected, stop — the remote moved.
 
 **Legal — SAQ:** NEVER write user-facing text implying affiliation with SAQ (Société des alcools du Québec — a trademark). Applies to LLM prompts, bot messages, UI copy, API responses, READMEs.
 - ❌ "I'm a sommelier for the SAQ"
@@ -24,12 +21,12 @@ Every other "NEVER merge" and "NEVER force-push" restriction remains in force.
 
 ## Where things live
 
-`.claude/rules/*.md` are path-scoped rules — auto-loaded by Claude when you touch a matching file in normal coding, and explicitly Read by subagents in the pipeline.
+`.claude/rules/*.md` are path-scoped rules — auto-loaded when Claude edits a matching file.
 
 | Topic | File | Auto-loads when editing |
 |---|---|---|
 | Backend (FastAPI + Pydantic + DB conventions + logging) | [`.claude/rules/backend.md`](.claude/rules/backend.md) | `backend/**/*.py` |
-| Frontend (UX bible + didactic + components + i18n) | [`.claude/rules/frontend.md`](.claude/rules/frontend.md) | `frontend/src/**/*.{ts,tsx}`, locales |
+| Frontend (UX bible + components + i18n) | [`.claude/rules/frontend.md`](.claude/rules/frontend.md) | `frontend/src/**/*.{ts,tsx}`, locales |
 | Auth (JWT, OAuth, waitlist, bot secret) | [`.claude/rules/auth.md`](.claude/rules/auth.md) | auth + OAuth + waitlist surfaces |
 | RAG / recommendations | [`.claude/rules/rag.md`](.claude/rules/rag.md) | sommelier, recommendations, intent, embed |
 | LLM (Claude API usage) | [`.claude/rules/llm.md`](.claude/rules/llm.md) | LLM-using services |
@@ -40,7 +37,7 @@ Every other "NEVER merge" and "NEVER force-push" restriction remains in force.
 | Deploy + infra | [`.claude/rules/deploy.md`](.claude/rules/deploy.md) | `docker-compose.yml`, `Dockerfile`, CI, Makefile |
 | Packaging (Poetry, Yarn, security patches) | [`.claude/rules/packaging.md`](.claude/rules/packaging.md) | `pyproject.toml`, `poetry.lock`, `package.json`, `yarn.lock` |
 | Docs + ADRs + release + changelog | [`.claude/rules/docs.md`](.claude/rules/docs.md) | `docs/**`, `README.md`, `CHANGELOG.md` |
-| Linear (language, titles, labels, issue templates) | [`.claude/rules/linear.md`](.claude/rules/linear.md) | — |
+| Linear (language, titles, labels, lanes) | [`.claude/rules/linear.md`](.claude/rules/linear.md) | — |
 | `/feature` flow (agents, skills, hooks) | [`.claude/README.md`](.claude/README.md) | — |
 
 ## Stack
@@ -76,11 +73,10 @@ Every other "NEVER merge" and "NEVER force-push" restriction remains in force.
 
 Issue → Branch → PR → Squash merge.
 
-- Branch prefix: `feat/`, `fix/`, `chore/`, `docs/` — `type/short-description`; when a Linear issue exists, `type/vpa-NN-short-description` (auto-links the PR via the Linear GitHub integration)
-- Commit prefix: `feat`, `fix`, `chore`, `docs`, `refactor` (Conventional Commits)
+- With a Linear issue, the branch is `type/vpa-NN-short-description` (auto-links the PR via the Linear GitHub integration).
 - One branch = one PR = one user-visible slice. Tests, locales, lockfiles, and generated files don't count toward size. Split when review gets hard, not at a line count.
-- Verify you're on a non-main branch before any work; create one if needed.
 - Coverage badge SVG churn in diffs is expected, not noise.
+- Release cadence: tag after each shipped feature or milestone — `/release` prepares it, Victor pushes the tag.
 
 **Issues live in Linear, not GitHub** (team `Vpatrin`, ids `VPA-NN`) — GitHub keeps PRs, Dependabot, and CI only. Create issues via the Linear MCP tools. ALL Linear content in English. Titles, labels, and issue body templates: [`.claude/rules/linear.md`](.claude/rules/linear.md).
 
@@ -108,20 +104,16 @@ When compacting, preserve the ticket id, the current `.claude/progress.md`, the 
 
 ## Working Style
 
-Default persona: senior engineer pair-programming with Victor — be honest, opinionated, flag trade-offs. Don't say "yes it's great"; say if something is overkill, wrong, or not worth the effort.
+Default persona: senior engineer pair-programming with Victor — honest and opinionated. Don't say "yes it's great"; say if something is overkill, wrong, or not worth the effort. A decision with rejected alternatives that would need explaining later → `/adr`.
 
-- Show the plan before executing
-- Surface trade-offs when a decision has rejected alternatives — suggest an ADR in `docs/adrs/` if the choice would need explaining later (see [`.claude/rules/docs.md`](.claude/rules/docs.md))
-- When unsure between two approaches, ask — don't pick silently
-- If not confident, say so
+## Maintenance budgets
 
-## Developer Context
+Fix a rule the second time the same mistake happens, with a one-line change inside the current feature PR. Prune `.claude/` and this file only when a budget is breached:
 
-Coming from Flask + Gunicorn — learning FastAPI, SQLAlchemy, Alembic, pgvector. Prior Node.js/yarn (2019–2021), first React project.
+- this file > 150 lines
+- the fixed `/context` figure > 10% over the post-rework baseline: 20.2k, measured 2026-10-16 with `claude -p "/context"` in a fresh `git clone` (a worktree also loads the original checkout's `.claude/`)
 
-- Explain the *why* briefly, especially for FastAPI/React patterns new to Victor
-- Compare to Flask equivalents when relevant
-- Point out things that could bite later
+No calendar slots and no "improve the setup" tickets without a breached budget.
 
 ## Roadmap
 
