@@ -15,9 +15,9 @@ You are auditing the agentic setup, not the product code. Run every check read-o
 
 4. **Size / scope.** Any rule file whose content spans clearly unrelated concerns, or any agent/command file that has grown past what its job needs. Propose split or trim with the seam named.
 
-5. **Cross-file consistency.** CLAUDE.md "Where things live" table ↔ actual `rules/` files; `.claude/README.md` command tables ↔ actual `commands/` files; orchestrator routing ↔ existing specialists. Anything listed but missing, or existing but unlisted.
+5. **Cross-file consistency.** CLAUDE.md "Where things live" table ↔ actual `rules/` files; `.claude/README.md` command and skill tables ↔ actual `commands/` and `skills/` files; review checklists ↔ the rules they enforce. Anything listed but missing, or existing but unlisted.
 
-6. **Pipeline friction.** Grep `docs/session-logs/*.md` for "Pipeline friction" and "Agent rules updated" lines, plus NEEDS-REVIEW flags naming `.claude/` files. Aggregate across runs — a friction note appearing twice is a bug in the pipeline docs, not bad luck.
+6. **Pipeline friction.** Grep merged PR bodies (`gh pr list --state merged --json body`) for "Harness friction" lines naming `.claude/` files. Aggregate across runs — a friction note appearing twice is a bug in the pipeline docs, not bad luck.
 
 ## Output
 

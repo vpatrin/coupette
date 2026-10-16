@@ -6,6 +6,9 @@ set -e
 
 echo "🔍 Running pre-push checks..."
 
+# Local main is often stale in worktrees; compare against origin/main when it exists.
+BASE=$(git merge-base origin/main HEAD 2>/dev/null || echo main)
+
 echo ""
 echo "📦 Checking lock files..."
 (cd backend && poetry check --lock)
@@ -15,8 +18,8 @@ echo "📦 Checking lock files..."
 
 echo ""
 echo "🗄️  Checking migration coverage..."
-MODELS_CHANGED=$(git log main..HEAD -1 --format="%H" -- 'core/db/models*.py' 'core/db/base.py')
-MIGRATION_PRESENT=$(git log main..HEAD -1 --format="%H" -- 'core/alembic/versions/')
+MODELS_CHANGED=$(git log $BASE..HEAD -1 --format="%H" -- 'core/db/models*.py' 'core/db/base.py')
+MIGRATION_PRESENT=$(git log $BASE..HEAD -1 --format="%H" -- 'core/alembic/versions/')
 
 if [ -n "$MODELS_CHANGED" ] && [ -z "$MIGRATION_PRESENT" ]; then
   echo "❌ Model changes detected without a corresponding migration!"
@@ -26,7 +29,7 @@ fi
 
 # Detect which services changed on this branch
 TESTABLE=(backend scraper bot)
-changed_dirs=$(git diff --name-only main..HEAD | cut -d/ -f1 | sort -u)
+changed_dirs=$(git diff --name-only $BASE..HEAD | cut -d/ -f1 | sort -u)
 
 to_test=()
 core_changed=false

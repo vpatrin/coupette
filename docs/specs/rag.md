@@ -62,7 +62,7 @@ Arômes: {portrait_arome}
 
 **Not embedded:** price, availability, rating — these go in WHERE clauses. Embedding price would conflate semantic similarity with price proximity.
 
-**Model:** `multilingual-e5-large` (1024-d). Runs on CPU for batch embedding.
+**Model:** OpenAI `text-embedding-3-large`, truncated to 1536 dims (`core/embedding_constants.py`). Catalog and query embeddings both go through `core/embedding_client.py`.
 
 **Change detection:** `attribute_hash` + `embedded_hash` on Product. `--embed-sync` (in scraper) recomputes embeddings where hashes differ.
 
@@ -127,10 +127,11 @@ User: {query}
 |---|---|
 | Embedding client wrapper | `core/embedding_client.py` |
 | Embedding dim constant | `core/embedding_constants.py` |
-| Batch embed CLI | `scraper/commands/embed.py` (`make embed-sync`) |
+| Batch embed CLI | `scraper/scraper/commands/embed.py` (`make embed-sync`) |
 | pgvector upsert | `scraper/scraper/db/embeddings.py` |
 | Recommendation orchestration | `backend/services/recommendations.py` |
-| Sommelier service (curation + wine_chat persona) | `backend/services/sommelier.py` |
+| Curation (LLM reasons + summary) | `backend/services/curation.py` |
+| Sommelier service (wine_chat persona) | `backend/services/sommelier.py` |
 | Intent parsing | `backend/services/intent.py` |
 | Repository (pgvector query) | `backend/repositories/recommendations.py` |
 | Tests | `backend/tests/test_recommendations*.py` |
@@ -141,10 +142,9 @@ User: {query}
 ## Dependencies
 
 - **pgvector extension** in PostgreSQL — vector storage + similarity ops
-- **`multilingual-e5-large`** (1024-d) — embedding model, runs CPU batch
+- **OpenAI `text-embedding-3-large`** (1536-d) — embedding model for catalog and queries
 - **Claude Haiku 4.5** — curation + (optional) intent parsing
 - **Scraper-owned ingestion** — `scraper/scraper/embed.py` writes embeddings; backend only reads
-- **OpenAI `text-embedding-3-large`** — used by `chat.py` for query embeddings (note: catalog uses e5; query uses OpenAI — historical mismatch worth flagging)
 
 ## Cross-cutting concerns
 
@@ -168,7 +168,7 @@ User: {query}
 
 ### Memory footprint
 
-~30.9k × 1024 dims × 4 bytes = **~126 MB** in pgvector. Well within the 4GB VPS budget.
+~30.9k × 1536 dims × 4 bytes = **~190 MB** in pgvector. Well within the 4GB VPS budget.
 
 ## Operational notes
 
@@ -177,13 +177,9 @@ User: {query}
 **Embedding lifecycle:**
 - Initial population: `make embed-sync` after first catalog ingest
 - Update: `make embed-sync` runs after monthly scrape — `--availability-check` does NOT touch embeddings
-- Re-embed all: change `multilingual-e5-large` model name or composite text format → all `embedded_hash` ≠ `attribute_hash` → full recompute on next `make embed-sync` (~30 min)
+- Re-embed all: change the embedding model (`core/embedding_constants.py`) or composite text format → all `embedded_hash` ≠ `attribute_hash` → full recompute on next `make embed-sync` (~30 min)
 
-**Hard rules (from [`.claude/rules/rag.md`](../../.claude/rules/rag.md)):**
-1. No SAQ impersonation in prompts/messages/errors
-2. Embedding-dim or model change → surface re-embedding cost before proceeding
-3. Prompt caching on static portions of system prompts
-4. Eval gate (`make eval`) required before merging prompt or retrieval changes
+**Hard rules** (SAQ impersonation, re-embedding cost, prompt caching, token discipline, eval gate): [`.claude/rules/rag.md`](../../.claude/rules/rag.md).
 
 **Eval framework** — see `backend/benchmarks/eval/`. LLM-as-judge (Sonnet evaluates Haiku's output against rubric):
 - 20 MW-quality benchmark queries
@@ -196,8 +192,6 @@ User: {query}
 - **Wine-scoped** — only wine products embedded (vin, champagne/mousseux, porto/fortifié, saké)
 - **Montreal MVP** — in-store availability for Montreal stores only (~64 consumer stores)
 - **Bilingual** — FR/EN handled natively by embedding model + Claude
-
-**Known mismatch:** catalog embedded with `multilingual-e5-large` (1024-d); query in chat embedded with OpenAI `text-embedding-3-large` (3072-d). Worth aligning — vector spaces don't compose. Flag for an ADR if/when addressed.
 
 ## Related
 

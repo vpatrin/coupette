@@ -13,14 +13,7 @@ The bot has **no database access**. It calls the backend API via `bot/bot/api_cl
 
 ## Structure
 
-| File/folder | Purpose |
-|---|---|
-| `bot/bot/handlers/` | One file per command/flow — `start.py`, `watch.py`, `mystores.py`, etc. |
-| `bot/bot/api_client.py` | Single httpx client — all backend calls go through here |
-| `bot/bot/formatters.py` | Message formatting — keep presentation out of handlers |
-| `bot/bot/keyboards.py` | Reply keyboards (`MAIN_MENU`, location prompt) + `InlineKeyboardMarkup` builders |
-| `bot/bot/middleware.py` | Pre-handler gates — backend-verified access check (cached 1h), per-user rate limit |
-| `bot/bot/app.py` | Application bootstrap — registers handlers |
+File map and backend endpoints: [`docs/specs/bot.md`](../../docs/specs/bot.md). Presentation stays in `formatters.py`, keyboards in `keyboards.py`, pre-handler gates in `middleware.py` — handlers stay thin.
 
 ## Handler conventions
 

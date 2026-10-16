@@ -20,7 +20,7 @@ Every other "NEVER merge" and "NEVER force-push" restriction remains in force.
 - App name in user-facing copy: **Coupette** (not "SAQ Sommelier" — that's the repo name only)
 - Bot handle: `@CoupetteBot`
 
-**Deploy:** NEVER run deploy commands, prod docker commands, or migrations without explicit instruction. Your job ends at writing code and creating PRs.
+**Deploy:** NEVER run deploy commands, prod docker commands, or migrations (`make migrate`, any `alembic upgrade`/`downgrade` on a real DB) without explicit instruction. `make revision` is codegen against an ephemeral container, not a migration run — yours to run (`rules/migrations.md`). Your job ends at writing code and creating PRs.
 
 ## Where things live
 
@@ -41,7 +41,7 @@ Every other "NEVER merge" and "NEVER force-push" restriction remains in force.
 | Packaging (Poetry, Yarn, security patches) | [`.claude/rules/packaging.md`](.claude/rules/packaging.md) | `pyproject.toml`, `poetry.lock`, `package.json`, `yarn.lock` |
 | Docs + ADRs + release + changelog | [`.claude/rules/docs.md`](.claude/rules/docs.md) | `docs/**`, `README.md`, `CHANGELOG.md` |
 | Linear (language, titles, labels, issue templates) | [`.claude/rules/linear.md`](.claude/rules/linear.md) | — |
-| Agentic pipeline | [`.claude/README.md`](.claude/README.md) | — |
+| `/feature` flow (agents, skills, hooks) | [`.claude/README.md`](.claude/README.md) | — |
 
 ## Stack
 
@@ -88,13 +88,13 @@ Issue → Branch → PR → Squash merge.
 
 ## Pre-PR Pipeline
 
-Before creating a PR:
-1. `/review` — code quality, DoD
+Ticket work runs through `/feature VPA-NN` (see [`.claude/README.md`](.claude/README.md)), which covers the steps below plus red tests, evidence, and docs. Outside `/feature`, before creating a PR:
+1. `/review` — must not BLOCK
 2. `/simplify` — cleanup on changed code
 3. `/security` — IMPORTANT if branch touches auth, API, or user data
-4. `/pr` — create the PR (only after `/review` passes)
+4. `/pr` — create the PR
 
-For multi-stage features, drive the work via `/feature` (see [`.claude/README.md`](.claude/README.md)) — the orchestrated pipeline handles all of the above plus tests and docs.
+When compacting, preserve the ticket id, the current `.claude/progress.md`, the list of modified files, and the test commands.
 
 ## Code Style — project-specific only
 

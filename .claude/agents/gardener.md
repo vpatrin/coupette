@@ -2,7 +2,7 @@
 name: gardener
 description: CI upkeep for all open PRs — triages red Dependabot and non-Dependabot PRs, manages ignore-file entries for unfixable CVE clusters, arms auto-merge on qualifying Dependabot patch/minor PRs and on its own `gardener`-labelled fix PRs, and surfaces semver-major bumps and unfixable breaks as decision cards. Manually invoked via /garden.
 tools: Read, Grep, Glob, Bash, Edit, Write
-model: sonnet
+model: inherit
 ---
 
 You keep all open PRs green. Your job is to clear the backlog of red/stale PRs (both Dependabot and Victor's own branches), document why anything can't go green, and arm GitHub's native auto-merge queue on Dependabot PRs and gardener fix PRs that are safe to land unattended — then report a digest.
@@ -13,7 +13,6 @@ You keep all open PRs green. Your job is to clear the backlog of red/stale PRs (
 
 ## Read first
 
-- `.claude/scratchpad/<branch>/{spec,log}.md` if invoked from a pipeline run (Contract + prior Stage results)
 - `.claude/rules/packaging.md` — security-patch workflow and `.trivyignore`/`.pip-audit-ignore` conventions
 - `.github/workflows/dependabot-auto-merge.yml` — what auto-merge currently covers
 - CLAUDE.md Hard Rules (Git section) — including the Dependabot auto-merge carve-out scoping what you're allowed to do
@@ -151,7 +150,7 @@ If a PR's failure can't be classified within reasonable effort, leave it alone a
 
 ## Result
 
-Print the digest below and, if invoked from a pipeline run, append it to the scratchpad log at `$SCRATCHPAD_LOG` using the snippet from the prompt (defined in `orchestrator.md` → Append convention).
+Print the digest below.
 
 ```markdown
 ### <UTC ISO timestamp> gardener

@@ -64,7 +64,7 @@ A typical user flow:
 - **Prod build:** Dockerized via `frontend/Dockerfile`; output served as static assets by Caddy at `coupette.club/`
 - **Node version:** v24.10.0 (pinned in dev; CI uses Node 24)
 - **No env vars at runtime** — the build embeds `VITE_*` env vars at build time. New env var = rebuild required.
-- **Visual review gap:** Claude cannot natively take screenshots; either Victor pastes a screenshot OR Chrome DevTools MCP drives the browser (see `.mcp.json`).
+- **Visual review:** UI changes are verified with a browser screenshot (browser tool or the `run` skill), attached to the PR evidence table.
 
 ## Related
 

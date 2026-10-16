@@ -11,7 +11,7 @@ SAQ scraping is a legal grey zone in Canada. Approach chosen: sitemap-first (mos
 
 ## Hard rules (non-negotiable)
 
-1. **Sitemap-only fetching.** Any new URL fetched MUST come from one of the official SAQ sitemaps below. If a change implies fetching anything else, STOP and surface to Victor before writing code.
+1. **Sitemap-only fetching.** Any new URL fetched MUST come from one of the official SAQ sitemaps below. If a change implies fetching anything else, STOP and surface to Victor before writing code. When a change adds a URL pattern, re-fetch the live robots.txt — never rely on a cached copy.
 2. **Never fetch disallowed paths:** `/catalogsearch/` · `/catalog/product/view/` · filtered URLs (`?price`, `?availability`, `?appellation`, etc.) · `/checkout/` · `/customer/` · `/wishlist/` · any admin paths.
 3. **Rate limit.** 2-3 second minimum interval between requests. Reuse the existing rate-limited client — never instantiate `requests.Session()` or `httpx.Client()` fresh.
 4. **Paraphrase SAQ descriptions, never copy verbatim.** Always attribute SAQ as data source.
@@ -25,6 +25,11 @@ SAQ scraping is a legal grey zone in Canada. Approach chosen: sitemap-first (mos
 
 ## Architecture
 
-- Commands live in `scraper/scraper/commands/<name>.py`, dispatched from `__main__.py`
-- New CLI command → new file in `commands/`, register in `__main__.py`, add a Make target if interactively run
-- Embedding ingestion in `scraper/scraper/embed.py` + `scraper/scraper/db/embeddings.py` — coordinate with `backend/repositories/recommendations.py` (retrieval) if the contract changes
+Data sources, partitions, file map: [`docs/specs/scraper.md`](../../docs/specs/scraper.md).
+
+- New CLI command → new file in `scraper/scraper/commands/`, register in `__main__.py`, add a Make target if interactively run
+- An embedding-contract change is the RAG surface too — follow `rules/rag.md`
+
+## Tests
+
+Mock the HTTP layer at the boundary, never internal helpers. A new fetch path gets an explicit rate-limit test.

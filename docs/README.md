@@ -19,7 +19,7 @@
 ## Decisions & history
 
 - [adrs/](adrs/) — significant technical decisions (rare, formal)
-- [session-logs/](session-logs/) — pipeline archaeology (per-run)
+- [session-logs/](session-logs/) — past pipeline runs (history; no new logs — decisions now live in tickets and PR bodies)
 
 ## Planning
 
@@ -28,32 +28,30 @@
 
 ---
 
-## How docs integrate with the agent pipeline
+## How docs integrate with Claude
 
-Each doc has clear consumers. Most are read on-demand by specific agents or `/advisors` rather than auto-loaded.
+Each doc has clear consumers. Most are read on demand rather than auto-loaded.
 
-| Doc | Agents that read it | When |
+| Doc | Who reads it | When |
 |---|---|---|
-| `roadmap.md` | scoper · `/po` · `/release` · `/roadmap-status` | Most pipeline runs (phase context) |
-| `security.md` | auth-specialist · reviewer (auth/user-data diffs) | Auth + API diffs |
-| `specs/<x>.md` | matching specialist | When touching subsystem X |
-| `architecture.md` | explorer (cross-cutting changes) · humans | First read, big-picture work |
-| `development.md` | migrator · new contributors | Migration work, local setup |
+| `roadmap.md` | `/po` · `/release` · `/roadmap-status` | Planning (phase context) |
+| `security.md` | `/feature` (risky lane) · reviewer (auth/user-data diffs) | Auth + API diffs |
+| `specs/<x>.md` | `/feature` recon (linked from the matching rule) | When touching subsystem X |
+| `architecture.md` | `/feature` recon (cross-cutting changes) · humans | First read, big-picture work |
+| `development.md` | `/feature` (migrations) · new contributors | Migration work, local setup |
 | `engineering.md` | `/po` (avoid duplicate work) · `/roadmap-status` | Planning |
 | `scaling.md` | `/health` · ops at 3am | Operational events |
 | `product-vision.md` | Humans only | Interview / portfolio |
-| `adrs/<NNNN>-*.md` | Specialists when starting work on the ADR'd surface | Read once, baseline context |
-| `session-logs/INDEX.md` | explorer · scoper | Before recon (find prior work on same surface) |
+| `adrs/<NNNN>-*.md` | `/feature` when the touched rule links one | Read once, baseline context |
 
 ## Where else docs live (not in `docs/`)
 
 | Location | Purpose |
 |---|---|
 | [`.claude/rules/*.md`](../.claude/rules/) | Agent-facing imperative rules — auto-load when Claude edits matching files |
-| [`.claude/agents/*.md`](../.claude/agents/) | Subagent definitions for the pipeline |
-| [`.claude/commands/*.md`](../.claude/commands/) | Slash commands (entry points + advisors) |
-| [`.claude/scratchpad/<branch>/`](../.claude/) | Per-pipeline-run ephemeral state (gitignored) |
+| [`.claude/agents/*.md`](../.claude/agents/) | Subagents: `red-test-writer`, `reviewer`, `gardener` |
+| [`.claude/skills/`](../.claude/skills/) · [`.claude/commands/`](../.claude/commands/) | Skills (`/feature`, `/review`, …) and slash commands |
 | [`CLAUDE.md`](../CLAUDE.md) | Project meta + hard rules (loaded every session) |
 | [`CHANGELOG.md`](../CHANGELOG.md) | User-facing release notes |
 
-See [`.claude/README.md`](../.claude/README.md) for the agentic pipeline overview.
+See [`.claude/README.md`](../.claude/README.md) for the `/feature` flow.
