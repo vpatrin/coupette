@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"$CLAUDE_PROJECT_DIR/.claude/progress.md\"; [ -f \"$f\" ] && { echo 'In-flight /feature state (.claude/progress.md):'; cat \"$f\"; } || true"
+          }
+        ]
+      }
+    ]
+  }
+}

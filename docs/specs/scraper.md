@@ -131,7 +131,7 @@ Bot + frontend are wine-focused. Of ~38k SAQ products, ~30.9k wine products are 
 - **SAQ HTML** (CDN-cached) — `description`, prices, display strings
 - **PostgreSQL** — `products`, `stores`, `watches`, `stock_events` tables
 - **pgvector extension** — for embedding storage (`--embed-sync` writes; backend reads — see [`rag.md`](rag.md))
-- **`core/embedding_client.py`** — embedding model wrapper (multilingual-e5-large, 1024-d)
+- **`core/embedding_client.py`** — embedding model wrapper (OpenAI `text-embedding-3-large`, 1536-d)
 
 ## Cross-cutting concerns
 

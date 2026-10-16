@@ -30,14 +30,11 @@ Skip: JSX syntax, basic useState, things already explained.
 
 ## Stack & tooling
 
-- React 19 + TypeScript + Vite + Tailwind CSS 4 + shadcn/ui
-- yarn classic v1
-- Node v24.10.0 (local bare-metal, NOT Docker — hot reload matters)
-- Vitest + React Testing Library
-- ESLint + Prettier
-- React Router (when needed)
+Stack, entry points, file map, dev and build notes: [`docs/specs/frontend.md`](../../docs/specs/frontend.md).
+
+- yarn classic v1 — never npm
 - State: React built-ins (useState, useContext) — no Redux/Zustand until proven necessary
-- HTTP: fetch with thin wrapper — no axios
+- HTTP: the thin fetch wrapper — no axios
 
 ## Component conventions
 
@@ -57,10 +54,8 @@ Skip: JSX syntax, basic useState, things already explained.
 
 ## Dev workflow
 
-- `yarn dev` on Mac, NOT in Docker (hot reload)
-- Docker only for CI and prod builds
 - Desktop-first 1200px+, dark mode default
-- **Visual review:** Claude cannot take screenshots. Always ask Victor to open the page (`yarn dev`) and paste a screenshot. Reading HTML/CSS is not a substitute.
+- **Visual review:** rendered output is the ground truth — reading HTML/CSS is not a substitute. For a UI acceptance criterion, run the app (`run` skill or a browser tool) and attach a browser screenshot to the PR evidence table. Without a browser tool, ask Victor for the screenshot. Authenticated pages need the dev login from VPA-52.
 
 ## Design direction
 

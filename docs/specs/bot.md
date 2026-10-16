@@ -69,6 +69,9 @@ Delisted products are always excluded from the backend API.
 | Handlers | `bot/bot/handlers/` (watch, alerts, mystores, start) |
 | Backend HTTP client | `bot/bot/api_client.py` |
 | Formatters (message shape) | `bot/bot/formatters.py` |
+| Reply + inline keyboards | `bot/bot/keyboards.py` |
+| Pre-handler gates (access check cached 1h, per-user rate limit) | `bot/bot/middleware.py` |
+| Application bootstrap, handler registration | `bot/bot/app.py` |
 | Tests | `bot/tests/` (pytest) |
 
 ## Dependencies
@@ -112,5 +115,5 @@ Delisted products are always excluded from the backend API.
 ## Related
 
 - **ADRs:** [`0003-bot-as-api-client.md`](../adrs/0003-bot-as-api-client.md), [`0004-telegram-first-auth.md`](../adrs/0004-telegram-first-auth.md)
-- **Agent rules (imperative form):** none yet — bot work falls through the orchestrator to the generic `implementer` agent loading the `.claude/rules/backend.md` rule
+- **Agent rules (imperative form):** [`.claude/rules/bot.md`](../../.claude/rules/bot.md)
 - **Recent session logs:** look up via [`../session-logs/INDEX.md`](../session-logs/INDEX.md)

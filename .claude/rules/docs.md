@@ -30,17 +30,24 @@ User-noticeable change → coupette ROADMAP. Builds-better-not-user-visible → 
 
 ## ADRs (`docs/adrs/`)
 
-Format: Context, Options, Decision, Rationale, Consequences. `NNNN-short-description.md`, 30-50 lines. Capture *why*, not *how*.
+Format: Context, Options, Decision, Rationale, Consequences. `NNNN-short-description.md`, 30-50 lines. Capture *why*, not *how*. Expect 5–15 a year.
 
-**Write an ADR for:**
-- Choosing between real alternatives
-- Decisions that are hard to reverse
-- Decisions that need explaining to a future contributor
+**Write one only when all 4 tests pass** — otherwise the decision goes in the PR's Decisions section:
 
-**Skip an ADR for:**
-- Framework conventions
-- Tooling with no meaningful alternative
-- Implementation details that live in code comments
+1. Real alternatives existed and were considered — a framework convention is not a decision.
+2. Hard to reverse or expensive to change later: schema shape, public API contract, dependency choice, retrieval architecture, auth strategy. Not internal refactors, naming, or one-off tuning.
+3. A future contributor would ask "why X?" and reading the code doesn't answer it.
+4. Throughput: more than 4 ADRs in the last 30 days means the bar is too low.
+
+**Amending:** an accepted ADR is immutable except for typos, links, clarifying examples, and status (`Superseded by [NNNN](NNNN-x.md)` on the old one). A changed decision is a new ADR.
+
+## Keeping docs current
+
+The coding session updates docs in the same PR as the behavior change; the reviewer blocks on a stale doc, rule, or spec.
+
+- `docs/specs/<subsystem>.md` — when a public contract, data flow, operational gotcha (env var, secret, ordering), or file map changes. Edit only the affected sections; if more than ~30% of a spec is stale, flag it in the PR instead of rewriting it.
+- `.claude/rules/*.md` — when a convention changes. Rules hold instructions and link to specs; they never restate them.
+- `CHANGELOG.md` and `docs/ROADMAP.md` — see below.
 
 ## Versioning + Release
 
@@ -63,9 +70,9 @@ Categories: `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`.
 
 Every version tag + deploy requires a dedicated Linear issue (team `Vpatrin`, labels `devops` + `chore`) with: pre-deploy checks, env var changes, infra prerequisites, migration order, post-deploy bootstrap, systemd updates, verification, rollback plan. The full body template lives in `.claude/commands/release.md` (step 5).
 
-## Session logs
+## Decisions, not session logs
 
-Lifecycle and skip rules live in [`docs/session-logs/README.md`](../../docs/session-logs/README.md). The documenter agent writes one per pipeline run automatically; standalone `/document` uses judgment.
+No new session logs. Decisions live in the ticket (before code) and the PR's Decisions section (during code); squash commits stay title-only and their `(#NNN)` links to the PR. The logs in `docs/session-logs/` stay as history.
 
 ## Roadmap maintenance
 

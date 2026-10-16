@@ -1,145 +1,80 @@
-# `.claude/` — Agentic Workflow
+# `.claude/` — how Claude works on Coupette
 
-A multi-agent pipeline for Coupette, inspired by Anthropic's orchestrator-worker pattern. Solo-dev sized: 14 agents, 5 entry commands, 12 path-scoped rules docs.
+One session per ticket writes the code; two subagents with fresh context check it. Hard invariants are enforced by hooks, not by prompts. Decided in VPA-51.
 
 ## Directory map
 
 ```
 .claude/
-├── agents/          Pipeline subagents (invoked by the orchestrator)
-├── commands/        Slash commands (invoked by Victor)
-├── rules/           Path-scoped context — auto-loaded by Claude when editing
-│                    matching files (main session) AND explicitly Read by
-│                    subagents in the pipeline. Single source of truth.
-├── skills/          Skills with supporting files (e.g. eval-pipeline)
-└── settings.local.json
+├── agents/       red-test-writer (before code) · reviewer (after) · gardener (Dependabot)
+├── skills/       feature · review (+ checklists/) · eval-pipeline
+├── commands/     remaining slash commands (move to skills in VPA-51 slice 3)
+├── rules/        path-scoped instructions — auto-load when Claude edits matching files
+├── settings.json project hooks (SessionStart prints .claude/progress.md)
+└── progress.md   per-workspace /feature state (gitignored, dies with the workspace)
 ```
 
-## Slash commands
-
-### Pipeline entries (user-invoked)
-
-| Command | Purpose |
-|---|---|
-| `/feature <desc>` | Drive a new feature through the full pipeline |
-| `/fix <desc>` | Same pipeline, framed for bugs |
-| `/document` | Run the documenter standalone (docs + session log + ADR) |
-| `/po <desc>` | Break a feature into Linear issues (stories + tasks) |
-| `/garden` | Triage red Dependabot PRs, manage CVE ignore-file entries, arm auto-merge — manual-invocation only |
-
-### Advisors (review personas)
-
-| Command | Role |
-|---|---|
-| `/review` | Tech lead — code quality, AI smell, DoD |
-| `/security` | Appsec — threat model |
-| `/data` | DBA / data engineer — schema, queries, migrations |
-| `/ai` | AI/ML architect — prompts, retrieval, RAG design |
-| `/ux` | UX designer — spec + audit |
-| `/roadmap-status` | Program manager — progress + cleanup |
-| `/health` | CTO — periodic project health |
-| `/audit-rules` | Meta — periodic audit of `.claude/` itself (dead globs, stale claims, accumulated pipeline friction) |
-| `/eval-pipeline` | ML engineer — RAG score tuning |
-
-### Actions
-
-| Command | Purpose |
-|---|---|
-| `/pr` | Create PR for the current branch |
-| `/land-pr` | Land an existing PR: rebase if conflicted (mechanical conflicts only), arm `gh pr merge --auto --squash` — never merges directly |
-| `/release` | Orchestrated release: verify roadmap + changelog gaps, prep CHANGELOG, draft deploy issue, hand Victor one ordered batch of git + gh commands (tag push triggers CD) |
-
-## Pipeline
+## The `/feature` flow
 
 ```
-/feature add wine pairing endpoint
-  ↓
-Main session reads agents/orchestrator.md as its playbook, spawns Scoper
-  → spec at .claude/scratchpad/<branch>/spec.md
-  ↓  (Victor reviews, says proceed)
-Main session: git worktree add ~/.claude/worktrees/coupette/<branch>
-              + initializes .claude/scratchpad/<branch>/log.md in the MAIN repo
-              (Working notes + Stage results)
-  ↓  (every subsequent subagent cd's into the worktree per its handoff prompt,
-       reads spec.md + log.md via the absolute scratchpad paths it was given,
-       appends its Result block to Stage results on completion)
-Main session spawns Explorer → recon brief + reads prior session logs for the touched surface
-Main session spawns Migrator → only if spec says Needs migration: yes
-Main session spawns Specialist (or generic Implementer) → does the work (Plan → Execute → Verify)
-  ↓  (Victor reviews diff, says proceed)
-Main session spawns Test-Writer → Reviewer (sequential — reviewer checks the tests + diff coverage)
-  Reviewer reads .claude/commands/<advisor>.md and applies them itself
-Main session spawns Documenter (BLOCKING) → consumes spec.md + log.md → writes session log
-              + changelog + ADR if applicable
-Main session commits + pushes the branch
-Main session spawns PR-Creator → applies .claude/commands/pr.md
-  ↓
-Main session: git worktree remove (scratchpad dir lives in the main repo and persists
-              for retrospection, gitignored, manual cleanup via `make clean-scratchpad`)
+Linear ticket (ACs + edge case that will bite + e2e line + Lane)   ← Victor approves
+  │
+  ▼  one session per ticket, in its own Superset workspace
+recon → plan naming the interfaces ──(risky lane: Victor reviews the plan)
+  │
+  ▼  red-test-writer (fresh context: ACs + interfaces only)
+one failing test per AC → main session re-runs them → "red" commit
+  │
+  ▼  main session
+code until green · coverage tests to ≥80% diff · docs in the same PR
+Stop hook: lint + tests (+ frontend build) of touched services must pass
+  │
+  ▼  reviewer (fresh context; xhigh effort on the risky lane)
+checklist IDs · TDD diff vs red commit · diff coverage re-run · evidence · stale docs
+BLOCK → one fix loop → still BLOCK → Victor
+  │
+  ▼
+PR: AC → evidence table · Decisions · Review line · Harness friction   → Victor merges
 ```
 
-## Three layers of memory
+Full procedure: [`skills/feature/SKILL.md`](skills/feature/SKILL.md).
 
-| Artifact | Lives in | Lifetime | Audience |
-|---|---|---|---|
-| **Spec** | `.claude/scratchpad/<branch>/spec.md` (main repo, not the worktree) | Local, gitignored — persists until manually cleaned | Pipeline input (scoper writes, agents read) |
-| **Pipeline log** | `.claude/scratchpad/<branch>/log.md` (main repo, not the worktree) | Same — local, gitignored, persists | All subagents (primary trace) |
-| **Session log** | `docs/session-logs/` | Permanent (committed) | Future-you + future AI agents |
+**Lanes.** Default: no human gate between ticket and merge except non-obvious choices. Risky (auth, migrations, RAG prompts/retrieval/embeddings): plus a plan checkpoint, `/security` or `make eval`, and a longer Decisions section.
 
-The scratchpad is for optimization (tight context, survives compaction). The session log is for archaeology (decisions, dead ends, rejected alternatives — like ADRs but per-session). Full pipeline runs always produce a session log; the trivial-case shortcut in `/feature`/`/fix` and standalone work use judgment.
+**Launching a worker.** Skills can't run built-in commands, so whoever starts the session does:
+
+```
+claude -n VPA-NN          # session named after the ticket; `claude --resume VPA-NN` finds it
+/feature VPA-NN
+/goal every AC in .claude/progress.md passes and lint/tests are green
+```
+
+`/clear` between unrelated tasks. After two failed corrections on the same issue, `/clear` and restart with a sharper prompt.
 
 ## Agents
 
-### Pipeline workers
-
-| Agent | Role | Edits code? |
+| Agent | Role | Edits |
 |---|---|---|
-| `orchestrator` | Playbook the main session follows — routes stages, manages handoffs (not a spawnable agent) | No |
-| `scoper` | Request → spec | Spec file only |
-| `explorer` | Read-only recon brief | No |
-| `migrator` | Model change + suggests `make revision` | Models only |
-| `implementer` | Generic code writer (fallback) | Yes |
-| `test-writer` | Tests for the change | Tests only |
-| `reviewer` | BLOCK / WARN / APPROVE | No |
-| `documenter` | Docs + session log + ADR (mandatory) | Docs only |
-| `pr-creator` | Final ship — applies `commands/pr.md` | No |
-| `gardener` | Dependabot/CVE triage — manual via `/garden`, outside the `/feature`/`/fix` pipeline | Ignore files + prepares fix branches (never commits/pushes) |
+| `red-test-writer` | Red step: one failing test per AC from the ACs + planned interfaces only | Tests only, never commits |
+| `reviewer` | APPROVE / WARN / BLOCK with checklist IDs; also runs as `/review` | Nothing |
+| `gardener` | CI upkeep for open PRs, Dependabot auto-merge — via `/garden` | Ignore files, fix branches |
 
-### Specialists (preferred over `implementer` when surface matches)
+All use `model: inherit`.
 
-| Specialist | Surface |
-|---|---|
-| `frontend-specialist` | `frontend/src/` — React 19 + TS + Tailwind + shadcn + i18n |
-| `rag-specialist` | Sommelier, recommendations, intent, embedding pipeline |
-| `auth-specialist` | JWT, OAuth (Google + GitHub), waitlist, bot secret |
-| `scraper-specialist` | `scraper/` — sitemap-only fetching, legal compliance |
+## Hooks
 
-Backend and bot fall through to the generic `implementer` + `.claude/rules/backend.md` / `.claude/rules/bot.md`.
+| Hook | Where | Does |
+|---|---|---|
+| `PreToolUse` (Bash) | `~/.claude/hooks/git-guard.py` (global) | Blocks tag pushes, `gh release create`, pushes to main, AI attribution in commits and PRs |
+| `SessionStart` | `.claude/settings.json` | Prints `.claude/progress.md` into new, resumed, cleared, or compacted sessions |
+| `Stop` | `skills/feature/stop-check.sh`, registered when `/feature` runs | Lint + tests (+ frontend build) for touched services; cached by diff hash |
 
-## Context layer (`.claude/rules/`)
+## Rules (`rules/`)
 
-One folder, single source of truth. Each file has `paths:` frontmatter so it auto-loads in main-session work when matching files are touched. Subagents Read them explicitly per their system prompts.
+One file per domain, `paths:` frontmatter scopes auto-loading. Rules hold instructions and link to `docs/specs/` for how things work — they never restate the specs. The review checklists in `skills/review/checklists/` turn the rules' gates into IDs a BLOCK can cite.
 
-`auth.md` · `backend.md` · `bot.md` · `deploy.md` · `docs.md` · `frontend.md` · `llm.md` · `migrations.md` · `packaging.md` · `rag.md` · `scraper.md` · `testing.md`
+## Improving the harness
 
-(Reviewer's project-specific invariants are inlined in `agents/reviewer.md` — they're reviewer-only and shouldn't auto-load into other sessions.)
-
-## Worktree convention
-
-All pipeline runs use `~/.claude/worktrees/coupette/<branch-with-slashes-as-dashes>`. The orchestrator creates it after spec approval and removes it after the PR lands. Diffs can be viewed in VSCode by opening that path, or in any external diff viewer.
-
-## Session logs
-
-The documenter writes durable session logs to `docs/session-logs/<date>-<slug>.md` for non-trivial work. See [`docs/session-logs/README.md`](../docs/session-logs/README.md) for when to write vs skip.
-
-## Design references
-
-- Anthropic orchestrator-worker pattern: <https://www.anthropic.com/engineering/multi-agent-research-system>
-- Claude Code subagents: <https://docs.claude.com/en/docs/claude-code/sub-agents>
-- Anthropic prompt engineering best practices: <https://docs.claude.com> (search "prompt engineering")
-
-## Maintenance
-
-- Adding a new specialist → write `.claude/agents/<name>-specialist.md` with a sharp `description` field. Update `orchestrator.md` routing if needed.
-- Adding a new rule → write `.claude/rules/<name>.md` with `paths:` frontmatter scoping where it auto-loads. Add to `CLAUDE.md` "Where things live" table.
-- Removing an advisor → delete `.claude/commands/<name>.md`. The reviewer's advisor-checks list (in `agents/reviewer.md`) references those file paths, so prune there too.
+- The PR's optional **Harness friction** line names what in `.claude/` tripped the session.
+- When a BLOCK ID already appeared in a merged PR, the reviewer proposes a deterministic guard (hook, lint rule, CI check).
+- `.claude/` changes only through a reviewed PR — the workflow never edits its own instructions in place.

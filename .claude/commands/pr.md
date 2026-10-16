@@ -1,25 +1,24 @@
-Create a PR for the current branch. Follow the Pre-PR Checklist from CLAUDE.md.
+Create or finish the PR for the current branch.
 
 ## Steps
 
-1. Run `git log --oneline main..HEAD` to understand all commits on this branch.
-2. Run `git diff main` to see the full diff.
-3. Verify the branch has been pushed to remote (`git branch -vv`). If not, push it: `git push -u origin <branch>` (branch only — never tags). **Main session only** — a pipeline subagent (pr-creator) must not push; it returns BLOCKED per its own rules.
-4. Determine which Linear issue(s) (`VPA-NN`) this branch closes from the commit history and branch name.
-5. Verify CHANGELOG.md and ROADMAP.md are already updated (done in `/review`). If the PR changes deployed behavior and `[Unreleased]` has no matching entry, warn and stop.
-6. Run frontend lint and build checks (only if frontend files changed):
-   - `cd frontend && yarn lint` — must pass with 0 errors (warnings are OK if pre-existing on main)
-   - `cd frontend && yarn build` — must succeed. If either fails, stop and fix before creating the PR.
-7. Create the PR using `gh pr create` with:
-   - Title in conventional commits format: `type: description (VPA-NN)` — take the id from the branch name (`type/vpa-NN-…`); omit the suffix if the branch carries no issue id
-   - Body following `.github/pull_request_template.md` (Summary, Related issue(s), Changes, How to test if applicable)
-   - Reference each Linear issue as `VPA-NN` in the Related issue(s) section (issues live in Linear; `Closes #XX` GitHub syntax no longer applies). If nothing to reference, write "none".
-   - If "How to test" includes curl commands, use port 8001 (backend runs on 8001, not 8000)
+1. `git fetch -q origin main`, then `git log --oneline origin/main..HEAD` and `git diff origin/main...HEAD` to see the whole branch.
+2. Push the branch if needed: `git push -u origin <branch>` (branch only — never tags).
+3. Take the Linear issue id from the branch name (`type/vpa-NN-…`).
+4. User-visible change without a matching `[Unreleased]` line in `CHANGELOG.md` → add it first (`rules/docs.md`).
+5. Frontend files changed → `cd frontend && yarn lint && yarn build` must pass.
+6. Body: follow `.github/pull_request_template.md`.
+   - **Related issue:** `Fixes VPA-NN` (moves the Linear issue to Done on squash merge); "none" if the branch has no id.
+   - **AC → evidence:** one row per acceptance criterion, built from `.claude/progress.md` — a named test, a runnable command, or an artifact. UI rows link a browser screenshot. Cite the red commit.
+   - **Decisions:** choices with rejected alternatives, surfaced constants and thresholds, guessed-interface renames. Longer on the risky lane.
+   - **Review:** the reviewer's Review line (verdict + finding IDs fixed).
+   - **How to test:** curl examples use port 8001.
+   - **Harness friction** (optional): what in `.claude/` tripped the session, and which file.
+7. Title: `type: description (VPA-NN)`. Create with `gh pr create` (`--draft` while `/feature` is still working), update with `gh pr edit`, and mark ready with `gh pr ready` once the review passes.
 8. Return the PR URL.
 
 ## Rules
 
-- Push the branch only, never tags (`git push -u origin <branch>` — tag pushes trigger deploys)
-- Do NOT create the PR if CHANGELOG.md is missing an entry for user-visible changes — warn and stop
-- Prerequisite: `/review` must have passed. If unsure, ask Victor before proceeding.
-- **Scope note:** this command does not re-check code quality — that's `/review`'s job. It also does not run a security audit (`/security`).
+- Push the branch only, never tags — tag pushes deploy.
+- No PR for a user-visible change without a CHANGELOG line.
+- **Scope:** this command doesn't review code (`/review`) or audit security (`/security`).

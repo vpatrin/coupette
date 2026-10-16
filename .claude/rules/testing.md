@@ -74,6 +74,13 @@ A test that can't fail is not a test — it's a comment with overhead.
 
 **Don't test what the type system covers.** mypy/TS verifies fields exist with the right type. Tests verify runtime behavior.
 
-## Auth/DB-touching tests
+## 6. Test-first
 
-Use real DB sessions (no mocking `AsyncSession`, `get_db`, `verify_auth`). See `rules/auth.md`.
+- In `/feature`, the `red-test-writer` agent writes one failing test per acceptance criterion, plus the ticket's edge case that will bite, before any code exists — from the ACs and the planned interfaces only. The main session re-runs them and commits them alone as the **red commit**.
+- The coder makes the red tests pass and never weakens or deletes one. Only exception: renaming a guessed interface (path, schema, prop), recorded in the PR's Decisions section.
+- Bug tickets: the red test is the reproduction.
+- **Diff coverage ≥ 80%** on new and changed lines — total coverage can stay high while new code is untested. Run `make coverage-<service>` (writes `coverage.xml`), then from the service dir `poetry run diff-cover coverage.xml --compare-branch=origin/main --fail-under=80`.
+
+## Auth tests
+
+`backend/tests/conftest.py` overrides `verify_auth` for every test (`_bypass_auth`) and mocks `get_db` with an `AsyncMock`: no backend test hits a real database. Route tests may keep both overrides. Tests of auth logic (JWT decode, `verify_auth`/`verify_admin`, OAuth callbacks, the waitlist gate) must remove the `verify_auth` override so the real code path runs (`_real_auth_client` in `backend/tests/test_auth.py`); mock the DB only at the session boundary. Known gap: no real-DB fixture yet (per-workspace DB, VPA-52).
