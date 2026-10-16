@@ -43,7 +43,7 @@ No scratchpad, no log. After any restart, rebuild the view from:
    If you stop blocked, end with SUPERSET_WORKER_BLOCKED, task, reason, needs."
    ```
 2. Linear: set the ticket In Progress and comment `Dispatched to Superset workspace vpa-NN (<branch>).`
-3. Once the worker's `.claude/progress.md` shows a `Red:` line — past any risky-lane plan checkpoint — and its terminal shows no pending question, `superset terminals send` `/rename VPA-NN`, then `/goal every AC in .claude/progress.md passes and lint/tests are green`. A skill can't run either, and an earlier `/goal` could push the worker past Victor's plan approval.
+3. Once the worker's `.claude/progress.md` shows `Red: <sha>` or `Red: none —` (not a placeholder), on the risky lane also after Victor's plan OK, and its terminal shows no pending question, `superset terminals send` `/rename VPA-NN`, then `/goal every AC in .claude/progress.md passes and lint/tests are green`. A skill can't run either, and an earlier `/goal` could push the worker past Victor's plan approval.
 
 ## Monitor and relay
 
@@ -57,7 +57,7 @@ Read every running terminal at each pass. A worker waiting on `AskUserQuestion`,
 
 ## After a merge
 
-- `git pull --ff-only` here. Then refresh the repository's original checkout (`git worktree list --porcelain | head -1`) if its tree is clean: `git -C <path> fetch -q origin && git -C <path> switch -q --detach origin/main` — every worktree session also loads that checkout's `.claude/`, so a stale one surfaces dead skills.
+- `git pull --ff-only` here. Then refresh the repository's original checkout (`git worktree list | head -1 | awk '{print $1}'`) if its tree is clean: `git -C <path> fetch -q origin && git -C <path> switch -q --detach origin/main` — every worktree session also loads that checkout's `.claude/`, so a stale one surfaces dead skills.
 - Comment on the ticket: the PR, touchpoints (count and what they were), and the Harness friction line.
 - The same friction in two PRs → draft a one-line fix to the `.claude/` file it names, and hand it to the next worker to include in its PR; Victor approves it at merge. Never edit `.claude/` from here.
 - Remove workspaces and branches only when Victor asks.

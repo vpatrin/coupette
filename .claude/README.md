@@ -114,7 +114,7 @@ Maintenance is triggered by a breached budget, not a calendar:
 | Budget | Limit | Now |
 |---|---|---|
 | Project `CLAUDE.md` | ≤ 150 lines | 128 |
-| Fixed context of a coupette session (`claude -p "/context"` in a fresh `git clone` — a worktree also loads the original checkout's `.claude/`) | ≤ 10% over the post-rework baseline | 20.2k (2026-10-16; 22k before the rework) |
+| Fixed context of a coupette session (`claude -p "/context"` in a fresh `git clone` — a worktree also loads the original checkout's `.claude/`) | ≤ 10% over the post-rework baseline | 20.2k (2026-10-16; base before slice 3: 20.6k; 22k before the rework, measured in a worktree) |
 
 Otherwise a rule is fixed the second time the same mistake happens, inside the current feature's PR.
 
