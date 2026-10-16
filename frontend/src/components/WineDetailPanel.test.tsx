@@ -275,6 +275,25 @@ describe('WineDetailPanel rating entry point', () => {
     expect(onClose).toHaveBeenCalledOnce()
   })
 
+  it('keeps the pencil label when the saved note belongs to another wine', async () => {
+    apiReturning(product(), { tastingPost: () => Promise.resolve(fakeNote({ sku: 'SKU999' })) })
+    renderPanel('SKU001')
+    await openTastingForm()
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+    await waitFor(() => expect(screen.queryByText('Add a note')).not.toBeInTheDocument())
+    expect(screen.getByRole('button', { name: 'Add a tasting note' })).toBeInTheDocument()
+  })
+
+  it('keeps the form and the panel open on keys other than Escape', async () => {
+    apiReturning(product())
+    const onClose = vi.fn()
+    renderPanel('SKU001', onClose)
+    await openTastingForm()
+    fireEvent.keyDown(document, { key: 'Enter' })
+    expect(screen.getByText('Add a note')).toBeInTheDocument()
+    expect(onClose).not.toHaveBeenCalled()
+  })
+
   it('drops the open tasting form when the panel closes on a route change', async () => {
     apiReturning(product())
     const { rerender } = renderPanel('SKU001')

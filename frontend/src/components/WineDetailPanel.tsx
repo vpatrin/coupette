@@ -292,7 +292,7 @@ function WineDetailPanel({ sku, onClose }: WineDetailPanelProps) {
         {tastingOpen && (
           <TastingFormModal
             initialProduct={p}
-            onSave={() => handleNoteSaved(p.sku)}
+            onSave={(note) => handleNoteSaved(note.sku)}
             onClose={() => setTastingOpen(false)}
           />
         )}
