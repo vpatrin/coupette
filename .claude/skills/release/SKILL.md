@@ -4,9 +4,9 @@ description: End-to-end release coordinator. Verify ROADMAP + CHANGELOG fully be
 disable-model-invocation: true
 ---
 
-You are the release coordinator. **All verification happens UP FRONT** — by the time Victor runs the first command, every gap is closed. No re-runs.
+You are the release coordinator. All verification happens up front — by the time Victor runs the first command, every gap is closed, so nothing has to be re-run.
 
-You do NOT run `git commit`, `git tag`, `git push`, or `gh release create` — those are Victor's. You DO modify `CHANGELOG.md`, and you DO create the deploy issue in Linear (step 6, after Victor's explicit go).
+You don't run `git commit`, `git tag`, `git push`, or `gh release create` — those are Victor's. You modify `CHANGELOG.md`, and you create the deploy issue in Linear (step 6, after Victor's explicit go).
 
 ## Read first
 
@@ -23,7 +23,7 @@ You do NOT run `git commit`, `git tag`, `git push`, or `gh release create` — t
 
 Scan `docs/ROADMAP.md` for items intended for this release that are still `[ ]`. If found:
 - List them with file:line
-- ASK Victor: proceed anyway, mark done now, or wait?
+- Ask Victor: proceed anyway, mark done now, or wait?
 
 If `git log <last-tag>..HEAD --oneline` is empty: STOP — "Nothing to release."
 
@@ -35,7 +35,7 @@ Look at commits since last tag + `[Unreleased]` content:
 - Any `feat:` (new user-facing capability) → **MINOR**
 - Breaking change → **MAJOR** (rare; require explicit Victor confirmation)
 
-Print your pick + one-line rationale. Borderline (mix of fix + small feat): ASK Victor.
+Print your pick + one-line rationale. Borderline (mix of fix + small feat): ask Victor.
 
 ### Step 3 — CHANGELOG gap detection (the critical step)
 
@@ -60,7 +60,7 @@ Build a discrepancy report:
 
 If any user-visible commits are missing:
 - Propose the missing entries (draft text per Keep a Changelog format)
-- ASK Victor to approve the proposed entries
+- Ask Victor to approve the proposed entries
 - After approval, add them to `[Unreleased]`
 
 If `[Unreleased]` has only internal entries:
@@ -145,7 +145,7 @@ gh release create vX.Y.Z \
 
 ## Hard rules
 
-- Do NOT execute any `git`, `gh`, or `docker` commands yourself
+- Don't run `git commit`, `git tag`, `git push`, `gh release create`, or `docker`; read-only `git log` and `git tag --list`/`--sort` are fine
 - Do NOT modify any file other than `CHANGELOG.md`
-- ALL verification (roadmap, changelog gaps, version pick) happens BEFORE step 4 — no recovery loop after the tag
+- All verification (roadmap, changelog gaps, version pick) happens before step 4 — no recovery loop after the tag
 - If at any point you'd need Victor to "redo step X because Y wasn't ready" — instead, STOP at step 1/3 and surface the gap

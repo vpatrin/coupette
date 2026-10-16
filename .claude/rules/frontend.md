@@ -7,33 +7,18 @@ paths:
 
 # Frontend
 
-> Single source of truth for React 19 + Vite + Tailwind + shadcn — UX bible, didactic workflow, component conventions, i18n. Read whenever editing anything in `frontend/src/`.
+> Single source of truth for React 19 + Vite + Tailwind + shadcn — UX bible, component conventions, i18n. Read whenever editing anything in `frontend/src/`.
 
-## Developer context
+## Explaining
 
-Victor's first React project. Background: Express/Mongoose APIs in JS (2019–2021), no frontend, no TS, no CSS. Comfortable with: ES6+, yarn, Chrome DevTools. New to: TypeScript, React, CSS/layout, frontend architecture.
-
-Explain all of: TS syntax, React concepts, CSS/Tailwind patterns. Reintroduce ES6 concepts when relevant. Skip only basic JS and yarn.
-
-## Didactic workflow
-
-Goal: ship good code AND build Victor's React mental model.
-
-- **Before writing code** — if a non-obvious React concept drives the implementation (context vs props, component boundaries, hook dependencies, derived state), explain in 2-3 sentences first.
-- **While writing code** — when a pattern is used for the first time or non-obviously, add a one-line `// why` comment. Examples:
-  - `// useCallback so this doesn't re-register the Escape listener on every render`
-  - `// eslint-disable-next-line — intentionally only re-run when panel opens`
-- **After a non-trivial change** — if a React concept came up Victor likely hasn't seen, explain in plain language. Use backend analogies when helpful.
-
-Explain: hook rules, scope isolation, state vs derived values, context mechanics, useCallback/useMemo rationale, TS generics/unions/narrowing, React lifecycle, virtual DOM, React Router, CSS box model/flexbox/grid, shadcn composition.
-Skip: JSX syntax, basic useState, things already explained.
+Explain only non-obvious patterns: the why behind state, rendering, and data-fetching decisions (`~/.claude/learning.md` → frontend fundamentals). A one-line `// why` comment where a pattern is non-obvious; no tutorial comments on basics.
 
 ## Stack & tooling
 
 Stack, entry points, file map, dev and build notes: [`docs/specs/frontend.md`](../../docs/specs/frontend.md).
 
 - yarn classic v1 — never npm
-- State: React built-ins (useState, useContext) — no Redux/Zustand until proven necessary
+- State: TanStack Query for server state (ADR-0011); React built-ins (useState, useContext) for UI state — no Redux/Zustand until proven necessary
 - HTTP: the thin fetch wrapper — no axios
 
 ## Component conventions
@@ -55,7 +40,7 @@ Stack, entry points, file map, dev and build notes: [`docs/specs/frontend.md`](.
 ## Dev workflow
 
 - Desktop-first 1200px+, dark mode default
-- **Visual review:** rendered output is the ground truth — reading HTML/CSS is not a substitute. For a UI acceptance criterion, run the app (`run` skill or a browser tool), take a browser screenshot, and save it to `.claude/evidence/` and name the file in the AC's evidence row — GitHub's CLI can't upload images, so the coordinator or Victor opens it from the workspace. Without a browser tool, ask Victor for the screenshot. Authenticated pages need the dev login from VPA-52.
+- **Visual review:** rendered output is the ground truth — reading HTML/CSS is not a substitute. For a UI acceptance criterion, run the app (`run` skill or a browser tool), take a browser screenshot, and save it to `.claude/evidence/` and name the file in the AC's evidence row — GitHub's CLI can't upload images, so the coordinator or Victor opens it from the workspace. Without a browser tool, ask Victor for the screenshot. Authenticated pages can't be screenshotted until VPA-52 adds a dev login — say so in the evidence row.
 
 ## Design direction
 

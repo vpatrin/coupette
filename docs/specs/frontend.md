@@ -69,5 +69,5 @@ A typical user flow:
 ## Related
 
 - **ADRs:** [`adrs/0006-react-shadcn-frontend.md`](../adrs/0006-react-shadcn-frontend.md)
-- **Agent rules (imperative form):** [`.claude/rules/frontend.md`](../../.claude/rules/frontend.md) — UX bible, didactic workflow, component conventions, i18n rules
+- **Agent rules (imperative form):** [`.claude/rules/frontend.md`](../../.claude/rules/frontend.md) — UX bible, component conventions, i18n rules
 - **Recent session logs:** look up via [`../session-logs/INDEX.md`](../session-logs/INDEX.md)
