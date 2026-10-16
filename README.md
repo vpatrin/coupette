@@ -46,12 +46,9 @@ graph LR
 ## Quick start
 
 ```bash
-make install              # install all dependencies (Poetry)
-cp .env.example .env      # defaults work as-is
-make run-db               # start PostgreSQL (localhost:5432)
-make migrate              # create database tables
-make dev-scraper          # populate the database (~38k products)
-make dev-backend          # start the backend (localhost:8001)
+make install              # install all dependencies (Poetry + Yarn)
+cp .env.example .env      # fill in values: the file documents itself
+make dev                  # DB + migrations + synthetic seed, then backend :8001 + frontend :5173
 ```
 
 ## Development
@@ -63,7 +60,7 @@ make test          # pytest (all services)
 make coverage      # tests + coverage badges
 make migrate       # alembic upgrade head
 make build         # docker build
-make run / down    # docker compose (full stack / stop)
+make start-db      # postgres + redis only (shared by every workspace)
 ```
 
 See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for setup and local workflow.

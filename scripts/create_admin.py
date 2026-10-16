@@ -21,7 +21,9 @@ def _database_url() -> str:
     host = os.environ.get("DB_HOST", "localhost")
     port = os.environ.get("DB_PORT", "5432")
     name = os.environ["DB_NAME"]
-    return f"postgresql://{user}:{password}@{host}:{port}/{name}"
+    # SQLAlchemy 2.1 maps bare postgresql:// to psycopg 3, which no venv installs.
+    # psycopg2 is the core dependency Alembic already uses.
+    return f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{name}"
 
 
 def main() -> None:
