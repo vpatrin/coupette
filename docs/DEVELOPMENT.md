@@ -25,7 +25,7 @@ make dev                  # everything below, then backend :8001 + frontend :517
 
 Things to know:
 
-- **The database is shared.** Every workspace and the root checkout use the same `coupette-postgres` container, so a branch with a new migration migrates all of them. Per-workspace databases are planned (VPA-52).
+- **The database is shared.** Every workspace and the root checkout use the same `coupette-postgres` container, so a branch with a new migration migrates all of them. A ticket that needs its own database will opt in at workspace creation (planned, VPA-52).
 - **Ports are fixed** (8001, 5173): the OAuth redirect URIs are registered against them, so only one workspace can run the app at a time.
 - **Seed data has no embeddings.** Search and browse work. Chat and recommendations return nothing until you run `make embed-sync` (needs `OPENAI_API_KEY`, costs a few cents).
 - **Real catalog data:** run the scraper instead (`make scrape-stores scrape-products`, then `make scrape-enrich embed-sync`). It fetches from the live site at 2–3 s per page; `SCRAPE_LIMIT` in `.env` caps the product count.

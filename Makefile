@@ -51,8 +51,8 @@ install:
 
 # One command from a fresh workspace to a running app with data.
 # Sub-makes, not prerequisites, so the order holds even under `make -j`.
-#! Until per-workspace DBs land (VPA-52 slice 5), `migrate` runs on the database every
-#! workspace shares: a branch with a new migration migrates all of them.
+#! By default `migrate` runs on the database every workspace shares: a branch with a new
+#! migration migrates all of them. A workspace can opt into its own DB (VPA-52 slice 5).
 dev:
 	$(MAKE) start-db
 	$(MAKE) migrate
