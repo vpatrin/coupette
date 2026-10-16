@@ -4,10 +4,10 @@ Cite the ID in each finding. A failed item here is a BLOCK.
 
 ## Flow (TDD + evidence)
 
-- **TEST-1** Each acceptance criterion maps to a test in the red commit, and that test failed on an assertion. An import/collection failure counts only for an interface the plan marks new.
+- **TEST-1** Each acceptance criterion with testable code behavior maps to a test in the red commit, and that test failed on an assertion (an import failure counts only for an interface the plan marks new). No red commit is acceptable only as `Red: none — <reason>` on a ticket without testable behavior.
 - **TEST-2** No red test weakened, skipped, or deleted since the red commit: `git diff <red>..HEAD -- <red test files>`. Only exception: renaming a guessed interface, recorded in the PR Decisions.
 - **TEST-3** The red commit touches test files only: `git show --name-only --format= <red>`.
-- **TEST-4** Diff coverage ≥ 80% on new and changed lines, re-run by the reviewer (never trust a reported figure).
+- **TEST-4** Diff coverage ≥ 80% on new and changed Python lines, re-run by the reviewer (never trust a reported figure). Frontend has no tooled threshold yet: every new branch exercised, checked by reading (a gap is a WARN).
 - **TEST-5** Tests follow `rules/testing.md`: sentence names, behavior not implementation, no mocking of internal helpers, falsifiable.
 - **EVID-1** Every AC has an evidence row with a named test, a runnable command, or an artifact. A row with none of the three is vague. UI ACs include a browser screenshot.
 - **DOC-1** No doc, rule, or spec left stale by the diff (`rules/docs.md` → Keeping docs current). User-visible change → `CHANGELOG.md` line.

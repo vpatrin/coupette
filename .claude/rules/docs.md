@@ -72,8 +72,8 @@ Every version tag + deploy requires a dedicated Linear issue (team `Vpatrin`, la
 
 ## Decisions, not session logs
 
-No new session logs. Decisions live in the ticket (before code) and the PR's Decisions section (during code); squash commits stay title-only and their `(#NNN)` links to the PR. The logs in `docs/session-logs/` stay as history.
+No new session logs. Decisions live in the ticket (before code), then in the body of the commit that made each one (during code); `/pr` compiles them into the PR's Decisions section. Squash commits stay title-only and their `(#NNN)` links to the PR. The logs in `docs/session-logs/` stay as history.
 
 ## Roadmap maintenance
 
-When work completes a capability tracked in `docs/ROADMAP.md`, mark it `[x]` with the issue/PR ref. Only add new items for meaningful capabilities — roadmaps are strategic, not operational. This check is part of the `/pr` flow.
+When work completes a capability tracked in `docs/ROADMAP.md`, mark it `[x]` with the issue/PR ref. Only add new items for meaningful capabilities — roadmaps are strategic, not operational. `/pr` checks it.

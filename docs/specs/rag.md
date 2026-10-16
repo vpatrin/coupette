@@ -179,11 +179,7 @@ User: {query}
 - Update: `make embed-sync` runs after monthly scrape — `--availability-check` does NOT touch embeddings
 - Re-embed all: change the embedding model (`core/embedding_constants.py`) or composite text format → all `embedded_hash` ≠ `attribute_hash` → full recompute on next `make embed-sync` (~30 min)
 
-**Hard rules (from [`.claude/rules/rag.md`](../../.claude/rules/rag.md)):**
-1. No SAQ impersonation in prompts/messages/errors
-2. Embedding-dim or model change → surface re-embedding cost before proceeding
-3. Prompt caching on static portions of system prompts
-4. Eval gate (`make eval`) required before merging prompt or retrieval changes
+**Hard rules** (SAQ impersonation, re-embedding cost, prompt caching, token discipline, eval gate): [`.claude/rules/rag.md`](../../.claude/rules/rag.md).
 
 **Eval framework** — see `backend/benchmarks/eval/`. LLM-as-judge (Sonnet evaluates Haiku's output against rubric):
 - 20 MW-quality benchmark queries

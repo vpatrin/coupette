@@ -9,6 +9,17 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/skills/feature/stop-check.sh\"",
+            "timeout": 300
+          }
+        ]
+      }
     ]
   },
   "enabledPlugins": {

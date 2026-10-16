@@ -140,12 +140,7 @@ Bot + frontend are wine-focused. Of ~38k SAQ products, ~30.9k wine products are 
 - **Errors:** Adobe API 4xx/5xx surfaced; HTML 404 marks SKU delisted; rate-limit backoff
 - **Observability:** batch-summary log per run (products updated, events emitted, errors); no Prometheus on scraper side
 - **Rate limiting:** 2–3s between SAQ HTML requests; Adobe API has no documented rate limit but requests pace ~1.2s/page naturally
-- **Legal compliance** — see [`.claude/rules/scraper.md`](../../.claude/rules/scraper.md). **Hard rules:**
-  - Sitemap-only URL discovery — never crawl
-  - Never fetch disallowed paths (`/catalogsearch/`, `/catalog/product/view/`, filtered URLs, `/checkout/`, `/customer/`, `/wishlist/`)
-  - Paraphrase SAQ descriptions, never copy verbatim in user-facing surfaces
-  - Always attribute SAQ as data source
-  - Transparent User-Agent (bot identification)
+- **Legal compliance** (sitemap-only fetching, disallowed paths, paraphrasing, attribution, User-Agent): [`.claude/rules/scraper.md`](../../.claude/rules/scraper.md).
 
 ### Schema
 

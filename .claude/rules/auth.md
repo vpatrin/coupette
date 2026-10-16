@@ -22,8 +22,9 @@ How it works — JWT, OAuth flows, bot secret, waitlist gate, file map: [`docs/s
 3. **Auth logic is tested through the real code path.** Remove the `verify_auth` override and mock the DB only at the session boundary — see `rules/testing.md` → Auth tests.
 4. **New secret?** Add to the production lifespan validation in `backend/app.py` so missing config fails fast at boot.
 5. **OAuth callbacks:** validate origin / state parameter. Never trust the callback blindly.
-6. **Admin route check:** verify both per-route `Depends(...)` AND the `app.include_router(..., dependencies=[Depends(verify_admin)])` mount site. Protection may be applied at the router level (the admin router mount in `backend/app.py`) — a route without a per-route dep is NOT necessarily unprotected.
-7. **Unsure about a flow?** (OAuth state validation, a JWT edge case, a waitlist transition) Stop and ask Victor. Don't guess — auth mistakes ship to production.
+6. **CORS changes are deliberate.** Any change to CORS settings is recorded in the PR's Decisions with its reason.
+7. **Admin route check:** verify both per-route `Depends(...)` AND the `app.include_router(..., dependencies=[Depends(verify_admin)])` mount site. Protection may be applied at the router level (the admin router mount in `backend/app.py`) — a route without a per-route dep is NOT necessarily unprotected.
+8. **Unsure about a flow?** (OAuth state validation, a JWT edge case, a waitlist transition) Stop and ask Victor. Don't guess — auth mistakes ship to production.
 
 ## Required test scenarios for auth changes
 

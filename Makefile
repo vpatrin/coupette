@@ -95,6 +95,7 @@ migrate:
 # Generate migration against a clean, ephemeral Postgres (no dev DB drift).
 # Spins up a temporary container, runs all existing migrations, autogenerates,
 # then tears down. The result only contains real model changes.
+# DATABASE_URL is blanked: core settings prefer it over DB_*, and .env is exported.
 REVISION_CONTAINER := coupette-revision-tmp
 REVISION_PORT := 5433
 revision:
@@ -115,13 +116,14 @@ revision:
 	done
 	@echo "▶ Installing extensions..."
 	@docker exec $(REVISION_CONTAINER) psql -U migration -d migration \
-		-c "CREATE EXTENSION IF NOT EXISTS vector; CREATE EXTENSION IF NOT EXISTS pg_trgm;" >/dev/null
+		-c "CREATE EXTENSION IF NOT EXISTS vector; CREATE EXTENSION IF NOT EXISTS pg_trgm;" >/dev/null \
+		|| (docker rm -f $(REVISION_CONTAINER) >/dev/null; exit 1)
 	@echo "▶ Running existing migrations..."
-	cd core && DB_HOST=localhost DB_PORT=$(REVISION_PORT) DB_USER=migration \
+	cd core && DATABASE_URL= DB_HOST=localhost DB_PORT=$(REVISION_PORT) DB_USER=migration \
 		DB_PASSWORD=migration DB_NAME=migration \
 		poetry run alembic upgrade head || (docker rm -f $(REVISION_CONTAINER) >/dev/null; exit 1)
 	@echo "▶ Autogenerating migration..."
-	cd core && DB_HOST=localhost DB_PORT=$(REVISION_PORT) DB_USER=migration \
+	cd core && DATABASE_URL= DB_HOST=localhost DB_PORT=$(REVISION_PORT) DB_USER=migration \
 		DB_PASSWORD=migration DB_NAME=migration \
 		poetry run alembic revision --autogenerate -m "$(msg)" || (docker rm -f $(REVISION_CONTAINER) >/dev/null; exit 1)
 	@echo "▶ Tearing down ephemeral Postgres..."
