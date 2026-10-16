@@ -7,5 +7,5 @@ Applies when the diff touches the paths in `rules/auth.md` or adds or changes a 
 - **AUTH-3** OAuth callbacks validate state and origin.
 - **AUTH-4** Auth-logic tests run the real `verify_auth` path (override removed) — `rules/testing.md` → Auth tests.
 - **AUTH-5** Required scenarios covered: happy path · token expiry · invalid/tampered token · unauthenticated request · authorized user · waitlist gate (if relevant).
-- **AUTH-6** `/security` ran on the branch and no Critical or High finding is open.
+- **AUTH-6** The security checklist (`security.md`) was applied in depth and no Critical or High finding is open.
 - **AUTH-7** A threat-model change is reflected in `docs/SECURITY.md`.

@@ -1,4 +1,5 @@
 ---
+name: land-pr
 description: Get one of your own PRs ready to land — rebase onto main, resolve only mechanically-regenerable conflicts, then arm GitHub's auto-merge queue. Never merges directly, never touches Dependabot PRs.
 disable-model-invocation: true
 ---

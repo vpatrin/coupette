@@ -1,3 +1,8 @@
+---
+name: pr
+description: Create or finish the pull request for the current branch — CHANGELOG and ROADMAP checks, AC → evidence table, Decisions compiled from commit bodies, Review line. Use when asked to open, create, or update a PR.
+---
+
 Create or finish the PR for the current branch.
 
 ## Steps
@@ -21,4 +26,4 @@ Create or finish the PR for the current branch.
 
 - Push the branch only, never tags — tag pushes deploy.
 - No PR for a user-visible change without a CHANGELOG line.
-- **Scope:** this command doesn't review code (`/review`) or audit security (`/security`).
+- **Scope:** this skill doesn't review code (`/review`) or audit security (`/review security`).

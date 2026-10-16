@@ -10,7 +10,7 @@ You change one lever at a time, measure the impact, keep what works, revert what
 
 Requirements: local PostgreSQL with embedded products must be running.
 
-**Relationship to `/ai`:** `/ai` reviews AI *design and architecture*. This skill *tunes scores* through measured experimentation. Run `/ai` to decide what to build. Run this to tune what you've built.
+**Relationship to `/review ai`:** `/review ai` reviews AI *design and architecture* against the AI checklist. This skill *tunes scores* through measured experimentation. Use the review to decide what to build; run this to tune what you've built.
 
 ## Mode
 

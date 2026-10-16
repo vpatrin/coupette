@@ -1,4 +1,5 @@
 ---
+name: garden
 description: Run an unattended CI upkeep pass — triage red PRs (Dependabot and non-Dependabot), manage ignore-file entries, arm auto-merge on qualifying Dependabot PRs and on its own fix PRs, and surface real breaks for human review.
 disable-model-invocation: true
 ---
