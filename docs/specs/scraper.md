@@ -12,6 +12,7 @@ What the scraper exposes (CLI flags via `python -m scraper`):
 | `--enrich-wines` | One-time (re-run manually) | `taste_tag`, `tasting_profile`, `grape_blend`, `vintage` on wine products | Wine only (~30.9k) |
 | `--embed-sync` | After monthly scrape | Recomputes pgvector embeddings where `attribute_hash != embedded_hash` | Wine only (~30.9k initial, ~0–20 incremental) |
 | (monthly HTML scrape) | Monthly | New SKU `description` + static fields; marks delisted SKUs | Sitemap diff (~0–20 pages/month) |
+| `seed` | Local dev only (`make seed`, called by `make dev`) | Synthetic `stores` + `products` from `scraper/scraper/fixtures/dev_catalog.json`, in one transaction; no embeddings, no network | Skipped when `products` has rows; refused when `ENVIRONMENT=production` |
 
 **Writer ownership rule:** every column on `products` has exactly one writer. No overlap between CLI flags (see [Writer ownership](#writer-ownership) below).
 
@@ -115,13 +116,14 @@ Bot + frontend are wine-focused. Of ~38k SAQ products, ~30.9k wine products are 
 | Concern | Where |
 |---|---|
 | Entry point + command dispatch | `scraper/scraper/__main__.py` |
-| CLI commands | `scraper/scraper/commands/{availability,enrich,embed,scrape,stores}.py` |
+| CLI commands | `scraper/scraper/commands/{availability,enrich,embed,scrape,seed,stores}.py` |
 | Adobe Live Search client | `scraper/scraper/adobe.py` |
 | Sitemap fetching | `scraper/scraper/sitemap.py` |
 | Robots.txt compliance | `scraper/scraper/robots.py` |
 | Product page scraping | `scraper/scraper/products.py` |
 | Stores | `scraper/scraper/stores.py` |
 | Embedding batch + upsert | `scraper/scraper/embed.py`, `scraper/scraper/db/embeddings.py` |
+| Dev seed fixture + insert | `scraper/scraper/fixtures/dev_catalog.json`, `scraper/scraper/db/seed.py` |
 | Models | `core/db/models/{product,store,watch,stock_event}.py` |
 | Tests | `scraper/tests/` |
 

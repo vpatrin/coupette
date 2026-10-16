@@ -181,6 +181,30 @@ class TestInsertSeedCatalog:
         assert all("ON CONFLICT DO NOTHING" in sql for sql in compiled)
 
 
+class TestCountProducts:
+    async def test_returns_row_count_from_products_table(self, mock_db_session) -> None:
+        mock_session, mock_factory = mock_db_session
+        mock_session.scalar.return_value = 42
+
+        with patch("scraper.db.seed.SessionLocal", mock_factory):
+            from scraper.db.seed import count_products
+
+            result = await count_products()
+
+        assert result == 42
+
+    async def test_returns_zero_when_count_query_yields_none(self, mock_db_session) -> None:
+        mock_session, mock_factory = mock_db_session
+        mock_session.scalar.return_value = None
+
+        with patch("scraper.db.seed.SessionLocal", mock_factory):
+            from scraper.db.seed import count_products
+
+            result = await count_products()
+
+        assert result == 0
+
+
 class TestLoadDevCatalog:
     def test_returns_at_least_one_store_and_one_product(self) -> None:
         from scraper.commands.seed import load_dev_catalog
