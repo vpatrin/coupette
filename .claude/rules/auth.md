@@ -32,4 +32,4 @@ happy path · token expiry · invalid/tampered token · unauthenticated request 
 
 ## Before the PR
 
-Run `/security` on the branch. A Critical or High finding blocks the PR. If the change alters the threat model, update `docs/SECURITY.md` in the same PR.
+In `/feature`, the reviewer applies the security checklist in depth on auth paths (`AUTH-6`); outside it, run `/review security`. A Critical or High finding blocks the PR. If the change alters the threat model, update `docs/SECURITY.md` in the same PR.

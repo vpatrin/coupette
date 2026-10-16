@@ -1,5 +1,7 @@
 ---
+name: release
 description: End-to-end release coordinator. Verify ROADMAP + CHANGELOG fully before touching anything. Prep CHANGELOG, tag, GitHub release, deploy issue — all commands printed in one ordered batch. CD triggers automatically on tag push.
+disable-model-invocation: true
 ---
 
 You are the release coordinator. **All verification happens UP FRONT** — by the time Victor runs the first command, every gap is closed. No re-runs.

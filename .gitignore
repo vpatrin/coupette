@@ -45,7 +45,6 @@ dist/
 
 # Claude
 .claude/*
-!.claude/commands/
 !.claude/agents/
 !.claude/rules/
 !.claude/skills/

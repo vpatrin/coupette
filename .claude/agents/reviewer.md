@@ -27,7 +27,7 @@ From `/feature`, the prompt gives you: the ticket id and acceptance criteria ver
 
 1. **Committed state only.** `git status --porcelain` must be empty — otherwise return CANNOT REVIEW. Then `git fetch -q origin main` and `BASE=$(git merge-base origin/main HEAD)` (local `main` is often stale in workspaces).
 2. **Read the diff.** `git diff $BASE...HEAD --stat`, then the full diff. Read `CLAUDE.md` Hard Rules and the `.claude/rules/*.md` for every touched surface.
-3. **Checklists.** Always [`core.md`](../skills/review/checklists/core.md). Add by touched path, all in `.claude/skills/review/checklists/`: `auth.md` for the auth paths in `rules/auth.md` or any new or changed route in `backend/api/`; `rag.md`; `scraper.md`; `frontend.md`; `migrations.md`.
+3. **Checklists.** Always [`core.md`](../skills/review/checklists/core.md). Add each one whose header matches the diff, all in `.claude/skills/review/checklists/`: `auth.md`, `security.md`, `data.md`, `ai.md`, `rag.md`, `scraper.md`, `frontend.md`, `migrations.md`. When the auth checklist applies, apply `security.md` in depth too — read the touched files in full (`AUTH-6`).
 4. **TDD checks.** A ticket with behavioral ACs and no red SHA fails TEST-1. `Red: none — <reason>` is fine only when no AC has testable code behavior. With a red SHA: TEST-3 `git show --name-only --format= <red>`; TEST-2 `git diff <red>..HEAD -- <red test files>` — a removed test, a loosened assertion, or a new skip is a BLOCK unless the Decisions record a guessed-interface rename; TEST-1 every AC maps to a red test, except ACs the red-test-writer reported untestable, which need an EVID-1 row instead.
 5. **Diff coverage** (TEST-4), re-run yourself — never trust a reported number. Per touched Python service: `T=$(mktemp -d)`, `cd <svc> && poetry run pytest --cov --cov-branch --cov-report=xml:$T/cov.xml -q`, then `poetry run diff-cover $T/cov.xml --compare-branch=$BASE --fail-under=80`. A `core/` change: run it from each service that imports the touched module. Frontend (no tooled threshold yet): read the diff and check every new branch is exercised; a gap is a WARN.
 6. **Evidence** (EVID-1): every AC row names a test, a runnable command, or an artifact. Open screenshot files under `.claude/evidence/` and check they show the AC.
@@ -47,8 +47,9 @@ No audit log for admin actions · no OAuth event logging · no log redaction fil
 ## Modes (`/review` arguments)
 
 - none → the procedure above on the current branch
-- a topic (e.g. "error handling") → steps 1–2, then review the diff only through that lens
-- `--full` → repo-wide quality audit: the 10 highest-risk files against the checklists; list what you deferred
+- a checklist name (`security`, `data`, `ai`, `auth`, …) → steps 1–2, then apply that checklist in depth to the diff, reading touched files in full
+- any other topic (e.g. "error handling") → steps 1–2, then review the diff only through that lens
+- `--full` (optionally with a checklist name) → repo-wide audit: the 10 highest-risk files against the checklists; list what you deferred
 
 ## Rebuttals
 
@@ -64,6 +65,6 @@ Review line: <verdict> — <IDs blocked, or "no blocks">   ← the PR body's Rev
 |----|----------|-----------|---------|
 
 Soft fixes proposed: <ID → rule/skill/CLAUDE.md line, or "none">
-Recommend: </security, /data, /ai when the diff warrants a deeper pass, or "none">
+Recommend: </review security, /review data, /review ai when the diff warrants a deeper pass, or "none">
 Not checked: <checks skipped for missing input, or "none">
 ```

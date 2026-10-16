@@ -34,13 +34,13 @@ Each doc has clear consumers. Most are read on demand rather than auto-loaded.
 
 | Doc | Who reads it | When |
 |---|---|---|
-| `roadmap.md` | `/po` · `/release` · `/roadmap-status` | Planning (phase context) |
+| `roadmap.md` | `/breakdown` · `/release` · `/status` | Planning (phase context) |
 | `security.md` | `/feature` (risky lane) · reviewer (auth/user-data diffs) | Auth + API diffs |
 | `specs/<x>.md` | `/feature` recon (linked from the matching rule) | When touching subsystem X |
 | `architecture.md` | `/feature` recon (cross-cutting changes) · humans | First read, big-picture work |
 | `development.md` | `/feature` (migrations) · new contributors | Migration work, local setup |
-| `engineering.md` | `/po` (avoid duplicate work) · `/roadmap-status` | Planning |
-| `scaling.md` | `/health` · ops at 3am | Operational events |
+| `engineering.md` | `/breakdown` (avoid duplicate work) · `/status` | Planning |
+| `scaling.md` | `/status --health` · ops at 3am | Operational events |
 | `product-vision.md` | Humans only | Interview / portfolio |
 | `adrs/<NNNN>-*.md` | `/feature` when the touched rule links one | Read once, baseline context |
 
@@ -50,7 +50,7 @@ Each doc has clear consumers. Most are read on demand rather than auto-loaded.
 |---|---|
 | [`.claude/rules/*.md`](../.claude/rules/) | Agent-facing imperative rules — auto-load when Claude edits matching files |
 | [`.claude/agents/*.md`](../.claude/agents/) | Subagents: `red-test-writer`, `reviewer`, `gardener` |
-| [`.claude/skills/`](../.claude/skills/) · [`.claude/commands/`](../.claude/commands/) | Skills (`/feature`, `/review`, …) and slash commands |
+| [`.claude/skills/`](../.claude/skills/) | Skills (`/feature`, `/review`, `/pr`, …) |
 | [`CLAUDE.md`](../CLAUDE.md) | Project meta + hard rules (loaded every session) |
 | [`CHANGELOG.md`](../CHANGELOG.md) | User-facing release notes |
 

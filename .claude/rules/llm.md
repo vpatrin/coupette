@@ -39,7 +39,7 @@ Never write user-facing text implying affiliation with SAQ. Applies to system pr
 
 `make eval` runs intent + curation scoring. Run after any prompt change. See `/eval-pipeline` skill.
 
-## When to consult `/ai` vs `/eval-pipeline`
+## When to use `/review ai` vs `/eval-pipeline`
 
-- `/ai` for design decisions (new LLM surface, retrieval architecture, prompt strategy)
+- `/review ai` for design review (new LLM surface, retrieval architecture, prompt strategy)
 - `/eval-pipeline` for score tuning on existing surfaces

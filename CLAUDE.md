@@ -91,7 +91,7 @@ Issue → Branch → PR → Squash merge.
 Ticket work runs through `/feature VPA-NN` (see [`.claude/README.md`](.claude/README.md)), which covers the steps below plus red tests, evidence, and docs. Outside `/feature`, before creating a PR:
 1. `/review` — must not BLOCK
 2. `/simplify` — cleanup on changed code
-3. `/security` — IMPORTANT if branch touches auth, API, or user data
+3. `/review security` — IMPORTANT if branch touches auth, API, or user data
 4. `/pr` — create the PR
 
 When compacting, preserve the ticket id, the current `.claude/progress.md`, the list of modified files, and the test commands.

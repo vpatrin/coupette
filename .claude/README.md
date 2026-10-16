@@ -28,7 +28,7 @@ BLOCK → one fix loop → still BLOCK → Victor
 PR: AC → evidence table · Decisions · Review line · Harness friction    → Victor merges
 ```
 
-**Lanes.** *Default*: no human gate between ticket and merge, except a genuinely non-obvious choice. *Risky* (auth, migrations, RAG prompts and retrieval): adds a plan checkpoint, `/security` or `make eval`, and a longer Decisions section.
+**Lanes.** *Default*: no human gate between ticket and merge, except a genuinely non-obvious choice. *Risky* (auth, migrations, RAG prompts and retrieval): adds a plan checkpoint, the reviewer's in-depth security pass or `make eval`, and a longer Decisions section.
 
 ## Design principles
 
@@ -49,10 +49,15 @@ Provenance: **Anthropic** (official doc or engineering post) · **Adapted** (cha
 | Skill | Purpose | Provenance |
 |---|---|---|
 | [`feature`](skills/feature/SKILL.md) | The flow above, from ticket to PR | **Adapted** from best practices' Explore → Plan → Implement → Commit, its interview step, and "`/clear` after two failed corrections". **Ours**: lanes, the red commit, the AC → evidence table |
-| [`review`](skills/review/SKILL.md) | Runs the `reviewer` agent in a forked context; `/review <topic>` for a focused pass | **Anthropic** skill `context: fork`. **Ours**: checklists with stable IDs |
+| [`review`](skills/review/SKILL.md) | Runs the `reviewer` agent in a forked context; `/review security\|data\|ai` for an in-depth audit, `--full` for the repo | **Anthropic** skill `context: fork`. **Ours**: checklists with stable IDs, replacing standalone security, data, and AI advisors |
+| [`pr`](skills/pr/SKILL.md) | Opens the PR: CHANGELOG and ROADMAP checks, AC → evidence table, Decisions compiled from commit bodies | **Ours** |
+| [`coordinate`](skills/coordinate/SKILL.md) | The main workspace dispatches one `/feature` worker per ticket, relays blocks to Victor, verifies CI and evidence; never edits code. Typed only (`disable-model-invocation`) | **Adapted** from Superset's `orchestrate` skill (transport, worker envelopes). **Ours**: the ticket as a lossless handoff to a full session (Cognition: share full context), state rebuilt from Linear, Superset, and GitHub instead of a scratchpad |
+| [`adr`](skills/adr/SKILL.md) | Drafts an ADR only when a 4-test gate passes; otherwise the decision goes in the PR | **Adapted** from Michael Nygard's ADR format (Context, Decision, Status, Consequences). **Ours**: Options and Rationale sections, and the gate that keeps ADRs rare |
+| [`status`](skills/status/SKILL.md) | Roadmap vs Linear vs code, next tasks; `--health` scorecard from the review checklists | **Ours** |
 | [`eval-pipeline`](skills/eval-pipeline/SKILL.md) | Tunes the RAG pipeline one lever at a time against a fixed benchmark with a holdout split | **Ours** — LLM-as-judge scores, never auto-fired (it costs money) |
+| [`release`](skills/release/SKILL.md) · [`land-pr`](skills/land-pr/SKILL.md) · [`garden`](skills/garden/SKILL.md) | Release prep (Victor pushes the tag), rebase + arm auto-merge, Dependabot upkeep | **Ours**. `disable-model-invocation`: run only when typed, and absent from the always-loaded skill list |
 
-`commands/` holds the remaining slash commands until they move to skills.
+Tickets come from the global `breakdown` skill: an interview first (**Anthropic** best practices — "interview me in detail using the AskUserQuestion tool"), INVEST checks (**Practitioner**: Bill Wake), and templates carrying the lane and an end-to-end verification line.
 
 ### Agents — `agents/`
 
@@ -86,7 +91,7 @@ All agents use `model: inherit`.
 | Piece | Purpose | Provenance |
 |---|---|---|
 | [`rules/`](rules/) — one file per domain, `paths:` frontmatter | Instructions that load only when Claude edits matching files; they link to `docs/specs/` and never restate it | **Anthropic** memory docs (`paths` frontmatter); HumanLayer — "concise and universally applicable" CLAUDE.md, progressive disclosure |
-| [`skills/review/checklists/`](skills/review/checklists/) | The gates the old specialist agents carried, as IDs (`AUTH-1`, `TEST-2`…) | **Ours** — a BLOCK must cite something checkable, and recurrences become searchable across PRs |
+| [`skills/review/checklists/`](skills/review/checklists/) | The gates the old specialist agents and advisor commands carried, as IDs: core, auth, security, data, ai, rag, scraper, frontend, migrations (`AUTH-1`, `SEC-3`, `TEST-2`…) | **Ours** — a BLOCK must cite something checkable, and recurrences become searchable across PRs |
 
 ### Tooling
 
@@ -109,7 +114,7 @@ Maintenance is triggered by a breached budget, not a calendar:
 | Budget | Limit | Now |
 |---|---|---|
 | Project `CLAUDE.md` | ≤ 150 lines | 128 |
-| Fixed context of a coupette session (`claude -p "/context"`) | ≤ 10% over the post-rework baseline | 21.4k (baseline, 2026-10-16; 22k before) |
+| Fixed context of a coupette session (`claude -p "/context"` in a fresh `git clone` — a worktree also loads the original checkout's `.claude/`) | ≤ 10% over the post-rework baseline | 20.2k (2026-10-16; base before slice 3: 20.6k; 22k before the rework, measured in a worktree) |
 
 Otherwise a rule is fixed the second time the same mistake happens, inside the current feature's PR.
 
@@ -130,8 +135,8 @@ claude -n VPA-NN          # named after the ticket; `claude --resume VPA-NN` fin
 ```
 .claude/
 ├── agents/        red-test-writer · reviewer · gardener
-├── skills/        feature (+ stop-check.sh) · review (+ checklists/) · eval-pipeline
-├── commands/      remaining slash commands
+├── skills/        feature (+ stop-check.sh) · review (+ checklists/) · pr · coordinate · adr · status
+│                  eval-pipeline · release · land-pr · garden
 ├── rules/         path-scoped instructions
 ├── settings.json  project hooks (SessionStart, Stop) + LSP plugins
 ├── progress.md    per-workspace /feature state (gitignored)
