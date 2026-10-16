@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import {
   ArrowSquareOutIcon as ArrowSquareOut,
+  CheckIcon as Check,
   HeartIcon as Heart,
   NotePencilIcon as NotePencil,
   ArrowLeftIcon as ArrowLeft,
@@ -12,7 +13,11 @@ import { useApiClient, ApiError } from '@/lib/api'
 import type { ProductOut, UserStorePreferenceOut, WatchWithProduct } from '@/lib/types'
 import { CATEGORY_DOT, formatOrigin } from '@/lib/utils'
 import AddToCellarButton from '@/components/AddToCellarButton'
+import TastingFormModal from '@/components/TastingFormModal'
 import { useCellarQuantities } from '@/hooks/useCellar'
+
+// How long the pencil shows a check after a tasting note is saved
+const SAVE_CONFIRM_MS = 2000
 
 interface WineDetailPanelProps {
   sku: string | null
@@ -39,6 +44,17 @@ function WineDetailPanel({ sku, onClose }: WineDetailPanelProps) {
   const [watchingInProgress, setWatchingInProgress] = useState<string | null>(null)
   const [storeIds, setStoreIds] = useState<string[]>([])
   const [storeNames, setStoreNames] = useState<Map<string, string>>(new Map())
+  const [tastingOpen, setTastingOpen] = useState(false)
+  // A SKU, not a boolean, so the check doesn't carry over when the panel switches wines
+  const [savedSku, setSavedSku] = useState<string | null>(null)
+
+  // A route change clears sku while the form may be open — drop the form so it can't
+  // reappear on the next open and post the previous wine (TastingForm keeps its first product)
+  const [prevSku, setPrevSku] = useState(sku)
+  if (sku !== prevSku) {
+    setPrevSku(sku)
+    setTastingOpen(false)
+  }
 
   // loadedSku tracks what's currently shown; when sku differs, show skeleton
   const isLoading = sku !== null && loadedSku !== sku
@@ -133,11 +149,25 @@ function WineDetailPanel({ sku, onClose }: WineDetailPanelProps) {
   useEffect(() => {
     if (!sku) return
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+      if (e.key !== 'Escape') return
+      // The tasting modal sits on top — Escape closes it first, the panel stays
+      if (tastingOpen) setTastingOpen(false)
+      else onClose()
     }
     document.addEventListener('keydown', handler)
     return () => document.removeEventListener('keydown', handler)
-  }, [sku, onClose])
+  }, [sku, onClose, tastingOpen])
+
+  // Started in the save handler, not an effect — the countdown is tied to the event
+  const savedTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  useEffect(() => () => clearTimeout(savedTimer.current), [])
+
+  const handleNoteSaved = useCallback((savedFor: string) => {
+    setTastingOpen(false)
+    setSavedSku(savedFor)
+    clearTimeout(savedTimer.current)
+    savedTimer.current = setTimeout(() => setSavedSku(null), SAVE_CONFIRM_MS)
+  }, [])
 
   const handleWatch = useCallback(
     async (targetSku: string) => {
@@ -192,6 +222,8 @@ function WineDetailPanel({ sku, onClose }: WineDetailPanelProps) {
     const origin = formatOrigin(p)
     const grapes = p.grape ?? null
     const cellarQuantity = cellarQuantities.get(p.sku)
+    const justSaved = savedSku === p.sku
+    const noteLabel = justSaved ? t('wineDetail.noteSaved') : t('wineDetail.addNote')
 
     const details: { label: string; value: string }[] = []
     if (origin) details.push({ label: t('wineDetail.region'), value: origin })
@@ -244,13 +276,26 @@ function WineDetailPanel({ sku, onClose }: WineDetailPanelProps) {
           </button>
           <button
             type="button"
-            disabled
-            title={t('userMenu.soon')}
-            className="border-border text-muted-foreground/20 flex h-7 w-7 cursor-not-allowed items-center justify-center rounded-lg border"
+            onClick={() => setTastingOpen(true)}
+            aria-label={noteLabel}
+            title={noteLabel}
+            className={`flex h-7 w-7 items-center justify-center rounded-lg border transition-colors ${
+              justSaved
+                ? 'border-primary/40 bg-primary/10 text-primary'
+                : 'border-border text-muted-foreground hover:text-foreground hover:border-border/80'
+            }`}
           >
-            <NotePencil size={13} />
+            {justSaved ? <Check size={13} weight="bold" /> : <NotePencil size={13} />}
           </button>
         </div>
+
+        {tastingOpen && (
+          <TastingFormModal
+            initialProduct={p}
+            onSave={() => handleNoteSaved(p.sku)}
+            onClose={() => setTastingOpen(false)}
+          />
+        )}
 
         <div className="border-border/50 flex items-center gap-3 border-b px-5 py-3">
           <AddToCellarButton product={p} />

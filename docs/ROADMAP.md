@@ -34,6 +34,7 @@ Log wines you've tasted with 100-point ratings and tasting notes. SAQ catalog wi
 - [x] "Log tasting" inline form on product cards (#444)
 - [x] My Tastings page (#445)
 - [x] Surface "You rated: 92" on product cards in search results (#446)
+- [x] Rate a wine from the wine detail panel (VPA-23)
 
 Design reference: `ui/journal/journal.html`, `ui/journal/notif-noteview.html`
 

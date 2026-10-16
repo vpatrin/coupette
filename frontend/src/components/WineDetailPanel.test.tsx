@@ -274,4 +274,21 @@ describe('WineDetailPanel rating entry point', () => {
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(onClose).toHaveBeenCalledOnce()
   })
+
+  it('drops the open tasting form when the panel closes on a route change', async () => {
+    apiReturning(product())
+    const { rerender } = renderPanel('SKU001')
+    await openTastingForm()
+    const tree = (sku: string | null) => (
+      <QueryClientProvider client={new QueryClient()}>
+        <MemoryRouter>
+          <WineDetailPanel sku={sku} onClose={vi.fn()} />
+        </MemoryRouter>
+      </QueryClientProvider>
+    )
+    rerender(tree(null))
+    rerender(tree('SKU001'))
+    await screen.findByRole('heading', { level: 2 })
+    expect(screen.queryByText('Add a note')).not.toBeInTheDocument()
+  })
 })
