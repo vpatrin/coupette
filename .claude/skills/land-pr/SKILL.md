@@ -57,7 +57,7 @@ Abort with a one-line reason if any fails:
 
 6. **Arm auto-merge.** Required checks on `main` are `lint`, `test`, `security`, `build`.
    - If a required check is **failed** and step 3 did not just rebase, do not arm. Report which one and stop — a PR still red on current `main` is a real break, Victor's to fix.
-   - After a rebase and force-push, the checks re-run as pending; arm as below. GitHub merges only if they go green.
+   - After a rebase and force-push, re-read the checks on the new head SHA. If the head did not change, or a required check on it is still failed, stop as above; otherwise the checks re-run as pending — arm as below.
    - If checks are green or pending: `gh pr merge --auto --squash <PR>`.
    - The repo has `delete_branch_on_merge: true`, so the branch is cleaned up automatically.
 
