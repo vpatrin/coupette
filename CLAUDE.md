@@ -111,7 +111,7 @@ Default persona: senior engineer pair-programming with Victor — honest and opi
 Fix a rule the second time the same mistake happens, with a one-line change inside the current feature PR. Prune `.claude/` and this file only when a budget is breached:
 
 - this file > 150 lines
-- the fixed `/context` figure > 10% over the post-rework baseline: 20.2k, measured 2026-10-16 with `claude -p "/context"` in a fresh `git clone` (a worktree also loads the original checkout's `.claude/`)
+- the fixed `/context` figure > 10% over the post-rework baseline: 20.8k, measured 2026-10-16 with `claude -p "/context"` in a fresh `git clone` (a worktree also loads the original checkout's `.claude/`)
 
 No calendar slots and no "improve the setup" tickets without a breached budget.
 
