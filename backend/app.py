@@ -12,6 +12,7 @@ from slowapi.middleware import SlowAPIMiddleware
 
 from backend.api.admin import router as admin_router
 from backend.api.auth import router as auth_router
+from backend.api.cellar import router as cellar_router
 from backend.api.chat import router as chat_router
 from backend.api.health import router as health_router
 from backend.api.products import router as products_router
@@ -129,6 +130,7 @@ app.include_router(products_router, prefix="/api", dependencies=_auth)
 app.include_router(stores_router, prefix="/api", dependencies=_auth)
 app.include_router(watches_router, prefix="/api", dependencies=_auth)
 app.include_router(tastings_router, prefix="/api", dependencies=_auth)
+app.include_router(cellar_router, prefix="/api", dependencies=_auth)
 app.include_router(recommendations_router, prefix="/api", dependencies=_auth)
 app.include_router(chat_router, prefix="/api", dependencies=_auth)
 app.include_router(users_router, prefix="/api", dependencies=_auth)

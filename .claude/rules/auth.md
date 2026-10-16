@@ -15,7 +15,7 @@ paths:
 
 ## Mechanisms
 
-- **JWT** — HS256, issued by `backend/services/auth.py`. Decoded + user lookup + active check in `backend/auth.py` (`verify_auth`, `verify_admin`, `get_caller_user_id`). Bearer scheme via FastAPI `HTTPBearer`.
+- **JWT** — HS256, issued by `backend/services/auth.py`. Decoded + user lookup + active check in `backend/auth.py` (`verify_auth`, `verify_admin`, `get_current_active_user`, `get_caller_user_id`). Bearer scheme via FastAPI `HTTPBearer`.
 - **OAuth (Google)** — `backend/services/google_oauth.py`. Lifespan startup validates client ID + secret in production.
 - **OAuth (GitHub)** — `backend/services/github_oauth.py`. Same lifespan validation.
 - **Bot secret** — `require_bot_secret()` checks `X-Bot-Secret` header. Used for backend ↔ Telegram bot RPC. Never exposed to end users.

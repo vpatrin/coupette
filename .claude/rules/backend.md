@@ -24,7 +24,8 @@ backend/
 ## Conventions
 
 - **Async all the way.** `AsyncSession` from SQLAlchemy 2.0. Routes are `async def`. Don't introduce sync DB calls — `from sqlalchemy.orm import Session` is wrong here.
-- **Dependency injection everywhere.** Use `Depends(get_db)`, `Depends(verify_auth)`, `Depends(verify_admin)`, `Depends(get_caller_user_id)`. Never instantiate sessions or auth checks inline.
+- **Dependency injection everywhere.** Use `Depends(get_db)`, `Depends(verify_auth)`, `Depends(verify_admin)`, `Depends(get_caller_user_id)`, `Depends(get_current_active_user)`. Never instantiate sessions or auth checks inline.
+- **Which user dependency.** `get_caller_user_id` yields the legacy `"user:{id}"` string and lets bot-secret callers through (watches, tastings). `get_current_active_user` yields the `User` (use `user.id`, an integer) and is JWT-only: use it for tables with an integer `users.id` FK, e.g. `cellar_entries`.
 - **Route → service → repository.** Routes never query the DB directly. Services raise domain exceptions (`NotFoundError`, `ConflictError`, etc.), not `HTTPException` — `backend/errors.py` translates.
 - **Schemas separate from models.** `backend/schemas/` (Pydantic, API contract) is independent of `core/` (SQLAlchemy, persistence). One model maps to many schemas.
 - **Lifespan validation.** Production mode fails fast if any secret is missing. Add new secrets to the lifespan check in `backend/app.py`.
