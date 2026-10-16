@@ -52,7 +52,7 @@ While `.claude/progress.md` exists, the project Stop hook ([`stop-check.sh`](sto
 
 - Commit everything first: the reviewer won't review a dirty tree.
 - Draft the AC → evidence table (from `.claude/progress.md`, screenshot paths, the e2e result, eval scores) and the Decisions list (from commit bodies).
-- Spawn `reviewer` (Agent tool) with the ticket id, ACs verbatim, lane, red SHA, the red-test-writer report, the evidence table, and the Decisions. Risky lane: pass `effort: "xhigh"`.
+- Spawn `reviewer` (Agent tool) with the ticket id, ACs verbatim, lane, red SHA, the red-test-writer report, the evidence table, and the Decisions. Risky lane: pass `effort: "xhigh"`. When it returns, `git status --porcelain` must still be empty — it has Write/Edit for its memory, and Bash; any repo change means stop and report BLOCKED.
 - Risky lane also: auth → run `/security` and fix any Critical or High; RAG prompt or retrieval → `make eval`, scores into the evidence table.
 - BLOCK → fix exactly the cited findings, or rebut one in writing with evidence. One fix loop: re-run the reviewer with the same inputs plus its first verdict table and, per finding ID, the fix commit or the rebuttal. Still BLOCK → stop and report to Victor.
 
