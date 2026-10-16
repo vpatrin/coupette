@@ -54,7 +54,7 @@ The coding session updates docs in the same PR as the behavior change; the revie
 Single product version via git tags. No version bumps in `pyproject.toml`.
 
 - **Semver**: PATCH for fixes, MINOR for new user-facing capabilities, MAJOR when it matters (not now)
-- **Tag on main at deploy time**: `git tag v1.0.1 && git push --tags`
+- **Tag on main at deploy time:** Victor runs it; `/release` prints the exact commands. Cadence: after each shipped feature or milestone.
 - **CHANGELOG.md** at root, [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format
 
 ## Changelog workflow

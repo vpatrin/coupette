@@ -18,7 +18,7 @@ Explain only non-obvious patterns: the why behind state, rendering, and data-fet
 Stack, entry points, file map, dev and build notes: [`docs/specs/frontend.md`](../../docs/specs/frontend.md).
 
 - yarn classic v1 — never npm
-- State: React built-ins (useState, useContext) — no Redux/Zustand until proven necessary
+- State: TanStack Query for server state (ADR-0011); React built-ins (useState, useContext) for UI state — no Redux/Zustand until proven necessary
 - HTTP: the thin fetch wrapper — no axios
 
 ## Component conventions
@@ -40,7 +40,7 @@ Stack, entry points, file map, dev and build notes: [`docs/specs/frontend.md`](.
 ## Dev workflow
 
 - Desktop-first 1200px+, dark mode default
-- **Visual review:** rendered output is the ground truth — reading HTML/CSS is not a substitute. For a UI acceptance criterion, run the app (`run` skill or a browser tool), take a browser screenshot, and save it to `.claude/evidence/` and name the file in the AC's evidence row — GitHub's CLI can't upload images, so the coordinator or Victor opens it from the workspace. Without a browser tool, ask Victor for the screenshot. Authenticated pages need the dev login from VPA-52.
+- **Visual review:** rendered output is the ground truth — reading HTML/CSS is not a substitute. For a UI acceptance criterion, run the app (`run` skill or a browser tool), take a browser screenshot, and save it to `.claude/evidence/` and name the file in the AC's evidence row — GitHub's CLI can't upload images, so the coordinator or Victor opens it from the workspace. Without a browser tool, ask Victor for the screenshot. Authenticated pages can't be screenshotted until VPA-52 adds a dev login — say so in the evidence row.
 
 ## Design direction
 

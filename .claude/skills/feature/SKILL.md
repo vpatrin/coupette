@@ -26,7 +26,7 @@ While `.claude/progress.md` exists, the project Stop hook ([`stop-check.sh`](sto
 - Read the `.claude/rules/` file and `docs/specs/` page for each touched surface. Use the built-in Explore agent only when the surface is wide (several services, unfamiliar code).
 - Plan before code when the change spans several files or the approach is uncertain; skip the plan when the diff fits in one sentence. The plan **names the interfaces**: endpoint paths and methods, schema names (`*In`/`*Out`) and fields, function signatures, component props.
 - Consult the advisor before committing to the approach.
-- A non-obvious product or technical choice → `AskUserQuestion`, recommendation first. On a Learning topic (LLM evals, frontend fundamentals, lower-level depth), present the options and let Victor choose before implementing.
+- A non-obvious product or technical choice → `AskUserQuestion`, recommendation first. On a Learning topic (`~/.claude/learning.md` → Learning), present the options and let Victor choose before implementing.
 - **Risky lane:** show the plan and wait for Victor's OK (plan checkpoint). A RAG plan states the `make eval` run it needs — it costs API money, and the OK covers it.
 
 ## 3. Red tests — a separate writer

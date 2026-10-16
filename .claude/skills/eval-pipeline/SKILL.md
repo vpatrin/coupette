@@ -1,6 +1,6 @@
 ---
 name: eval-pipeline
-description: Systematically tune the RAG recommendation pipeline through measured iteration — baseline eval, one-lever-at-a-time changes, holdout validation. Use only when explicitly invoked; never auto-fire (it costs money and takes time).
+description: Systematically tune the RAG recommendation pipeline through measured iteration — baseline eval, one-lever-at-a-time changes, holdout validation. Costs API money and time.
 disable-model-invocation: true
 ---
 
@@ -92,7 +92,6 @@ The skill references but does NOT ship the eval datasets, levers reference, or r
 - `backend/benchmarks/eval/levers.md` — lever catalog
 - `backend/benchmarks/eval/results/` — per-run JSON outputs
 
-If you ever want a baselines/snapshots folder to ship with the skill (for cross-run comparison without git archaeology), add `baselines/` here and update step 4 to use it.
 
 ## Output
 

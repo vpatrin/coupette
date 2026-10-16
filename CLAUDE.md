@@ -2,7 +2,7 @@
 
 Wine discovery + recommendations via Telegram bot and web app. Modular monolith on Hetzner, sitemap scraper for SAQ catalog, pgvector + Claude Haiku for retrieval and curation.
 
-## Hard Rules — YOU MUST NOT violate any of these
+## Hard Rules
 
 **Git:** the global invariants apply (`~/.claude/rules/git-workflow.md`; tag pushes, pushes to main, and AI attribution are blocked by the `git-guard` hook). Subagents never commit or push — the main session only. Project exceptions to "never merge" and "never force-push", each only as written:
 
@@ -87,7 +87,7 @@ Issue → Branch → PR → Squash merge.
 Ticket work runs through `/feature VPA-NN` (see [`.claude/README.md`](.claude/README.md)), which covers the steps below plus red tests, evidence, and docs. Outside `/feature`, before creating a PR:
 1. `/review` — must not BLOCK
 2. `/simplify` — cleanup on changed code
-3. `/review security` — IMPORTANT if branch touches auth, API, or user data
+3. `/review security` — when the branch touches auth, an API route, or user data
 4. `/pr` — create the PR
 
 When compacting, preserve the ticket id, the current `.claude/progress.md`, the list of modified files, and the test commands.
