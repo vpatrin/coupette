@@ -412,7 +412,9 @@
     "availability": "Availability",
     "noStores": "Save stores to see availability —",
     "saveStores": "go to My Stores",
-    "viewOnSaq": "View on SAQ.com"
+    "viewOnSaq": "View on SAQ.com",
+    "addNote": "Add a tasting note",
+    "noteSaved": "Note saved"
   },
   "time": {
     "justNow": "just now",

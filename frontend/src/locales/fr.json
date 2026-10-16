@@ -412,7 +412,9 @@
     "availability": "Disponibilité",
     "noStores": "Enregistrez des succursales pour voir la disponibilité —",
     "saveStores": "Mes succursales",
-    "viewOnSaq": "Voir sur SAQ.com"
+    "viewOnSaq": "Voir sur SAQ.com",
+    "addNote": "Ajouter une note de dégustation",
+    "noteSaved": "Note enregistrée"
   },
   "time": {
     "justNow": "à l'instant",

@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Language persistence — locale preference saved to user profile; synced on login via `GET /users/me`
 - SEO: meta description, robots.txt, sitemap.xml, Open Graph tags for social sharing
 - Cellar — add bottles you own from search, chat or the wine panel, see « Dans ta cave (×2) » on cards, manage quantities on the « Ma cave » page, and log a tasting when a bottle leaves
+- Rate a wine from its detail panel — the pencil opens the tasting form with the wine pre-selected; a check confirms the save
 
 ### Deprecated
 
