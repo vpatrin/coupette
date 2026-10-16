@@ -14,7 +14,7 @@ What the scraper exposes (CLI flags via `python -m scraper`):
 | (monthly HTML scrape) | Monthly | New SKU `description` + static fields; marks delisted SKUs | Sitemap diff (~0–20 pages/month) |
 | `seed` | Local dev only (`make seed`, called by `make dev`) | Synthetic `stores` + `products` from `scraper/scraper/fixtures/dev_catalog.json`, in one transaction; no embeddings, no network | Skipped when `products` has rows; refused when `ENVIRONMENT=production` |
 
-**Writer ownership rule:** every column on `products` has exactly one writer. No overlap between CLI flags (see [Writer ownership](#writer-ownership) below).
+**Writer ownership rule:** every column on `products` has exactly one writer. No overlap between CLI flags (see [Writer ownership](#writer-ownership) below). Exception: `seed` writes whole rows, but only into an empty table in local dev, never where the real writers run.
 
 ## How it works
 
