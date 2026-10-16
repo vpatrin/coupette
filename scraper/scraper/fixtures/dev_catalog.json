@@ -52,7 +52,7 @@
   "products": [
     {
       "sku": "DEV-0001",
-      "name": "Domaine des Trois Coupes Cuvée Réserve Merlot 2018",
+      "name": "Domaine des Trois Coupes Cuvée Réserve Merlot",
       "category": "Vin rouge",
       "country": "France",
       "region": "Bordeaux",
@@ -75,7 +75,7 @@
     },
     {
       "sku": "DEV-0002",
-      "name": "Maison Verlaine Cuvée Réserve Grenache 2019",
+      "name": "Maison Verlaine Cuvée Réserve Grenache",
       "category": "Vin rouge",
       "country": "France",
       "region": "Vallée du Rhône",
@@ -102,7 +102,7 @@
     },
     {
       "sku": "DEV-0003",
-      "name": "Weingut Steinbach Les Galets Pinot noir 2020",
+      "name": "Weingut Steinbach Les Galets Pinot noir",
       "category": "Vin rouge",
       "country": "France",
       "region": "Bourgogne",
@@ -129,7 +129,7 @@
     },
     {
       "sku": "DEV-0004",
-      "name": "Château Bellevigne Les Galets Sangiovese 2021",
+      "name": "Château Bellevigne Les Galets Sangiovese",
       "category": "Vin rouge",
       "country": "Italie",
       "region": "Toscane",
@@ -155,7 +155,7 @@
     },
     {
       "sku": "DEV-0005",
-      "name": "Cave du Vieux Pressoir Vieilles Vignes Barbera 2022",
+      "name": "Cave du Vieux Pressoir Vieilles Vignes Barbera",
       "category": "Vin rouge",
       "country": "Italie",
       "region": "Piémont",
@@ -182,7 +182,7 @@
     },
     {
       "sku": "DEV-0006",
-      "name": "Quinta do Rio Claro Vieilles Vignes Tempranillo 2023",
+      "name": "Quinta do Rio Claro Vieilles Vignes Tempranillo",
       "category": "Vin rouge",
       "country": "Espagne",
       "region": "Rioja",
@@ -209,7 +209,7 @@
     },
     {
       "sku": "DEV-0007",
-      "name": "Bodega Sol Alto Terre Douce Malbec 2018",
+      "name": "Bodega Sol Alto Terre Douce Malbec",
       "category": "Vin rouge",
       "country": "Argentine",
       "region": "Mendoza",
@@ -235,7 +235,7 @@
     },
     {
       "sku": "DEV-0008",
-      "name": "Vignoble Lune Rousse Terre Douce Touriga nacional 2019",
+      "name": "Vignoble Lune Rousse Terre Douce Touriga nacional",
       "category": "Vin rouge",
       "country": "Portugal",
       "region": "Douro",
@@ -262,7 +262,7 @@
     },
     {
       "sku": "DEV-0009",
-      "name": "Clos des Érables L'Insolite Cabernet franc 2020",
+      "name": "Clos des Érables L'Insolite Cabernet franc",
       "category": "Vin rouge",
       "country": "Canada",
       "region": "Ontario",
@@ -289,7 +289,7 @@
     },
     {
       "sku": "DEV-0010",
-      "name": "Tenuta Collefiore L'Insolite Zinfandel 2021",
+      "name": "Tenuta Collefiore L'Insolite Zinfandel",
       "category": "Vin rouge",
       "country": "États-Unis",
       "region": "Californie",
@@ -312,7 +312,7 @@
     },
     {
       "sku": "DEV-0011",
-      "name": "Domaine des Trois Coupes Grand Vent Merlot 2022",
+      "name": "Domaine des Trois Coupes Grand Vent Merlot",
       "category": "Vin rouge",
       "country": "France",
       "region": "Bordeaux",
@@ -339,7 +339,7 @@
     },
     {
       "sku": "DEV-0012",
-      "name": "Maison Verlaine Grand Vent Grenache 2023",
+      "name": "Maison Verlaine Grand Vent Grenache",
       "category": "Vin rouge",
       "country": "France",
       "region": "Vallée du Rhône",
@@ -366,7 +366,7 @@
     },
     {
       "sku": "DEV-0013",
-      "name": "Weingut Steinbach Cuvée Réserve Pinot noir 2018",
+      "name": "Weingut Steinbach Cuvée Réserve Pinot noir",
       "category": "Vin rouge",
       "country": "France",
       "region": "Bourgogne",
@@ -392,7 +392,7 @@
     },
     {
       "sku": "DEV-0014",
-      "name": "Château Bellevigne Cuvée Réserve Sangiovese 2019",
+      "name": "Château Bellevigne Cuvée Réserve Sangiovese",
       "category": "Vin rouge",
       "country": "Italie",
       "region": "Toscane",
@@ -419,7 +419,7 @@
     },
     {
       "sku": "DEV-0015",
-      "name": "Cave du Vieux Pressoir Les Galets Barbera 2020",
+      "name": "Cave du Vieux Pressoir Les Galets Barbera",
       "category": "Vin rouge",
       "country": "Italie",
       "region": "Piémont",
@@ -446,7 +446,7 @@
     },
     {
       "sku": "DEV-0016",
-      "name": "Quinta do Rio Claro Les Galets Tempranillo 2021",
+      "name": "Quinta do Rio Claro Les Galets Tempranillo",
       "category": "Vin rouge",
       "country": "Espagne",
       "region": "Rioja",
@@ -472,7 +472,7 @@
     },
     {
       "sku": "DEV-0017",
-      "name": "Bodega Sol Alto Vieilles Vignes Malbec 2022",
+      "name": "Bodega Sol Alto Vieilles Vignes Malbec",
       "category": "Vin rouge",
       "country": "Argentine",
       "region": "Mendoza",
@@ -499,7 +499,7 @@
     },
     {
       "sku": "DEV-0018",
-      "name": "Vignoble Lune Rousse Vieilles Vignes Touriga nacional 2023",
+      "name": "Vignoble Lune Rousse Vieilles Vignes Touriga nacional",
       "category": "Vin rouge",
       "country": "Portugal",
       "region": "Douro",
@@ -526,7 +526,7 @@
     },
     {
       "sku": "DEV-0019",
-      "name": "Clos des Érables Terre Douce Cabernet franc 2018",
+      "name": "Clos des Érables Terre Douce Cabernet franc",
       "category": "Vin rouge",
       "country": "Canada",
       "region": "Ontario",
@@ -549,7 +549,7 @@
     },
     {
       "sku": "DEV-0020",
-      "name": "Tenuta Collefiore Terre Douce Zinfandel 2019",
+      "name": "Tenuta Collefiore Terre Douce Zinfandel",
       "category": "Vin rouge",
       "country": "États-Unis",
       "region": "Californie",
@@ -576,7 +576,7 @@
     },
     {
       "sku": "DEV-0021",
-      "name": "Domaine des Trois Coupes L'Insolite Sauvignon blanc 2020",
+      "name": "Domaine des Trois Coupes L'Insolite Sauvignon blanc",
       "category": "Vin blanc",
       "country": "France",
       "region": "Loire",
@@ -603,7 +603,7 @@
     },
     {
       "sku": "DEV-0022",
-      "name": "Maison Verlaine L'Insolite Riesling 2021",
+      "name": "Maison Verlaine L'Insolite Riesling",
       "category": "Vin blanc",
       "country": "France",
       "region": "Alsace",
@@ -629,7 +629,7 @@
     },
     {
       "sku": "DEV-0023",
-      "name": "Weingut Steinbach Grand Vent Chardonnay 2022",
+      "name": "Weingut Steinbach Grand Vent Chardonnay",
       "category": "Vin blanc",
       "country": "France",
       "region": "Bourgogne",
@@ -656,7 +656,7 @@
     },
     {
       "sku": "DEV-0024",
-      "name": "Château Bellevigne Grand Vent Riesling 2023",
+      "name": "Château Bellevigne Grand Vent Riesling",
       "category": "Vin blanc",
       "country": "Allemagne",
       "region": "Moselle",
@@ -683,7 +683,7 @@
     },
     {
       "sku": "DEV-0025",
-      "name": "Cave du Vieux Pressoir Cuvée Réserve Sauvignon blanc 2018",
+      "name": "Cave du Vieux Pressoir Cuvée Réserve Sauvignon blanc",
       "category": "Vin blanc",
       "country": "Nouvelle-Zélande",
       "region": "Marlborough",
@@ -709,7 +709,7 @@
     },
     {
       "sku": "DEV-0026",
-      "name": "Quinta do Rio Claro Cuvée Réserve Albariño 2019",
+      "name": "Quinta do Rio Claro Cuvée Réserve Albariño",
       "category": "Vin blanc",
       "country": "Espagne",
       "region": "Galice",
@@ -736,7 +736,7 @@
     },
     {
       "sku": "DEV-0027",
-      "name": "Bodega Sol Alto Les Galets Vidal 2020",
+      "name": "Bodega Sol Alto Les Galets Vidal",
       "category": "Vin blanc",
       "country": "Canada",
       "region": "Québec",
@@ -763,7 +763,7 @@
     },
     {
       "sku": "DEV-0028",
-      "name": "Vignoble Lune Rousse Les Galets Sauvignon blanc 2021",
+      "name": "Vignoble Lune Rousse Les Galets Sauvignon blanc",
       "category": "Vin blanc",
       "country": "France",
       "region": "Loire",
@@ -786,7 +786,7 @@
     },
     {
       "sku": "DEV-0029",
-      "name": "Clos des Érables Vieilles Vignes Riesling 2022",
+      "name": "Clos des Érables Vieilles Vignes Riesling",
       "category": "Vin blanc",
       "country": "France",
       "region": "Alsace",
@@ -813,7 +813,7 @@
     },
     {
       "sku": "DEV-0030",
-      "name": "Tenuta Collefiore Vieilles Vignes Chardonnay 2023",
+      "name": "Tenuta Collefiore Vieilles Vignes Chardonnay",
       "category": "Vin blanc",
       "country": "France",
       "region": "Bourgogne",
@@ -840,7 +840,7 @@
     },
     {
       "sku": "DEV-0031",
-      "name": "Domaine des Trois Coupes Terre Douce Riesling 2018",
+      "name": "Domaine des Trois Coupes Terre Douce Riesling",
       "category": "Vin blanc",
       "country": "Allemagne",
       "region": "Moselle",
@@ -866,7 +866,7 @@
     },
     {
       "sku": "DEV-0032",
-      "name": "Maison Verlaine Terre Douce Sauvignon blanc 2019",
+      "name": "Maison Verlaine Terre Douce Sauvignon blanc",
       "category": "Vin blanc",
       "country": "Nouvelle-Zélande",
       "region": "Marlborough",
@@ -893,7 +893,7 @@
     },
     {
       "sku": "DEV-0033",
-      "name": "Weingut Steinbach L'Insolite Albariño 2020",
+      "name": "Weingut Steinbach L'Insolite Albariño",
       "category": "Vin blanc",
       "country": "Espagne",
       "region": "Galice",
@@ -920,7 +920,7 @@
     },
     {
       "sku": "DEV-0034",
-      "name": "Château Bellevigne L'Insolite Vidal 2021",
+      "name": "Château Bellevigne L'Insolite Vidal",
       "category": "Vin blanc",
       "country": "Canada",
       "region": "Québec",
@@ -946,7 +946,7 @@
     },
     {
       "sku": "DEV-0035",
-      "name": "Cave du Vieux Pressoir Grand Vent Grenache 2022",
+      "name": "Cave du Vieux Pressoir Grand Vent Grenache",
       "category": "Vin rosé",
       "country": "France",
       "region": "Provence",
@@ -973,7 +973,7 @@
     },
     {
       "sku": "DEV-0036",
-      "name": "Quinta do Rio Claro Grand Vent Garnacha 2023",
+      "name": "Quinta do Rio Claro Grand Vent Garnacha",
       "category": "Vin rosé",
       "country": "Espagne",
       "region": "Navarre",
@@ -1000,7 +1000,7 @@
     },
     {
       "sku": "DEV-0037",
-      "name": "Bodega Sol Alto Cuvée Réserve Negroamaro 2018",
+      "name": "Bodega Sol Alto Cuvée Réserve Negroamaro",
       "category": "Vin rosé",
       "country": "Italie",
       "region": "Pouilles",
@@ -1023,7 +1023,7 @@
     },
     {
       "sku": "DEV-0038",
-      "name": "Vignoble Lune Rousse Cuvée Réserve Grenache 2019",
+      "name": "Vignoble Lune Rousse Cuvée Réserve Grenache",
       "category": "Vin rosé",
       "country": "France",
       "region": "Provence",
@@ -1050,7 +1050,7 @@
     },
     {
       "sku": "DEV-0039",
-      "name": "Clos des Érables Les Galets Garnacha 2020",
+      "name": "Clos des Érables Les Galets Garnacha",
       "category": "Vin rosé",
       "country": "Espagne",
       "region": "Navarre",
@@ -1077,7 +1077,7 @@
     },
     {
       "sku": "DEV-0040",
-      "name": "Tenuta Collefiore Les Galets Negroamaro 2021",
+      "name": "Tenuta Collefiore Les Galets Negroamaro",
       "category": "Vin rosé",
       "country": "Italie",
       "region": "Pouilles",
@@ -1130,7 +1130,7 @@
     },
     {
       "sku": "DEV-0042",
-      "name": "Maison Verlaine Vieilles Vignes Macabeo 2023",
+      "name": "Maison Verlaine Vieilles Vignes Macabeo",
       "category": "Vin mousseux",
       "country": "Espagne",
       "region": "Catalogne",
@@ -1183,7 +1183,7 @@
     },
     {
       "sku": "DEV-0044",
-      "name": "Château Bellevigne Terre Douce Chardonnay 2019",
+      "name": "Château Bellevigne Terre Douce Chardonnay",
       "category": "Champagne",
       "country": "France",
       "region": "Champagne",
@@ -1237,7 +1237,7 @@
     },
     {
       "sku": "DEV-0046",
-      "name": "Quinta do Rio Claro L'Insolite Glera 2021",
+      "name": "Quinta do Rio Claro L'Insolite Glera",
       "category": "Vin mousseux",
       "country": "Italie",
       "region": "Vénétie",
@@ -1260,7 +1260,7 @@
     },
     {
       "sku": "DEV-0047",
-      "name": "Bodega Sol Alto Grand Vent Touriga nacional 2022",
+      "name": "Bodega Sol Alto Grand Vent Touriga nacional",
       "category": "Porto tawny",
       "country": "Portugal",
       "region": "Douro",
@@ -1287,7 +1287,7 @@
     },
     {
       "sku": "DEV-0048",
-      "name": "Vignoble Lune Rousse Grand Vent Vidal 2023",
+      "name": "Vignoble Lune Rousse Grand Vent Vidal",
       "category": "Vin de glace",
       "country": "Canada",
       "region": "Québec",
@@ -1314,7 +1314,7 @@
     },
     {
       "sku": "DEV-0049",
-      "name": "Clos des Érables Cuvée Réserve Touriga nacional 2018",
+      "name": "Clos des Érables Cuvée Réserve Touriga nacional",
       "category": "Porto tawny",
       "country": "Portugal",
       "region": "Douro",
@@ -1340,7 +1340,7 @@
     },
     {
       "sku": "DEV-0050",
-      "name": "Tenuta Collefiore Cuvée Réserve Vidal 2019",
+      "name": "Tenuta Collefiore Cuvée Réserve Vidal",
       "category": "Vin de glace",
       "country": "Canada",
       "region": "Québec",
