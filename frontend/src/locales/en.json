@@ -377,7 +377,7 @@
     "collapseSidebar": "Collapse sidebar",
     "expandSidebar": "Expand sidebar",
     "journal": "Tasting Journal",
-    "cellar": "Cellar"
+    "cellar": "My Cellar"
   },
   "userMenu": {
     "anonymous": "Anonymous",
@@ -434,5 +434,30 @@
     "pastWeek": "Past week",
     "pastMonth": "Past month",
     "pastYear": "Past year"
+  },
+  "cellar": {
+    "title": "My Cellar",
+    "add": "Add to my cellar",
+    "addFailed": "Failed — retry",
+    "inCellar_one": "In your cellar",
+    "inCellar_other": "In your cellar (×{{count}})",
+    "bottles_one": "{{count}} bottle",
+    "bottles_other": "{{count}} bottles",
+    "addedOn": "Added {{date}}",
+    "increment": "Add a bottle",
+    "decrement": "Remove a bottle",
+    "remove": "Remove from my cellar",
+    "removed": "{{name}} left your cellar.",
+    "drankIt": "Did you drink it?",
+    "logTasting": "Log tasting",
+    "dismiss": "No thanks",
+    "emptyTitle": "Your cellar is empty",
+    "emptyDesc": "Add the bottles you have at home from the catalog or a chat.",
+    "emptyCta": "Browse the catalog",
+    "delisted": "Product delisted (SKU: {{sku}})",
+    "failedToLoad": "Couldn't load your cellar",
+    "retry": "Retry",
+    "failedToUpdate": "Couldn't update your cellar",
+    "dismissError": "Dismiss"
   }
 }

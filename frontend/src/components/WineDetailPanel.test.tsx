@@ -1,9 +1,11 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { MemoryRouter } from 'react-router'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useAuth } from '@/contexts/AuthContext'
 import { useApiClient, ApiError } from '@/lib/api'
-import { product } from '@/tests/factories'
+import { cellarEntry, product } from '@/tests/factories'
+import type { CellarEntryOut } from '@/lib/types'
 import WineDetailPanel from './WineDetailPanel'
 
 vi.mock('@/contexts/AuthContext', () => ({ useAuth: vi.fn() }))
@@ -23,10 +25,13 @@ vi.mock('@/lib/api', () => ({
 const mockApiClient = vi.fn()
 
 function renderPanel(sku: string | null, onClose = vi.fn()) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return render(
-    <MemoryRouter>
-      <WineDetailPanel sku={sku} onClose={onClose} />
-    </MemoryRouter>,
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter>
+        <WineDetailPanel sku={sku} onClose={onClose} />
+      </MemoryRouter>
+    </QueryClientProvider>,
   )
 }
 
@@ -34,12 +39,19 @@ function apiReturning(
   p: ReturnType<typeof product>,
   overrides?: { watchPost?: () => Promise<unknown> },
 ) {
+  // Stateful like the server: the refetch after a POST returns the added entry
+  let cellar: CellarEntryOut[] = []
   mockApiClient.mockImplementation((url: string, opts?: RequestInit) => {
     if (url.startsWith('/products/')) return Promise.resolve(p)
     if (url.includes('/watches') && opts?.method === 'POST')
       return overrides?.watchPost?.() ?? Promise.resolve({})
     if (url.includes('/watches')) return Promise.resolve([])
     if (url.includes('/stores/preferences')) return Promise.resolve([])
+    if (url === '/cellar' && opts?.method === 'POST') {
+      cellar = [cellarEntry({ sku: p.sku, product: p })]
+      return Promise.resolve(cellar[0])
+    }
+    if (url === '/cellar') return Promise.resolve(cellar)
     return Promise.reject(new Error(`unexpected api call: ${url}`))
   })
 }
@@ -114,5 +126,12 @@ describe('WineDetailPanel', () => {
     expect(screen.getByRole('button', { name: '...' })).toBeDisabled()
     // After rejection settles: rolls back to Watch
     await waitFor(() => expect(screen.getByRole('button', { name: /watch$/i })).toBeInTheDocument())
+  })
+
+  it('shows the in-cellar badge after clicking Add to my cellar', async () => {
+    apiReturning(product())
+    renderPanel('SKU001')
+    fireEvent.click(await screen.findByRole('button', { name: 'Add to my cellar' }))
+    expect(await screen.findByText('In your cellar')).toBeInTheDocument()
   })
 })

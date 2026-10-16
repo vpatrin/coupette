@@ -20,6 +20,8 @@ import { useApiClient } from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
 import type { ChatOutletContext } from '@/components/AppShell'
 import WineCard from '@/components/WineCard'
+import AddToCellarButton from '@/components/AddToCellarButton'
+import { useCellarQuantities } from '@/hooks/useCellar'
 import { useWineDetail } from '@/contexts/WineDetailContext'
 import type {
   ChatSessionOut,
@@ -211,11 +213,13 @@ function AssistantMessage({
   storeNames,
   selectedSku,
   setSelectedSku,
+  cellarQuantities,
 }: {
   content: string | RecommendationOut
   storeNames: Map<string, string>
   selectedSku: string | null
   setSelectedSku: (sku: string | null) => void
+  cellarQuantities: Map<string, number>
 }) {
   const proseClass =
     'prose prose-sm prose-invert max-w-none text-foreground/80 font-light [&_p]:leading-relaxed [&_ul]:mt-1 [&_ol]:mt-1 [&_li]:my-0.5 [&_strong]:text-foreground [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-sm'
@@ -242,16 +246,30 @@ function AssistantMessage({
             gridTemplateColumns: content.products.length > 1 ? 'repeat(2, minmax(0, 1fr))' : '1fr',
           }}
         >
-          {content.products.map(({ product, reason }) => (
-            <button
-              key={product.sku}
-              type="button"
-              onClick={() => setSelectedSku(selectedSku === product.sku ? null : product.sku)}
-              className={`w-full rounded-xl text-left ${selectedSku === product.sku ? 'ring-primary/60 ring-1' : ''}`}
-            >
-              <WineCard product={product} reason={reason} storeNames={storeNames} />
-            </button>
-          ))}
+          {content.products.map(({ product, reason }) => {
+            const toggle = () => setSelectedSku(selectedSku === product.sku ? null : product.sku)
+            return (
+              // div role="button", not <button>: the card now holds its own add-to-cellar button
+              <div
+                key={product.sku}
+                role="button"
+                tabIndex={0}
+                onClick={toggle}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') toggle()
+                }}
+                className={`w-full cursor-pointer rounded-xl text-left ${selectedSku === product.sku ? 'ring-primary/60 ring-1' : ''}`}
+              >
+                <WineCard
+                  product={product}
+                  reason={reason}
+                  storeNames={storeNames}
+                  cellarSlot={<AddToCellarButton product={product} />}
+                  cellarQuantity={cellarQuantities.get(product.sku)}
+                />
+              </div>
+            )
+          })}
         </div>
       </div>
     </Suspense>
@@ -354,6 +372,8 @@ function ChatPage() {
   const navigate = useNavigate()
   const { sessionId: urlSessionId } = useParams<{ sessionId: string }>()
   const { selectedSku, setSelectedSku } = useWineDetail()
+  // One cellar subscription for the whole thread, not one per message
+  const cellarQuantities = useCellarQuantities()
   const {
     refreshSessions,
     sessions,
@@ -672,6 +692,7 @@ function ChatPage() {
                       storeNames={storeNames}
                       selectedSku={selectedSku}
                       setSelectedSku={setSelectedSku}
+                      cellarQuantities={cellarQuantities}
                     />
                   </div>
                   <AssistantMessageActions

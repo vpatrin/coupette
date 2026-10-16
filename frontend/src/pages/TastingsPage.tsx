@@ -1,5 +1,4 @@
 import { useState, useCallback, useEffect, useMemo } from 'react'
-import { createPortal } from 'react-dom'
 import { CaretDown, MagnifyingGlass, NotePencil, PencilSimple, Plus } from '@phosphor-icons/react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
@@ -8,7 +7,7 @@ import type { TastingNoteOut } from '@/lib/types'
 import { getBucket, ratingColor } from '@/lib/rating'
 import { CATEGORY_DOT } from '@/lib/utils'
 import EmptyState from '@/components/EmptyState'
-import TastingForm from '@/components/TastingForm'
+import TastingFormModal from '@/components/TastingFormModal'
 import NoteViewModal from '@/components/NoteViewModal'
 
 const PAGE_SIZE = 20
@@ -428,18 +427,7 @@ function TastingsPage() {
         )}
       </div>
 
-      {/* Add-note modal — portaled to body to escape overflow:hidden on <main> */}
-      {addNoteOpen &&
-        createPortal(
-          <div className="fixed inset-0 z-50 flex items-center justify-center">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={closeModal} />
-            <div className="border-border relative mx-4 w-full max-w-lg rounded-xl border bg-[#0e0e12] p-6 shadow-2xl">
-              <p className="mb-4 text-[14px] font-medium">{t('tastingForm.addTitle')}</p>
-              <TastingForm onSave={handleNoteSaved} onCancel={closeModal} />
-            </div>
-          </div>,
-          document.body,
-        )}
+      {addNoteOpen && <TastingFormModal onSave={handleNoteSaved} onClose={closeModal} />}
 
       {viewNote !== null && (
         <NoteViewModal

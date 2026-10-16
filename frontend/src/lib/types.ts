@@ -108,6 +108,16 @@ export interface WatchWithProduct {
   product: ProductOut | null
 }
 
+// --- Cellar ---
+
+export interface CellarEntryOut {
+  id: number
+  sku: string
+  quantity: number
+  added_at: string
+  product: ProductOut | null
+}
+
 export interface StoreOut {
   saq_store_id: string
   name: string

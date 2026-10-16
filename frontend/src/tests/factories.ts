@@ -1,4 +1,4 @@
-import type { ProductOut, TastingNoteOut } from '@/lib/types'
+import type { CellarEntryOut, ProductOut, TastingNoteOut } from '@/lib/types'
 
 export function product(overrides: Partial<ProductOut> = {}): ProductOut {
   return {
@@ -46,6 +46,17 @@ export function fakeNote(overrides: Partial<TastingNoteOut> = {}): TastingNoteOu
     product_region: 'Bordeaux',
     product_grape: 'Merlot',
     product_price: '24.95',
+    ...overrides,
+  }
+}
+
+export function cellarEntry(overrides: Partial<CellarEntryOut> = {}): CellarEntryOut {
+  return {
+    id: 1,
+    sku: 'SKU001',
+    quantity: 1,
+    added_at: '2026-01-15T12:00:00Z',
+    product: product(),
     ...overrides,
   }
 }

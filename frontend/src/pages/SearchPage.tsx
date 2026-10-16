@@ -15,6 +15,8 @@ import type {
 import { Button } from '@/components/ui/button'
 import { CATEGORY_DOT } from '@/lib/utils'
 import WineCard from '@/components/WineCard'
+import AddToCellarButton from '@/components/AddToCellarButton'
+import { useCellarQuantities } from '@/hooks/useCellar'
 import EmptyState from '@/components/EmptyState'
 import { useWineDetail } from '@/contexts/WineDetailContext'
 
@@ -89,6 +91,7 @@ function SearchPage() {
   const [watchedSkus, setWatchedSkus] = useState<Set<string>>(new Set())
 
   const [userRatings, setUserRatings] = useState<Record<string, TastingRatingOut>>({})
+  const cellarQuantities = useCellarQuantities()
   const [watchingInProgress, setWatchingInProgress] = useState<string | null>(null)
 
   // Saved store IDs + names — for "In my stores" filter and availability display
@@ -651,7 +654,9 @@ function SearchPage() {
                           product={product}
                           storeNames={storeNames}
                           watchSlot={watchButton}
+                          cellarSlot={<AddToCellarButton product={product} />}
                           userRating={userRatings[product.sku]}
+                          cellarQuantity={cellarQuantities.get(product.sku)}
                         />
                       </div>
                     </li>

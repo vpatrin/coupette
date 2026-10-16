@@ -30,9 +30,8 @@ const NAV_ITEMS = [
   { to: '/watches', labelKey: 'nav.myWatches', icon: Eye },
   { to: '/stores', labelKey: 'nav.myStores', icon: MapPin },
   { to: '/tastings', labelKey: 'nav.journal', icon: NotePencil },
+  { to: '/cellar', labelKey: 'nav.cellar', icon: ChartDonut },
 ] as const
-
-const SOON_ITEMS = [{ labelKey: 'nav.cellar', icon: ChartDonut }] as const
 
 export interface ChatOutletContext {
   refreshSessions: () => void
@@ -288,16 +287,6 @@ function AppShell() {
               )
             })}
 
-            {SOON_ITEMS.map(({ labelKey, icon: Icon }) => (
-              <div
-                key={labelKey}
-                title={`${t(labelKey)} — ${t('userMenu.soon')}`}
-                className="text-muted-foreground/35 flex h-[38px] w-[38px] cursor-not-allowed items-center justify-center rounded-lg"
-              >
-                <Icon size={17} />
-              </div>
-            ))}
-
             <div ref={userMenuRef} className="relative mt-auto overflow-visible">
               <button
                 type="button"
@@ -380,18 +369,6 @@ function AppShell() {
                   </Link>
                 )
               })}
-              {SOON_ITEMS.map(({ labelKey, icon: Icon }) => (
-                <div
-                  key={labelKey}
-                  className="text-muted-foreground/40 flex cursor-not-allowed items-center gap-2.5 rounded-lg px-3 py-2 text-[length:var(--text-sidebar)]"
-                >
-                  <Icon size={16} className="opacity-70" />
-                  {t(labelKey)}
-                  <span className="border-primary/25 bg-primary/10 text-primary/60 ml-auto rounded border px-1.5 py-0.5 font-mono text-[9px]">
-                    {t('userMenu.soon')}
-                  </span>
-                </div>
-              ))}
             </nav>
 
             <div className="flex min-h-0 flex-1 scrollbar-none flex-col overflow-y-auto">
