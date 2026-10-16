@@ -40,7 +40,7 @@ While `.claude/progress.md` exists, the project Stop hook ([`stop-check.sh`](sto
 - Write code until the red tests pass. **Never weaken, skip, or delete a red test.** Only exception: renaming a guessed interface, recorded as a decision.
 - Follow the rules for each touched surface. Migrations: `make revision` is yours, `make migrate` never is.
 - Add tests for implementation branches the ACs don't name until diff coverage ≥ 80% (`rules/testing.md` §6).
-- UI ACs: run the app (`run` skill or a browser tool) and save a browser screenshot to `.claude/evidence/`.
+- UI ACs: run the app (`run` skill or a browser tool), take a browser screenshot, and save it to `.claude/evidence/` and name the file in the AC's evidence row — GitHub's CLI can't upload images, so the coordinator or Victor opens it from the workspace.
 - Run the ticket's end-to-end verification line; its result is an evidence row.
 - Update docs in the same PR: specs, rules, CHANGELOG, ROADMAP (`rules/docs.md`).
 - Commit each finished slice (conventional commit) and rewrite `.claude/progress.md`. **Record each decision in the body of the commit that made it** (`git commit -m "<title>" -m "Decision: <choice> over <rejected>, because <why>"`) — git keeps it through `/clear` and compaction, and `/pr` compiles the PR's Decisions section from these bodies.
@@ -54,11 +54,11 @@ While `.claude/progress.md` exists, the project Stop hook ([`stop-check.sh`](sto
 - Draft the AC → evidence table (from `.claude/progress.md`, screenshot paths, the e2e result, eval scores) and the Decisions list (from commit bodies).
 - Spawn `reviewer` (Agent tool) with the ticket id, ACs verbatim, lane, red SHA, the red-test-writer report, the evidence table, and the Decisions. Risky lane: pass `effort: "xhigh"`.
 - Risky lane also: auth → run `/security` and fix any Critical or High; RAG prompt or retrieval → `make eval`, scores into the evidence table.
-- BLOCK → fix exactly the cited findings, or rebut one in writing with evidence. One fix loop, then re-run the reviewer. Still BLOCK → stop and report to Victor.
+- BLOCK → fix exactly the cited findings, or rebut one in writing with evidence. One fix loop: re-run the reviewer with the same inputs plus its first verdict table and, per finding ID, the fix commit or the rebuttal. Still BLOCK → stop and report to Victor.
 
 ## 6. Ship
 
-- Push, then create the PR with `/pr`: AC → evidence table, Decisions (longer on the risky lane), the reviewer's Review line, Harness friction if something in `.claude/` tripped you. GitHub's CLI can't attach images — name the screenshot file in its evidence row.
+- Push, then create the PR with `/pr`: AC → evidence table, Decisions (longer on the risky lane), the reviewer's Review line, Harness friction if something in `.claude/` tripped you.
 - Report the PR URL. Victor merges.
 
 ## `.claude/progress.md`

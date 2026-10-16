@@ -55,7 +55,7 @@ Stack, entry points, file map, dev and build notes: [`docs/specs/frontend.md`](.
 ## Dev workflow
 
 - Desktop-first 1200px+, dark mode default
-- **Visual review:** rendered output is the ground truth — reading HTML/CSS is not a substitute. For a UI acceptance criterion, run the app (`run` skill or a browser tool) and attach a browser screenshot to the PR evidence table. Without a browser tool, ask Victor for the screenshot. Authenticated pages need the dev login from VPA-52.
+- **Visual review:** rendered output is the ground truth — reading HTML/CSS is not a substitute. For a UI acceptance criterion, run the app (`run` skill or a browser tool), take a browser screenshot, and save it to `.claude/evidence/` and name the file in the AC's evidence row — GitHub's CLI can't upload images, so the coordinator or Victor opens it from the workspace. Without a browser tool, ask Victor for the screenshot. Authenticated pages need the dev login from VPA-52.
 
 ## Design direction
 

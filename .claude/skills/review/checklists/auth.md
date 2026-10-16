@@ -1,6 +1,6 @@
 # Auth checklist
 
-Applies when the diff touches the paths in `rules/auth.md` or adds a protected route. Risky lane.
+Applies when the diff touches the paths in `rules/auth.md` or adds or changes a route in `backend/api/`. Risky lane for the auth paths.
 
 - **AUTH-1** No JWT, OAuth token, bot secret, or session token reaches a log call or formatted string.
 - **AUTH-2** Protected routes use `Depends(verify_auth)` / `Depends(verify_admin)`, never a parallel check. Before calling a route unprotected, check the decorator's `dependencies=[...]` and the `app.include_router(..., dependencies=[...])` mount site in `backend/app.py`.

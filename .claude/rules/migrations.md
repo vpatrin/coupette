@@ -23,7 +23,7 @@ paths:
 
 1. Modify the SQLAlchemy model in `core/`
 2. Run `make revision msg="..."` (needs Docker)
-3. Read the generated file in `core/alembic/versions/` — autogenerate gets constraint names and `server_default` subtly wrong. Fix the model and regenerate rather than editing the file.
+3. Read the generated file in `core/alembic/versions/` — autogenerate gets constraint names and `server_default` subtly wrong. Fix the model and regenerate rather than editing the file. Exception — operations autogenerate can't express (column rename, data migration, `CONCURRENTLY` index): edit the generated file, keep its header, and record the edit in the PR's Decisions.
 4. Record backfill needs, lock risk, or a two-step plan in the PR's Decisions section. Victor reviews the generated file in the PR diff and applies it at deploy time.
 
 See `docs/DEVELOPMENT.md#migrations` for full practices.
