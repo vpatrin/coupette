@@ -58,7 +58,7 @@ make lint          # ruff check
 make format        # ruff format
 make test          # pytest (all services)
 make coverage      # tests + coverage badges
-make migrate       # alembic upgrade head
+make migrate       # alembic upgrade head + admin user
 make build         # docker build
 make start-db      # postgres + redis only (shared by every workspace)
 ```

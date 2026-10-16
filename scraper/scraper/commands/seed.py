@@ -38,7 +38,7 @@ async def seed_dev_data() -> int:
         stores, products = load_dev_catalog()
         await insert_seed_catalog(stores, products)
     except SQLAlchemyError as exc:
-        logger.opt(exception=exc).error("Seed failed — has `make migrate` run?")
+        logger.error("Seed failed: {} — has `make migrate` run?", exc)
         return EXIT_FATAL
 
     logger.info("Seeded {} stores and {} products", len(stores), len(products))

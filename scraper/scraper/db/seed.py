@@ -12,7 +12,7 @@ from .session import SessionLocal
 
 async def count_products() -> int:
     async with SessionLocal() as session:
-        return await session.scalar(select(func.count()).select_from(Product)) or 0
+        return await session.scalar(select(func.count()).select_from(Product))
 
 
 async def insert_seed_catalog(stores: list[dict], products: list[dict]) -> None:
