@@ -24,7 +24,7 @@ Abort with a one-line reason if any fails:
 
 1. **Resolve the PR.** No argument → `gh pr view --json number,headRefName,baseRefName,mergeable,mergeStateStatus`. Argument → same for that number.
 
-2. **Check whether a rebase is even needed.** `main` has `strict: false` branch protection, so GitHub does **not** require the branch to be current. If `mergeable` is `MERGEABLE` and the PR is not conflicted, skip to step 6 — do not rebase for cosmetic freshness. Rebase only when `mergeable` is `CONFLICTING`, or when Victor explicitly asked for fresh CI against current `main`.
+2. **Check whether a rebase is even needed.** `main` has `strict: false` branch protection, so GitHub does **not** require the branch to be current. If `mergeable` is `MERGEABLE` and the PR is not conflicted, skip to step 6 — do not rebase for cosmetic freshness. Rebase only when `mergeable` is `CONFLICTING`; when a required check failed because `main` moved on (a stale PR, such as one `/garden` routed here); or when Victor explicitly asked for fresh CI against current `main`.
 
 3. **Rebase in a worktree**, never in the working tree:
    ```
@@ -56,7 +56,8 @@ Abort with a one-line reason if any fails:
    - Remove the worktree: `git worktree remove ../.land-pr-<branch>`.
 
 6. **Arm auto-merge.** Required checks on `main` are `lint`, `test`, `security`, `build`.
-   - If any required check is already **failed**, do not arm. Report which one and stop — a red PR is `/garden`'s problem or Victor's, not this command's.
+   - If a required check is **failed** and step 3 did not just rebase, do not arm. Report which one and stop — a PR still red on current `main` is a real break, Victor's to fix.
+   - After a rebase and force-push, the checks re-run as pending; arm as below. GitHub merges only if they go green.
    - If checks are green or pending: `gh pr merge --auto --squash <PR>`.
    - The repo has `delete_branch_on_merge: true`, so the branch is cleaned up automatically.
 

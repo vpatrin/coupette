@@ -55,7 +55,7 @@ Provenance: **Anthropic** (official doc or engineering post) · **Adapted** (cha
 | [`adr`](skills/adr/SKILL.md) | Drafts an ADR only when a 4-test gate passes; otherwise the decision goes in the PR | **Adapted** from Michael Nygard's ADR format (Context, Decision, Status, Consequences). **Ours**: Options and Rationale sections, and the gate that keeps ADRs rare |
 | [`status`](skills/status/SKILL.md) | Roadmap vs Linear vs code, next tasks; `--health` scorecard from the review checklists | **Ours** |
 | [`eval-pipeline`](skills/eval-pipeline/SKILL.md) | Tunes the RAG pipeline one lever at a time against a fixed benchmark with a holdout split | **Ours** — LLM-as-judge scores, never auto-fired (it costs money) |
-| [`release`](skills/release/SKILL.md) · [`land-pr`](skills/land-pr/SKILL.md) · [`garden`](skills/garden/SKILL.md) | Release prep (Victor pushes the tag), rebase + arm auto-merge, Dependabot upkeep | **Ours**. `disable-model-invocation`: run only when typed, and absent from the always-loaded skill list |
+| [`release`](skills/release/SKILL.md) · [`land-pr`](skills/land-pr/SKILL.md) · [`garden`](skills/garden/SKILL.md) | Release prep (Victor pushes the tag); rebase + arm auto-merge; CI upkeep — Dependabot triage, and Victor's red PRs routed to `/land-pr` | **Ours**. `disable-model-invocation`: run only when typed, and absent from the always-loaded skill list |
 
 Tickets come from the global `breakdown` skill: an interview first (**Anthropic** best practices — "interview me in detail using the AskUserQuestion tool"), INVEST checks (**Practitioner**: Bill Wake), and templates carrying the lane and an end-to-end verification line.
 
@@ -65,7 +65,7 @@ Tickets come from the global `breakdown` skill: an interview first (**Anthropic*
 |---|---|---|
 | [`red-test-writer`](agents/red-test-writer.md) | TDD red step: one failing test per AC plus the edge case that will bite, from the ACs and planned interfaces only | **Anthropic** best practices (one Claude writes tests, another the code). **Adapted**: the harness post forbids editing the pass/fail feature list; we hold red tests to the same rule. Name from TDD's red-green-refactor |
 | [`reviewer`](agents/reviewer.md) | APPROVE / WARN / BLOCK, blocking only on correctness, an unmet AC, or a cited checklist ID; keeps its own memory of recurring issues | **Adapted** from best practices — "have a subagent review the diff in a fresh context". **Ours**: BLOCK criteria, the TDD diff against the red commit, re-running diff coverage instead of trusting a reported figure |
-| [`gardener`](agents/gardener.md) | Keeps open PRs green; arms GitHub auto-merge on Dependabot patch/minor only | **Ours** — dependency upkeep without a human in the loop for low-risk bumps |
+| [`gardener`](agents/gardener.md) | Keeps open PRs green: triages Dependabot PRs and arms GitHub auto-merge on patch/minor bumps and on its own CI-fix PRs; routes Victor's red PRs to `/land-pr` without pushing to them | **Ours** — dependency upkeep without a human in the loop for low-risk bumps |
 
 All agents use `model: inherit`.
 
