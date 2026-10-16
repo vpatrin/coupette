@@ -20,13 +20,9 @@ Everything in English: titles, descriptions, comments, project summaries. (The a
 
 ## Issue templates
 
-Feature, enabler, bug, and chore bodies live in the global `breakdown` skill (`~/.claude/skills/breakdown/templates/`). Pick by what the ticket IS, not by its label. Every ticket `/feature` will run carries:
+Feature, enabler, bug, and chore bodies live in the global `breakdown` skill (`~/.claude/skills/breakdown/templates/`). Pick by what the ticket IS, not by its label. Every ticket carries **`Lane: default | risky`** — risky when it touches auth, migrations (`core/db/`, `core/alembic/`), or RAG prompts, retrieval, or embeddings — and a verification line. Feature and enabler tickets also carry falsifiable ACs with **the edge case that will bite**; a bug's reproduction is its AC; a chore's Tasks stand in for ACs.
 
-- falsifiable acceptance criteria, including **the edge case that will bite**
-- an **end-to-end verification line**: one command or user path that proves it works
-- **`Lane: default | risky`** — risky when it touches auth, migrations (`core/db/`, `core/alembic/`), or RAG prompts, retrieval, or embeddings
-
-Before writing the ACs of a larger ticket, interview Victor with `AskUserQuestion` (edge cases, trade-offs). Default to incremental delivery (one issue = one PR to main); propose a feature branch only when CLAUDE.md's three criteria all hold.
+Default to incremental delivery (one issue = one PR to main); propose a feature branch only when CLAUDE.md's three criteria all hold.
 
 ## Branches & PRs — linking
 

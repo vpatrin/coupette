@@ -15,7 +15,7 @@ While `.claude/progress.md` exists, the project Stop hook ([`stop-check.sh`](sto
 ## 1. Ticket
 
 - Fetch the ticket with the Linear MCP tools — title, description, labels, comments. **The ticket is the spec.**
-- It needs falsifiable acceptance criteria, an "edge case that will bite", and an end-to-end verification line. Vague or missing on a larger feature → interview Victor with `AskUserQuestion` (edge cases, trade-offs), update the ticket in Linear, then go on. **Bug ticket:** "Steps to reproduce" + "Expected vs actual" are the AC — the red test is the reproduction.
+- It needs falsifiable acceptance criteria, an "edge case that will bite", and an end-to-end verification line. Vague or missing on a larger feature → interview Victor with `AskUserQuestion` (edge cases, trade-offs), update the ticket in Linear, then go on. **Bug ticket:** "Steps to reproduce" + "Expected vs actual" are the AC — the red test is the reproduction. **Chore ticket:** its Tasks and Verification stand in for ACs; usually `Red: none`.
 - Lane: the ticket's `Lane:` field. If absent: **risky** when the change touches auth (`rules/auth.md`), migrations (`core/db/`, `core/alembic/`), or RAG prompts, retrieval, or embeddings (`rules/rag.md`); **default** otherwise.
 - Branch: keep the workspace branch if it already reads `<type>/vpa-NN-<short>`; otherwise `git fetch origin main && git checkout -b <type>/vpa-NN-<short> origin/main` (`type` from the ticket title prefix). Set the issue to In Progress.
 - Write `.claude/progress.md` (format below) — this also arms the Stop hook.
@@ -53,7 +53,7 @@ While `.claude/progress.md` exists, the project Stop hook ([`stop-check.sh`](sto
 - Commit everything first: the reviewer won't review a dirty tree.
 - Draft the AC → evidence table (from `.claude/progress.md`, screenshot paths, the e2e result, eval scores) and the Decisions list (from commit bodies).
 - Spawn `reviewer` (Agent tool) with the ticket id, ACs verbatim, lane, red SHA, the red-test-writer report, the evidence table, and the Decisions. Risky lane: pass `effort: "xhigh"`. When it returns, `git status --porcelain` must still be empty — it has Write/Edit for its memory, and Bash; any repo change means stop and report BLOCKED.
-- Risky lane also: auth → the reviewer applies the security checklist in depth (`AUTH-6`), so fix any Critical or High it finds; RAG prompt or retrieval → `make eval`, scores into the evidence table.
+- Risky lane also: auth → the reviewer applies the security checklist in depth on auth paths (`AUTH-6`); fix any Critical or High; RAG prompt or retrieval → `make eval`, scores into the evidence table.
 - BLOCK → fix exactly the cited findings, or rebut one in writing with evidence. One fix loop: re-run the reviewer with the same inputs plus its first verdict table and, per finding ID, the fix commit or the rebuttal. Still BLOCK → stop and report to Victor.
 
 ## 6. Ship
