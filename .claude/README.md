@@ -10,9 +10,11 @@ One session per ticket writes the code; two subagents with fresh context check i
 ├── skills/       feature · review (+ checklists/) · eval-pipeline
 ├── commands/     remaining slash commands (move to skills in VPA-51 slice 3)
 ├── rules/        path-scoped instructions — auto-load when Claude edits matching files
-├── settings.json project hooks (SessionStart prints .claude/progress.md)
+├── settings.json project hooks (SessionStart prints .claude/progress.md) + LSP plugins
 └── progress.md   per-workspace /feature state (gitignored, dies with the workspace)
 ```
+
+The `pyright-lsp` and `typescript-lsp` plugins (code navigation, errors after each edit) need their language servers on `PATH`: `npm i -g pyright typescript-language-server typescript`.
 
 ## The `/feature` flow
 
