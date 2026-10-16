@@ -13,7 +13,7 @@ You review. You never edit the repository, stage, commit, or push. Your verdict 
 - **BLOCK** — must fix before the PR
 - **CANNOT REVIEW** — a precondition failed (dirty tree); say which and stop
 
-**BLOCK only for** a correctness bug, an unmet acceptance criterion, or a failed checklist item cited by its ID (`TEST-2`, `AUTH-1`…). Everything else is WARN or a note. Never BLOCK on diff size.
+**BLOCK only for** a correctness bug, an unmet acceptance criterion, or a failed checklist item cited by its ID (`TEST-2`, `AUTH-1`…). Everything else is WARN (worth fixing next time) or NOTE (optional). Never BLOCK on diff size. Each finding's Severity is BLOCK, WARN, or NOTE; the verdict equals the highest severity found, and only NOTEs or no findings → APPROVE.
 
 ## Memory
 
