@@ -1,4 +1,4 @@
-import type { CellarEntryOut, ProductOut, TastingNoteOut } from '@/lib/types'
+import type { CellarEntryOut, ProductOut, TastingOut } from '@/lib/types'
 
 export function product(overrides: Partial<ProductOut> = {}): ProductOut {
   return {
@@ -30,7 +30,7 @@ export function product(overrides: Partial<ProductOut> = {}): ProductOut {
   }
 }
 
-export function fakeNote(overrides: Partial<TastingNoteOut> = {}): TastingNoteOut {
+export function fakeNote(overrides: Partial<TastingOut> = {}): TastingOut {
   return {
     id: 1,
     sku: 'SKU001',

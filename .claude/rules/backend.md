@@ -36,6 +36,7 @@ backend/
 - `*In` for request bodies (e.g. `WatchIn`, `LoginIn`)
 - Never `*Request` / `*Create` / `*Response` — standardize on `*Out` / `*In`
 - Field validation goes on the schema, not the route handler
+- After changing a schema or a route, run `make types` and commit `frontend/src/lib/api.gen.ts`. CI fails on a stale file.
 - Complex shared field constraints (max length, format) → reusable `Annotated[type, Field(...)]`
 
 ## Logging

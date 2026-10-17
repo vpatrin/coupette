@@ -30,6 +30,7 @@ Things to know:
 - **Seed data has no embeddings.** Search and browse work. Chat and recommendations return nothing until you run `make embed-sync` (needs `OPENAI_API_KEY`, costs a few cents).
 - **Real catalog data:** run the scraper instead (`make scrape-stores scrape-products`, then `make scrape-enrich embed-sync`). It fetches from the live site at 2–3 s per page; `SCRAPE_LIMIT` in `.env` caps the product count.
 - The bot is not started: two instances polling one Telegram token conflict. Run `make dev-bot` by hand.
+- **Frontend API types are generated.** `make types` writes `frontend/src/lib/api.gen.ts` from the backend's OpenAPI schema (no database needed). Run it after changing a Pydantic schema or a route, and commit the result: CI's `make types-check` fails on a stale file.
 
 ## How the pieces connect
 

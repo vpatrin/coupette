@@ -1,5 +1,5 @@
 .PHONY: help install \
-	dev dev-backend dev-frontend dev-bot seed \
+	dev dev-backend dev-frontend dev-bot seed types types-check \
 	scrape-stores scrape-products scrape-enrich scrape-availability scrape-all embed-sync \
 	eval load \
 	migrate create-admin revision \
@@ -23,7 +23,7 @@ export
 
 help:
 	@echo "Setup:     install"
-	@echo "Dev:       dev  dev-backend  dev-frontend  dev-bot  seed"
+	@echo "Dev:       dev  dev-backend  dev-frontend  dev-bot  seed  types  types-check"
 	@echo "Scraper:   scrape-stores  scrape-products  scrape-enrich  scrape-availability  scrape-all  embed-sync"
 	@echo "Benchmarks: eval  load  load SKIP_CHAT=1  load VUS=5"
 	@echo "Database:  migrate  create-admin  revision"
@@ -67,6 +67,17 @@ dev-frontend:
 
 dev-bot:
 	cd bot && poetry run python -m bot
+
+# Frontend API types from the backend's OpenAPI schema. Commit the result; CI runs types-check.
+API_TYPES := src/lib/api.gen.ts
+types:
+	cd backend && poetry run python ../scripts/dump_openapi.py ../frontend/openapi.json
+	cd frontend && yarn -s openapi-typescript openapi.json -o $(API_TYPES) --root-types --root-types-no-schema-prefix; \
+		status=$$?; rm -f openapi.json; exit $$status
+
+types-check: types
+	@git diff --exit-code -- frontend/$(API_TYPES) \
+		|| (echo "❌ frontend/$(API_TYPES) is stale. Run make types and commit the result." && exit 1)
 
 # --- Scraper tasks ---
 

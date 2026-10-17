@@ -1,12 +1,12 @@
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import TastingForm from '@/components/TastingForm'
-import type { ProductOut, TastingNoteOut } from '@/lib/types'
+import type { ProductOut, TastingOut } from '@/lib/types'
 
 interface TastingFormModalProps {
   // Skips the wine search step when set
   initialProduct?: ProductOut
-  onSave: (note: TastingNoteOut) => void
+  onSave: (note: TastingOut) => void
   onClose: () => void
 }
 
