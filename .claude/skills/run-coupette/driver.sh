@@ -29,6 +29,8 @@ overrides() {
     "ADMIN_EMAIL=$ADMIN_EMAIL" "JWT_SECRET_KEY=$(cat "$RUN_DIR/jwt.key")"
     # Dev login is opt-in (off in the root .env); FRONTEND_URL beats the .env's tunnel URL.
     DEV_LOGIN_ENABLED=true FRONTEND_URL=http://localhost:5173
+    # A dev-login admin can approve waitlist entries, which sends mail: no email key here.
+    RESEND_API_KEY=
   )
 }
 
@@ -63,7 +65,8 @@ cmd_up() {
   set -m
   nohup make dev-backend "${OVR[@]}" >"$RUN_DIR/backend.log" 2>&1 &
   echo $! >"$RUN_DIR/backend.pgid"
-  nohup make dev-frontend "${OVR[@]}" >"$RUN_DIR/frontend.log" 2>&1 &
+  # Loopback only: vite.config.ts sets host: true, which would put dev-login on the LAN.
+  nohup bash -c 'cd frontend && exec yarn dev --host 127.0.0.1' >"$RUN_DIR/frontend.log" 2>&1 &
   echo $! >"$RUN_DIR/frontend.pgid"
   set +m
 
