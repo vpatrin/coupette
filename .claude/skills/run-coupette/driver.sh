@@ -27,6 +27,8 @@ overrides() {
     DB_HOST=localhost "DB_PORT=$PG_PORT" DB_USER=coupette DB_PASSWORD=coupette DB_NAME=coupette
     DATABASE_URL= "REDIS_URL=redis://localhost:$REDIS_PORT/0" ENVIRONMENT=development
     "ADMIN_EMAIL=$ADMIN_EMAIL" "JWT_SECRET_KEY=$(cat "$RUN_DIR/jwt.key")"
+    # Dev login is opt-in (off in the root .env); FRONTEND_URL beats the .env's tunnel URL.
+    DEV_LOGIN_ENABLED=true FRONTEND_URL=http://localhost:5173
   )
 }
 
@@ -41,7 +43,7 @@ cmd_up() {
     listening "$p" && die "port $p is busy (another workspace running the app? \`$SKILL_DIR/driver.sh down\` or stop it there)"
   done
   mkdir -p "$RUN_DIR/shots"
-  # Per-run signing key, kept outside the repo; `token` signs with the same one.
+  # Per-run signing key, kept outside the repo.
   python3 -c 'import secrets; print(secrets.token_urlsafe(32))' >"$RUN_DIR/jwt.key"
   overrides
 
@@ -67,6 +69,11 @@ cmd_up() {
 
   wait_for 90 curl -sf http://localhost:8001/health || { tail -30 "$RUN_DIR/backend.log"; die "backend not healthy"; }
   wait_for 60 curl -sf -o /dev/null http://localhost:5173 || { tail -30 "$RUN_DIR/frontend.log"; die "frontend not serving"; }
+  # Log in once through the real dev-login route; `token` reuses it (the route is rate limited).
+  curl -sf -X POST http://localhost:5173/api/auth/dev-login -H 'Content-Type: application/json' \
+    -d "{\"email\": \"$ADMIN_EMAIL\"}" |
+    python3 -c 'import json, sys; print(json.load(sys.stdin)["access_token"])' >"$RUN_DIR/token" ||
+    { tail -30 "$RUN_DIR/backend.log"; die "dev login failed"; }
   echo "✅ ready: http://localhost:5173 (api via the same origin, /api/*). Logs: $RUN_DIR/*.log"
 }
 
@@ -78,14 +85,8 @@ cmd_status() {
 }
 
 cmd_token() {
-  [ -f "$RUN_DIR/jwt.key" ] || die "no run in progress: \`$SKILL_DIR/driver.sh up\` first"
-  overrides
-  local uid
-  uid=$(docker exec "$PG" psql -U coupette -d coupette -tAc "select id from users where email = '$ADMIN_EMAIL'")
-  [ -n "$uid" ] || die "seeded admin not found"
-  # The backend's own signer, so the payload never drifts from what verify_auth expects.
-  (cd backend && env "${OVR[@]}" poetry run python -c \
-    "from backend.services.auth import _create_jwt; print(_create_jwt($uid, 'admin', 'Dev Admin'))" 2>/dev/null)
+  [ -s "$RUN_DIR/token" ] || die "no run in progress: \`$SKILL_DIR/driver.sh up\` first"
+  cat "$RUN_DIR/token"
 }
 
 cmd_api() {
@@ -113,6 +114,7 @@ cmd_down() {
   sleep 1
   for p in 8001 5173; do lsof -ti "tcp:$p" -sTCP:LISTEN | xargs kill 2>/dev/null || true; done
   docker rm -f "$PG" "$REDIS" >/dev/null 2>&1 || true
+  rm -f "$RUN_DIR/token"
   echo "✅ stopped servers, removed $PG and $REDIS"
 }
 
