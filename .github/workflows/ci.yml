@@ -153,6 +153,27 @@ jobs:
       - run: cd frontend && yarn --frozen-lockfile
       - run: make lint-frontend
 
+  # Generated frontend types must match the backend's OpenAPI schema (make types).
+  lint-api-types:
+    needs: [changes]
+    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.core == 'true' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.workflows == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-python-service
+        with:
+          service: backend
+          python-version: ${{ env.PYTHON_VERSION }}
+          poetry-version: ${{ env.POETRY_VERSION }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: yarn
+          cache-dependency-path: frontend/yarn.lock
+      - run: cd frontend && yarn --frozen-lockfile
+      - run: make types-check
+
   # ── Test ──────────────────────────────────────────────────────
 
   test-backend:
@@ -431,7 +452,7 @@ jobs:
           done
 
   lint:
-    needs: [lint-backend, lint-scraper, lint-core, lint-bot, lint-dockerfiles, lint-frontend]
+    needs: [lint-backend, lint-scraper, lint-core, lint-bot, lint-dockerfiles, lint-frontend, lint-api-types]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions: {}
@@ -444,7 +465,8 @@ jobs:
             "${{ needs.lint-core.result }}" \
             "${{ needs.lint-bot.result }}" \
             "${{ needs.lint-dockerfiles.result }}" \
-            "${{ needs.lint-frontend.result }}"; do
+            "${{ needs.lint-frontend.result }}" \
+            "${{ needs.lint-api-types.result }}"; do
             if [ "$result" != "success" ] && [ "$result" != "skipped" ]; then
               exit 1
             fi
