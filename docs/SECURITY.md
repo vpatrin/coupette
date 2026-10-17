@@ -31,7 +31,7 @@ Users authenticate via third-party OAuth providers. The backend handles the full
 `POST /api/auth/dev-login` returns a JWT for an existing active user by email, with no OAuth. It lets agents and QA reach authenticated pages on a throwaway local database (`.claude/skills/run-coupette/driver.sh`).
 
 - **Two keys to mount it:** `DEV_LOGIN_ENABLED=true` AND `ENVIRONMENT=development`. `ENVIRONMENT` itself defaults to `development`, so the flag (default `false`) is what keeps the route off when `ENVIRONMENT` is unset.
-- **Why a flag, not the environment alone:** local dev can run behind a tunnel (ngrok, via `FRONTEND_URL`), and Vite proxies `/api`. An environment-only gate would hand admin login to anyone who reaches the tunnel. Only the run driver sets the flag; `make dev` leaves it off.
+- **Why a flag, not the environment alone:** local dev can run behind a tunnel (ngrok, via `FRONTEND_URL`), and Vite proxies `/api`. An environment-only gate would hand admin login to anyone who reaches the tunnel. Only the run driver sets the flag; `make dev` leaves it off. A tunnel left open on `:5173` during a driver run would still expose it, but only to a throwaway database with synthetic data, and the token is signed with a per-run key the real backend never accepts.
 - **Startup guard:** the backend refuses to boot when the flag is `true` outside development (production and staging). The check runs first in the lifespan, before the secret checks.
 - **No waitlist bypass:** it never creates a user; unknown email → 401, deactivated → 403. Hidden from OpenAPI, rate limited like the OAuth login routes, logs the user id only.
 
