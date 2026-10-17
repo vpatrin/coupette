@@ -31,6 +31,7 @@ Things to know:
 - **Real catalog data:** run the scraper instead (`make scrape-stores scrape-products`, then `make scrape-enrich embed-sync`). It fetches from the live site at 2–3 s per page; `SCRAPE_LIMIT` in `.env` caps the product count.
 - The bot is not started: two instances polling one Telegram token conflict. Run `make dev-bot` by hand.
 - **Frontend API types are generated.** `make types` writes `frontend/src/lib/api.gen.ts` from the backend's OpenAPI schema (no database needed). Run it after changing a Pydantic schema or a route, and commit the result: CI's `make types-check` fails on a stale file.
+- **Login is OAuth here.** The dev-only login (`POST /api/auth/dev-login`, see [SECURITY.md](SECURITY.md#dev-only-login-local-agents)) stays off under `make dev`. Agents use `.claude/skills/run-coupette/driver.sh`, which enables it on a throwaway database.
 
 ## How the pieces connect
 

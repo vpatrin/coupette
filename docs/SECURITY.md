@@ -26,6 +26,17 @@ Users authenticate via third-party OAuth providers. The backend handles the full
 
 **Code:** `backend/api/auth.py` (endpoints), `backend/services/auth.py` → `create_oauth_session()`, `backend/services/github_oauth.py`, `backend/services/google_oauth.py`
 
+### Dev-only login (local agents)
+
+`POST /api/auth/dev-login` returns a JWT for an existing active user by email, with no OAuth. It lets agents and QA reach authenticated pages on a throwaway local database (`.claude/skills/run-coupette/driver.sh`).
+
+- **Two keys to mount it:** `DEV_LOGIN_ENABLED=true` AND `ENVIRONMENT=development`. `ENVIRONMENT` itself defaults to `development`, so the flag (default `false`) is what keeps the route off when `ENVIRONMENT` is unset.
+- **Why a flag, not the environment alone:** local dev can run behind a tunnel (ngrok, via `FRONTEND_URL`), and Vite proxies `/api`. An environment-only gate would hand admin login to anyone who reaches the tunnel. Only the run driver sets the flag; `make dev` leaves it off. The driver binds Vite to `127.0.0.1` (the config's `host: true` would put it on the LAN) and blanks `RESEND_API_KEY`. What is left during a driver run: a tunnel left open on `:5173`, or a DNS-rebinding page (Vite's `allowedHosts: true`), could reach it. It gets a throwaway database with synthetic data and a token signed with a per-run key the real backend never accepts, but the backend still holds the root `.env`'s LLM keys, so chat calls would spend API credit.
+- **Startup guard:** the backend refuses to boot when the flag is `true` outside development (production and staging). The check runs first in the lifespan, before the secret checks.
+- **No waitlist bypass:** it never creates a user; unknown email → 401, deactivated → 403. Hidden from OpenAPI, rate limited like the OAuth login routes, logs the user id only.
+
+**Code:** `backend/api/auth.py` → `dev_login()`, `backend/services/auth.py` → `create_dev_session()`, `backend/app.py` → `include_dev_login()` + `lifespan()`
+
 ### Telegram HMAC (notification linking)
 
 The Telegram Login Widget uses HMAC-SHA-256 verification per Telegram's spec. Used in Settings to link a Telegram account for notifications and bot access (not as a login provider). Payloads older than 24 hours are rejected to prevent replay attacks.

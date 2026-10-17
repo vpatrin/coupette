@@ -3,7 +3,7 @@ name: run-coupette
 description: Start, run, and drive the Coupette web app locally (FastAPI backend + React frontend) on a throwaway seeded database, call its API as a logged-in user, click through the UI, and take screenshots. Use when asked to run or start the app, launch the local stack, verify a change in the real app, screenshot a page, or check an endpoint end to end.
 ---
 
-Drive the app with `.claude/skills/run-coupette/driver.sh`. `up` starts the backend (:8001) and frontend (:5173) against a **throwaway** Postgres (:5434) and Redis (:6380) seeded with the synthetic catalog. `api` calls endpoints as the seeded admin. `browse` clicks through the UI in headless Chrome and saves screenshots. Paths are relative to the repo root.
+Drive the app with `.claude/skills/run-coupette/driver.sh`. `up` starts the backend (:8001) and frontend (:5173) against a **throwaway** Postgres (:5434) and Redis (:6380) seeded with the synthetic catalog. `up` logs in once through the dev-only `POST /api/auth/dev-login`; `api` calls endpoints as the seeded admin with that token. `browse` clicks through the UI in headless Chrome and saves screenshots. Paths are relative to the repo root.
 
 Agents use this, never `make dev`: `make dev` migrates the database every workspace shares (`rules/migrations.md`). The driver never touches `coupette-postgres` / `coupette-redis`.
 
@@ -14,7 +14,7 @@ Set up by the Superset workspace (`.superset/setup.sh`) or `make install`: Poetr
 ## Run (agent path)
 
 ```bash
-.claude/skills/run-coupette/driver.sh up        # ~8 s: containers, migrate, seed, servers; prints "✅ ready"
+.claude/skills/run-coupette/driver.sh up        # ~9 s: containers, migrate, seed, servers, dev login; prints "✅ ready"
 .claude/skills/run-coupette/driver.sh status    # ports + backend /health
 ```
 
@@ -66,14 +66,16 @@ make test-frontend  # vitest
 ## Gotchas
 
 - **Fixed ports.** 8001 and 5173 are hardcoded (Makefile, vite proxy, OAuth redirect URIs), so one workspace at a time runs the app. `up` refuses when a port is busy; stop the other run first.
-- **Overrides go on the make command line.** The Makefile does `-include .env` + `export`, which beats plain environment variables. The driver passes `DB_*`, `REDIS_URL`, `ADMIN_EMAIL`, `JWT_SECRET_KEY` as `make VAR=value`; copy that if you run a target by hand against the throwaway DB.
+- **Overrides go on the make command line.** The Makefile does `-include .env` + `export`, which beats plain environment variables. The driver passes `DB_*`, `REDIS_URL`, `ADMIN_EMAIL`, `JWT_SECRET_KEY`, `DEV_LOGIN_ENABLED`, `FRONTEND_URL`, `RESEND_API_KEY` (blank) as `make VAR=value`; copy that if you run a target by hand against the throwaway DB.
 - **Postgres readiness must be checked over TCP.** The pgvector image's init server answers `pg_isready` on its Unix socket, then restarts; migrating at that moment fails. The driver uses `pg_isready -h 127.0.0.1`.
 - **Wine cards are buttons.** Each `WineCard` has `role=button` and its accessible name includes "Add to my cellar" and "Watch"; a substring match clicks the card and opens the detail panel instead. `--click` matches the exact name for this reason.
-- **No dev login yet.** Auth is OAuth only; the driver signs a JWT with the backend's own `_create_jwt` and a per-run key (`/tmp/coupette-run/jwt.key`), and the browser gets it through `localStorage` (`auth_token`, plus `onboarded` to skip `/onboarding`).
+- **Dev login is opt-in.** The driver passes `DEV_LOGIN_ENABLED=true` (plus `FRONTEND_URL=http://localhost:5173`, so nothing lands on the root `.env`'s tunnel). `up` posts `{"email": "dev-admin@coupette.test"}` to `/api/auth/dev-login` once and caches the JWT in `/tmp/coupette-run/token`; the route is rate limited (10/min), so reuse `driver.sh token` instead of calling it again. The browser gets the token through `localStorage` (`auth_token`, plus `onboarded` to skip `/onboarding`). With the flag off the route answers 404 (checked against the throwaway DB), and it never appears in `/openapi.json`, flag or not. The backend refuses to boot with the flag outside development.
+- **Vite listens on 127.0.0.1 only in driver runs.** `vite.config.ts` sets `host: true` (all interfaces) for the tunnel workflow; the driver runs `yarn dev --host 127.0.0.1` instead so the dev login stays off the LAN. The log shows `Local: http://127.0.0.1:5173/`; `localhost:5173` still works for curl and Chrome.
 - **Chat and recommendations return nothing on seed data.** The seed has no embeddings, and retrieval filters on `embedding IS NOT NULL`. `make embed-sync` fixes it but needs `OPENAI_API_KEY` and costs money; it also needs the `DB_*` overrides to hit the throwaway DB.
 - **`DEV-` SKUs give dead outbound links.** `NoteViewModal` builds a saq.com URL from the SKU.
 
 ## Troubleshooting
 
 - **`port 8001 is busy`**: another workspace (or a crashed run) holds it. `driver.sh down` here frees this run's ports; otherwise stop the app in that workspace.
+- **`make test-backend` fails `test_submit_waitlist_silences_duplicate_email` with `assert 429 == 201`** on a rerun within a minute: the Makefile exports the root `.env`'s `REDIS_URL`, so slowapi counts in the live `coupette-redis` and the conftest reset only clears the in-memory fallback (3/min on `/api/waitlist`). Wait a minute, or run `cd backend && REDIS_URL=redis://127.0.0.1:1/0 poetry run pytest -q` (unreachable Redis → in-memory limiter; passes back to back).
 - **`step failed: locator.waitFor: Timeout 15000ms exceeded`**: the text never appeared; open `/tmp/coupette-run/shots/failure.png`. Seen when a `--click` hit the wrong element (the substring trap above).

@@ -98,5 +98,10 @@ class BackendSettings(BaseSettings):
     FRONTEND_URL: str = ""
     BACKEND_URL: str = ""
 
+    #! Dev-only login (POST /api/auth/dev-login) — mounted only when ENVIRONMENT=development.
+    # Off by default: a local `make dev` behind a tunnel would otherwise expose it.
+    # The backend refuses to boot when this is true outside development.
+    DEV_LOGIN_ENABLED: bool = False
+
 
 backend_settings = BackendSettings()

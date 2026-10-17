@@ -13,3 +13,9 @@ class TelegramLoginIn(BaseModel):
 class TokenOut(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
+
+class DevLoginIn(BaseModel):
+    # Not EmailStr: it rejects reserved TLDs like the seeded admin's @coupette.test.
+    # Lookup key for an existing user only, so format validation buys nothing.
+    email: str = Field(min_length=1, max_length=254)
