@@ -37,6 +37,7 @@ A typical user flow:
 | Pages | `frontend/src/pages/*.tsx` |
 | Shared components | `frontend/src/components/*.tsx` (incl. `ui/` for shadcn primitives) |
 | HTTP wrapper | `frontend/src/lib/api.ts` (or similar — `fetch`-based, no axios) |
+| API types | `frontend/src/lib/api.gen.ts`, generated from the backend OpenAPI schema by `make types`; `lib/types.ts` re-exports it |
 | Locales | `frontend/src/locales/{fr,en}.json` |
 | i18n setup | `frontend/src/i18n.ts` |
 | Tests | co-located: `Component.tsx` + `Component.test.tsx` (Vitest + RTL) |
