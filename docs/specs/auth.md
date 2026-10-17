@@ -14,6 +14,12 @@ What auth exposes to callers:
 | `GET /api/auth/{github,google}/callback` | Provider callback — exchanges code, upserts user, mints JWT, returns redirect with exchange code |
 | `GET /api/auth/exchange?code=...` | Frontend swaps the exchange code for the actual JWT (kept out of URLs) |
 
+**Dev-only login (local agents and QA, never deployed):**
+
+| Endpoint | Purpose |
+|---|---|
+| `POST /api/auth/dev-login` | Body `{email}` → `TokenOut` for an existing active user. Mounted only when `DEV_LOGIN_ENABLED=true` AND `ENVIRONMENT=development`; hidden from OpenAPI; rate limited. Never creates a user (no waitlist bypass). Unknown email → 401, deactivated → 403 |
+
 **Telegram linking (for notifications + bot access, NOT login):**
 
 | Endpoint | Purpose |
@@ -70,14 +76,14 @@ Provider-specific:
 | OAuth session creation, Telegram HMAC verify | `backend/services/auth.py` |
 | GitHub OAuth | `backend/services/github_oauth.py` |
 | Google OAuth | `backend/services/google_oauth.py` |
-| OAuth routes | `backend/api/auth.py` |
+| OAuth routes + dev-only login (`dev_router`, mounted by `include_dev_login` in `backend/app.py`) | `backend/api/auth.py` |
 | Telegram link/unlink routes | `backend/api/users.py` |
 | Waitlist routes | `backend/api/waitlist.py` |
 | Waitlist repo | `backend/repositories/waitlist.py` |
 | User model | `core/db/models/user.py` |
 | OAuthAccount model | `core/db/models/oauth_account.py` |
 | Admin role enforcement | `backend/auth.py` + `backend/app.py:135` (router-level `verify_admin`) |
-| Tests | `backend/tests/test_auth_*.py`, `test_oauth_*.py`, `test_waitlist_*.py` |
+| Tests | `backend/tests/test_auth_*.py`, `test_oauth_*.py`, `test_waitlist_*.py`, `test_dev_login.py` |
 
 ## Dependencies
 
@@ -152,6 +158,7 @@ Unique constraint on `(provider, provider_user_id)`.
 | `FRONTEND_URL` | OAuth redirect target |
 | `BACKEND_URL` | OAuth callback base URL |
 | `REDIS_URL` | State + nonce + exchange-code storage |
+| `DEV_LOGIN_ENABLED` | Default `false`. Mounts the dev-only login in development; the backend refuses to boot when it is `true` outside development |
 
 **Admin bootstrap:** `make create-admin` is idempotent — creates or promotes the admin user from `ADMIN_EMAIL`. Backend startup verifies an active admin exists or refuses to boot.
 
