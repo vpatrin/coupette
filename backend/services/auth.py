@@ -103,6 +103,20 @@ async def create_oauth_session(
     return code, is_new
 
 
+async def create_dev_session(db: AsyncSession, email: str) -> str:
+    """Mint a JWT for an existing active user, no OAuth. Dev only — never creates a user."""
+    user = await users_repo.find_by_email(db, email.strip().lower())
+    if not user:
+        raise InvalidCredentialsError("No user with this email")
+    if not user.is_active:
+        raise ForbiddenError("Account is deactivated")
+    user.last_login_at = datetime.now(UTC)
+    logger.warning("Dev login: user_id={}", user.id)
+    token = _create_jwt(user.id, user.role, user.display_name)
+    await db.commit()
+    return token
+
+
 def verify_telegram_data(data: TelegramLoginIn) -> None:
     """Verify Telegram Login Widget payload: expiry + HMAC. Raises on failure."""
     if time.time() - data.auth_date > _TELEGRAM_AUTH_MAX_AGE_SECONDS:

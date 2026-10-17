@@ -11,6 +11,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
 from backend.api.admin import router as admin_router
+from backend.api.auth import dev_router as dev_auth_router
 from backend.api.auth import router as auth_router
 from backend.api.cellar import router as cellar_router
 from backend.api.chat import router as chat_router
@@ -39,6 +40,9 @@ _auth = [Depends(verify_auth)]
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    #! Before every other check: a leaked dev login is worse than a missing secret.
+    if backend_settings.DEV_LOGIN_ENABLED and settings.ENVIRONMENT != "development":
+        raise RuntimeError(f"DEV_LOGIN_ENABLED must be false in {settings.ENVIRONMENT}")
     if settings.ENVIRONMENT == "production":
         if not backend_settings.BOT_SECRET:
             raise RuntimeError("BOT_SECRET must be set in production")
@@ -75,6 +79,13 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     await redis_client.aclose()
     await engine.dispose()
     logger.info("Shutdown complete")
+
+
+def include_dev_login(app: FastAPI) -> None:
+    """Mount POST /api/auth/dev-login only when the flag is on AND the env is development."""
+    if backend_settings.DEV_LOGIN_ENABLED and settings.ENVIRONMENT == "development":
+        app.include_router(dev_auth_router, prefix="/api")
+        logger.warning("Dev login enabled: POST /api/auth/dev-login")
 
 
 app = FastAPI(title="Coupette", version="1.0.0", debug=settings.DEBUG, lifespan=lifespan)
@@ -135,3 +146,4 @@ app.include_router(recommendations_router, prefix="/api", dependencies=_auth)
 app.include_router(chat_router, prefix="/api", dependencies=_auth)
 app.include_router(users_router, prefix="/api", dependencies=_auth)
 app.include_router(admin_router, prefix="/api", dependencies=[Depends(verify_admin)])
+include_dev_login(app)

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 
 
 class TelegramLoginIn(BaseModel):
@@ -13,3 +13,7 @@ class TelegramLoginIn(BaseModel):
 class TokenOut(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
+
+class DevLoginIn(BaseModel):
+    email: EmailStr

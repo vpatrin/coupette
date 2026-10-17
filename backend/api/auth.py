@@ -17,12 +17,14 @@ from backend.redis_client import (
     store_oauth_state,
 )
 from backend.repositories import users as users_repo
-from backend.schemas.auth import TokenOut
-from backend.services.auth import create_oauth_session
+from backend.schemas.auth import DevLoginIn, TokenOut
+from backend.services.auth import create_dev_session, create_oauth_session
 from backend.services.github_oauth import fetch_github_access_token, fetch_github_user
 from backend.services.google_oauth import fetch_google_access_token, fetch_google_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+# Mounted only by backend.app.include_dev_login — never include it directly.
+dev_router = APIRouter(prefix="/auth", tags=["auth"])
 
 _GITHUB_AUTHORIZE_URL = "https://github.com/login/oauth/authorize"
 _GOOGLE_AUTHORIZE_URL = "https://accounts.google.com/o/oauth2/v2/auth"
@@ -157,3 +159,16 @@ async def check_user(
         raise NotFoundError("User", str(telegram_id))
     if not user.is_active:
         raise ForbiddenError("Account is deactivated")
+
+
+# Out of the OpenAPI schema: generated frontend types stay identical whatever the flag says.
+@dev_router.post("/dev-login", response_model=TokenOut, include_in_schema=False)
+@limiter.limit(RATE_LIMIT_AUTH)
+async def dev_login(
+    request: Request,
+    body: DevLoginIn,
+    db: AsyncSession = Depends(get_db),
+) -> TokenOut:
+    """Dev-only login for an existing user, no OAuth. Lets agents reach authenticated pages."""
+    token = await create_dev_session(db, body.email)
+    return TokenOut(access_token=token)
