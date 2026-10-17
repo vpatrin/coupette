@@ -53,6 +53,7 @@ Provenance: **Anthropic** (official doc or engineering post) · **Adapted** (cha
 | [`pr`](skills/pr/SKILL.md) | Opens the PR: CHANGELOG and ROADMAP checks, AC → evidence table, Decisions compiled from commit bodies | **Ours** |
 | [`coordinate`](skills/coordinate/SKILL.md) | The main workspace dispatches one `/feature` worker per ticket, relays blocks to Victor, verifies CI and evidence; never edits code. Typed only (`disable-model-invocation`) | **Adapted** from Superset's `orchestrate` skill (transport, worker envelopes). **Ours**: the ticket as a lossless handoff to a full session (Cognition: share full context), state rebuilt from Linear, Superset, and GitHub instead of a scratchpad |
 | [`adr`](skills/adr/SKILL.md) | Drafts an ADR only when a 4-test gate passes; otherwise the decision goes in the PR | **Adapted** from Michael Nygard's ADR format (Context, Decision, Status, Consequences). **Ours**: Options and Rationale sections, and the gate that keeps ADRs rare |
+| [`run-coupette`](skills/run-coupette/SKILL.md) | Starts the app on a throwaway seeded Postgres + Redis, calls the API as the seeded admin, drives the UI in headless Chrome and saves screenshots (`driver.sh`) | **Anthropic**: generated with the bundled `/run-skill-generator`. **Adapted**: Playwright on the installed Chrome, since `chromium-cli` is absent here; a throwaway DB, since `make dev` migrates the shared one |
 | [`status`](skills/status/SKILL.md) | Roadmap vs Linear vs code, next tasks; `--health` scorecard from the review checklists | **Ours** |
 | [`eval-pipeline`](skills/eval-pipeline/SKILL.md) | Tunes the RAG pipeline one lever at a time against a fixed benchmark with a holdout split | **Ours** — LLM-as-judge scores, never auto-fired (it costs money) |
 | [`release`](skills/release/SKILL.md) · [`land-pr`](skills/land-pr/SKILL.md) · [`garden`](skills/garden/SKILL.md) | Release prep (Victor pushes the tag); rebase + arm auto-merge; CI upkeep — Dependabot triage, and Victor's red PRs routed to `/land-pr` | **Ours**. `disable-model-invocation`: run only when typed, and absent from the always-loaded skill list |
@@ -135,7 +136,7 @@ claude -n VPA-NN          # named after the ticket; `claude --resume VPA-NN` fin
 ```
 .claude/
 ├── agents/        red-test-writer · reviewer · gardener
-├── skills/        feature (+ stop-check.sh) · review (+ checklists/) · pr · coordinate · adr · status
+├── skills/        feature (+ stop-check.sh) · review (+ checklists/) · pr · coordinate · adr · status · run-coupette (+ driver.sh)
 │                  eval-pipeline · release · land-pr · garden
 ├── rules/         path-scoped instructions
 ├── settings.json  project hooks (SessionStart, Stop) + LSP plugins

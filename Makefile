@@ -1,8 +1,8 @@
 .PHONY: help install \
-	dev-backend dev-frontend dev-bot \
+	dev dev-backend dev-frontend dev-bot seed \
 	scrape-stores scrape-products scrape-enrich scrape-availability scrape-all embed-sync \
 	eval load \
-	migrate revision \
+	migrate create-admin revision \
 	lint lint-backend lint-scraper lint-core lint-bot lint-frontend \
 	format format-backend format-scraper format-core format-bot format-frontend \
 	test test-backend test-scraper test-bot test-frontend \
@@ -23,10 +23,10 @@ export
 
 help:
 	@echo "Setup:     install"
-	@echo "Dev:       dev-backend  dev-frontend  dev-bot"
+	@echo "Dev:       dev  dev-backend  dev-frontend  dev-bot  seed"
 	@echo "Scraper:   scrape-stores  scrape-products  scrape-enrich  scrape-availability  scrape-all  embed-sync"
 	@echo "Benchmarks: eval  load  load SKIP_CHAT=1  load VUS=5"
-	@echo "Database:  migrate  revision"
+	@echo "Database:  migrate  create-admin  revision"
 	@echo "Lint:      lint  lint-{backend,scraper,core,bot,frontend}"
 	@echo "Format:    format  format-{backend,scraper,core,bot,frontend}"
 	@echo "Test:      test  test-{backend,scraper,bot,frontend}"
@@ -48,6 +48,16 @@ install:
 	cd frontend && yarn install
 
 # --- Dev servers ---
+
+# One command from a fresh workspace to a running app with data.
+# Sub-makes, not prerequisites, so the order holds even under `make -j`.
+#! By default `migrate` runs on the database every workspace shares: a branch with a new
+#! migration migrates all of them. A workspace can opt into its own DB (VPA-52 slice 5).
+dev:
+	$(MAKE) start-db
+	$(MAKE) migrate
+	$(MAKE) seed
+	./.superset/run.sh
 
 dev-backend:
 	cd backend && poetry run uvicorn backend.app:app --reload --port 8001
@@ -77,6 +87,10 @@ scrape-all: scrape-stores scrape-products scrape-enrich scrape-availability
 embed-sync:
 	cd scraper && poetry run python -m scraper embed
 
+# Synthetic dev catalog (no live scraping). No-op when the products table already has rows.
+seed:
+	cd scraper && poetry run python -m scraper seed
+
 # --- Eval ---
 # HAIKU_TEMPERATURE=0 forces deterministic intent/curation for reproducible scores.
 
@@ -90,6 +104,10 @@ load:
 
 migrate:
 	cd core && poetry run alembic upgrade head
+	$(MAKE) create-admin
+
+# Backend startup refuses to boot without an active admin (ADMIN_EMAIL).
+create-admin:
 	cd core && poetry run python ../scripts/create_admin.py
 
 # Generate migration against a clean, ephemeral Postgres (no dev DB drift).
@@ -286,8 +304,12 @@ scan: scan-backend scan-scraper scan-bot
 
 # --- Docker ---
 
+#! Gated on .env: the dev overlay sets POSTGRES_USER/PASSWORD/DB from it, and without it
+#! compose would recreate the shared postgres container with empty credentials.
 start-db:
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d postgres
+	@test -f .env || (echo "❌ No .env — copy it from the root checkout first (docs/DEVELOPMENT.md)." && exit 1)
+	@docker network inspect internal >/dev/null 2>&1 || docker network create internal
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --wait postgres redis
 
 stop-db:
 	docker compose -f docker-compose.yml -f docker-compose.dev.yml down

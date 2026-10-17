@@ -17,7 +17,7 @@ Wine discovery + recommendations via Telegram bot and web app. Modular monolith 
 - App name in user-facing copy: **Coupette** (not "SAQ Sommelier" — that's the repo name only)
 - Bot handle: `@CoupetteBot`
 
-**Deploy:** NEVER run deploy commands, prod docker commands, or migrations (`make migrate`, any `alembic upgrade`/`downgrade` on a real DB) without explicit instruction. `make revision` is codegen against an ephemeral container, not a migration run — yours to run (`rules/migrations.md`). Your job ends at writing code and creating PRs.
+**Deploy:** NEVER run deploy commands, prod docker commands, or migrations (`make migrate`, `make dev` which runs it, any `alembic upgrade`/`downgrade` on a real DB) without explicit instruction. `make revision` is codegen against an ephemeral container, not a migration run — yours to run (`rules/migrations.md`). Your job ends at writing code and creating PRs.
 
 ## Where things live
 

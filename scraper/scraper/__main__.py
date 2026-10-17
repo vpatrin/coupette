@@ -4,7 +4,14 @@ import sys
 
 from core.logging import setup_logging
 
-from .commands import availability_check, embed_sync, enrich_wines, scrape_products, scrape_stores
+from .commands import (
+    availability_check,
+    embed_sync,
+    enrich_wines,
+    scrape_products,
+    scrape_stores,
+    seed_dev_data,
+)
 from .config import settings
 
 setup_logging(settings.SERVICE_NAME, level=settings.LOG_LEVEL)
@@ -19,6 +26,7 @@ def _build_parser() -> argparse.ArgumentParser:
     sub.add_parser("enrich", help="Enrich wine attributes via Adobe API")
     sub.add_parser("embed", help="Sync product embeddings")
     sub.add_parser("availability", help="Check watched-product availability")
+    sub.add_parser("seed", help="Load the synthetic dev catalog into an empty DB")
 
     return parser
 
@@ -30,6 +38,7 @@ _COMMANDS: dict[str | None, object] = {
     "enrich": enrich_wines,
     "embed": embed_sync,
     "availability": availability_check,
+    "seed": seed_dev_data,
 }
 
 if __name__ == "__main__":

@@ -4,6 +4,7 @@ from .availability import availability_check
 from .embed import embed_sync
 from .enrich import enrich_wines
 from .scrape import scrape_products
+from .seed import seed_dev_data
 from .stores import scrape_stores
 
 __all__ = [
@@ -12,4 +13,5 @@ __all__ = [
     "enrich_wines",
     "scrape_products",
     "scrape_stores",
+    "seed_dev_data",
 ]

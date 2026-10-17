@@ -11,19 +11,25 @@ VPS-level infrastructure (firewall, SSH, TLS, networking) lives in the [infra re
 Prerequisites: Python 3.12+, [Poetry](https://python-poetry.org/docs/#installation), Node.js 24+, [Yarn](https://classic.yarnpkg.com/), Docker.
 
 ```bash
-make install              # Python + frontend deps
-cp .env.example .env      # fill in values — the file documents itself
-make run-db               # PostgreSQL on localhost:5432
-make migrate              # create tables
-make create-admin         # seed admin user (backend won't start without it)
-make dev-scraper          # populate DB (~14k products)
-make dev-backend          # API on localhost:8001
-make dev-frontend         # SPA on localhost:5173
+make install              # Python + frontend deps (a Superset workspace runs this in setup.sh)
+cp .env.example .env      # fill in values: the file documents itself (setup.sh copies the root .env)
+make dev                  # everything below, then backend :8001 + frontend :5173
 ```
 
-Or skip Poetry and run everything in Docker: `make run` (see `make help` for all targets).
+`make dev` runs, in order:
 
-Frontend always runs bare-metal (`yarn dev`) — hot reload matters.
+1. `make start-db`: Postgres and Redis in Docker, waits until both are healthy. Refuses to run without `.env`.
+2. `make migrate`: `alembic upgrade head`, then `make create-admin` (the backend refuses to boot without an active admin for `ADMIN_EMAIL`).
+3. `make seed`: loads a synthetic catalog (58 made-up products, 4 made-up stores) in a few seconds. It is a no-op when the `products` table already has rows, so it never mixes fake rows into scraped data.
+4. `.superset/run.sh`: backend (`make dev-backend`) and frontend (`make dev-frontend`). Ctrl-C stops both.
+
+Things to know:
+
+- **The database is shared.** Every workspace and the root checkout use the same `coupette-postgres` container, so a branch with a new migration migrates all of them. A ticket that needs its own database will opt in at workspace creation (planned, VPA-52).
+- **Ports are fixed** (8001, 5173): the OAuth redirect URIs are registered against them, so only one workspace can run the app at a time.
+- **Seed data has no embeddings.** Search and browse work. Chat and recommendations return nothing until you run `make embed-sync` (needs `OPENAI_API_KEY`, costs a few cents).
+- **Real catalog data:** run the scraper instead (`make scrape-stores scrape-products`, then `make scrape-enrich embed-sync`). It fetches from the live site at 2–3 s per page; `SCRAPE_LIMIT` in `.env` caps the product count.
+- The bot is not started: two instances polling one Telegram token conflict. Run `make dev-bot` by hand.
 
 ## How the pieces connect
 
