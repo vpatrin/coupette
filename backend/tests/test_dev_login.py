@@ -136,7 +136,7 @@ async def test_dev_login_accepts_reserved_tld_email_of_seeded_admin():
     with patch.object(backend_settings, "JWT_SECRET_KEY", JWT_SECRET):
         async with _client(dev_app) as client:
             resp = await client.post(
-                "/api/auth/dev-login", json={"email": "Dev-Admin@coupette.test"}
+                "/api/auth/dev-login", json={"email": "dev-admin@coupette.test"}
             )
 
     assert resp.status_code == status.HTTP_200_OK

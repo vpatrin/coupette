@@ -82,7 +82,7 @@ Provider-specific:
 | Waitlist repo | `backend/repositories/waitlist.py` |
 | User model | `core/db/models/user.py` |
 | OAuthAccount model | `core/db/models/oauth_account.py` |
-| Admin role enforcement | `backend/auth.py` + `backend/app.py:135` (router-level `verify_admin`) |
+| Admin role enforcement | `backend/auth.py` + `backend/app.py` → `admin_router` mount (router-level `verify_admin`) |
 | Tests | `backend/tests/test_auth_*.py`, `test_oauth_*.py`, `test_waitlist_*.py`, `test_dev_login.py` |
 
 ## Dependencies
@@ -96,7 +96,7 @@ Provider-specific:
 
 ## Cross-cutting concerns
 
-- **Auth:** the subsystem IS the cross-cutting concern. Other subsystems use `Depends(verify_auth)` / `Depends(verify_admin)`; admin router has `dependencies=[Depends(verify_admin)]` at the mount site (`backend/app.py:135`) so every `/admin/*` route inherits it
+- **Auth:** the subsystem IS the cross-cutting concern. Other subsystems use `Depends(verify_auth)` / `Depends(verify_admin)`; admin router has `dependencies=[Depends(verify_admin)]` at the mount site (`admin_router` in `backend/app.py`) so every `/admin/*` route inherits it
 - **Logging:** OAuth login success structured-logged (`backend/services/auth.py:92`); OAuth callbacks currently silent — gap flagged in [`.claude/agents/reviewer.md`](../../.claude/agents/reviewer.md) audited-gaps section. Tokens/secrets NEVER logged
 - **Errors:** mapped to status codes in `backend/errors.py`
 - **Observability:** Prometheus metrics on the auth endpoints (rate of logins, failures)
