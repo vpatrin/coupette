@@ -129,6 +129,20 @@ async def test_dev_login_returns_404_in_development_when_flag_is_unset(monkeypat
     assert resp.status_code == status.HTTP_404_NOT_FOUND
 
 
+async def test_dev_login_accepts_reserved_tld_email_of_seeded_admin():
+    session = _session_returning(_seeded_user(email="dev-admin@coupette.test"))
+    dev_app = _dev_app(environment="development", enabled=True, session=session)
+
+    with patch.object(backend_settings, "JWT_SECRET_KEY", JWT_SECRET):
+        async with _client(dev_app) as client:
+            resp = await client.post(
+                "/api/auth/dev-login", json={"email": "Dev-Admin@coupette.test"}
+            )
+
+    assert resp.status_code == status.HTTP_200_OK
+    assert resp.json()["access_token"]
+
+
 async def test_dev_login_returns_401_and_creates_no_user_for_unknown_email():
     session = _session_returning(None)
     dev_app = _dev_app(environment="development", enabled=True, session=session)

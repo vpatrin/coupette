@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
 
 
 class TelegramLoginIn(BaseModel):
@@ -16,4 +16,6 @@ class TokenOut(BaseModel):
 
 
 class DevLoginIn(BaseModel):
-    email: EmailStr
+    # Not EmailStr: it rejects reserved TLDs like the seeded admin's @coupette.test.
+    # Lookup key for an existing user only, so format validation buys nothing.
+    email: str = Field(min_length=1, max_length=254)
