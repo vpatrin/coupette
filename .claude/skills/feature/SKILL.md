@@ -27,6 +27,7 @@ While `.claude/progress.md` exists, the project Stop hook ([`stop-check.sh`](sto
 - Plan before code when the change spans several files or the approach is uncertain; skip the plan when the diff fits in one sentence. The plan **names the interfaces**: endpoint paths and methods, schema names (`*In`/`*Out`) and fields, function signatures, component props.
 - Consult the advisor before committing to the approach.
 - A non-obvious product or technical choice → `AskUserQuestion`, recommendation first. On a Learning topic (`~/.claude/learning.md` → Learning), present the options and let Victor choose before implementing.
+- An AC that names a user-only skill (`disable-model-invocation`, e.g. `/run-skill-generator`) goes to Victor at the plan checkpoint: he runs it or re-scopes the AC. Never substitute it alone.
 - **Risky lane:** show the plan and wait for Victor's OK (plan checkpoint). A RAG plan states the `make eval` run it needs — it costs API money, and the OK covers it.
 
 ## 3. Red tests — a separate writer
@@ -42,7 +43,7 @@ While `.claude/progress.md` exists, the project Stop hook ([`stop-check.sh`](sto
 - Add tests for implementation branches the ACs don't name until diff coverage ≥ 80% (`rules/testing.md` §6).
 - UI ACs: run the app (`run` skill or a browser tool), take a browser screenshot, and save it to `.claude/evidence/` and name the file in the AC's evidence row — GitHub's CLI can't upload images, so the coordinator or Victor opens it from the workspace.
 - Run the ticket's end-to-end verification line; its result is an evidence row.
-- Update docs in the same PR: specs, rules, CHANGELOG, ROADMAP (`rules/docs.md`).
+- Update docs in the same PR: specs, rules, CHANGELOG, ROADMAP (`rules/docs.md`). Run `grep -rn VPA-NN .claude docs CLAUDE.md`: every "until / planned VPA-NN" line this slice ships must change.
 - Commit each finished slice (conventional commit) and rewrite `.claude/progress.md`. **Record each decision in the body of the commit that made it** (`git commit -m "<title>" -m "Decision: <choice> over <rejected>, because <why>"`) — git keeps it through `/clear` and compaction, and `/pr` compiles the PR's Decisions section from these bodies.
 - Push only once lint and tests are green: `.githooks/pre-push` runs the suites, and red tests fail it by design. Never bypass it.
 - Two failed attempts at the same fix → stop and report BLOCKED with what you tried; recommend `/clear` and a sharper prompt.
