@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { formatOrigin, CATEGORY_DOT } from '@/lib/utils'
 import { getBucket, ratingColor } from '@/lib/rating'
 import TastingForm from '@/components/TastingForm'
-import type { TastingNoteOut, ProductOut } from '@/lib/types'
+import type { TastingOut, ProductOut } from '@/lib/types'
 
 const dateFmt = new Intl.DateTimeFormat('fr-CA', { day: 'numeric', month: 'long', year: 'numeric' })
 
@@ -16,10 +16,10 @@ function saqUrl(sku: string) {
 }
 
 interface NoteViewModalProps {
-  note: TastingNoteOut
+  note: TastingOut
   onClose: () => void
   onDelete: (id: number) => void
-  onUpdated: (note: TastingNoteOut) => void
+  onUpdated: (note: TastingOut) => void
   initialMode?: 'view' | 'edit'
 }
 
@@ -99,7 +99,7 @@ function NoteViewModal({
   }, [apiClient, currentNote.sku, userId, watched])
 
   const handleNoteSaved = useCallback(
-    (updated: TastingNoteOut) => {
+    (updated: TastingOut) => {
       setCurrentNote(updated)
       onUpdated(updated)
       setMode('view')

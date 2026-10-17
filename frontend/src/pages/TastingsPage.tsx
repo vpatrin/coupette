@@ -3,7 +3,7 @@ import { CaretDown, MagnifyingGlass, NotePencil, PencilSimple, Plus } from '@pho
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { useApiClient, ApiError } from '@/lib/api'
-import type { TastingNoteOut } from '@/lib/types'
+import type { TastingOut } from '@/lib/types'
 import { getBucket, ratingColor } from '@/lib/rating'
 import { CATEGORY_DOT } from '@/lib/utils'
 import EmptyState from '@/components/EmptyState'
@@ -22,11 +22,11 @@ const noteDateFmt = new Intl.DateTimeFormat('fr-CA', { day: 'numeric', month: 's
 
 // Groups an ordered list of tasting notes by their tasted_at date label.
 // Returns pairs of [label, notes[]] in the order they first appear.
-function groupByDate(notes: TastingNoteOut[], t: TFunction): [string, TastingNoteOut[]][] {
+function groupByDate(notes: TastingOut[], t: TFunction): [string, TastingOut[]][] {
   const today = new Date().toISOString().slice(0, 10)
   const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10)
 
-  const map = new Map<string, TastingNoteOut[]>()
+  const map = new Map<string, TastingOut[]>()
   for (const note of notes) {
     let label: string
     if (note.tasted_at === today) label = t('time.today')
@@ -43,7 +43,7 @@ function TastingsPage() {
   const apiClient = useApiClient()
   const { t } = useTranslation()
 
-  const [notes, setNotes] = useState<TastingNoteOut[]>([])
+  const [notes, setNotes] = useState<TastingOut[]>([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState(false)
   const [hasMore, setHasMore] = useState(false)
@@ -54,15 +54,11 @@ function TastingsPage() {
   )
   const [fetchKey, setFetchKey] = useState(0)
   const [addNoteOpen, setAddNoteOpen] = useState(false)
-  const [viewNote, setViewNote] = useState<{ note: TastingNoteOut; mode: 'view' | 'edit' } | null>(
-    null,
-  )
+  const [viewNote, setViewNote] = useState<{ note: TastingOut; mode: 'view' | 'edit' } | null>(null)
 
   const fetchPage = useCallback(
     async (offset: number) => {
-      const data = await apiClient<TastingNoteOut[]>(
-        `/tastings?limit=${PAGE_SIZE}&offset=${offset}`,
-      )
+      const data = await apiClient<TastingOut[]>(`/tastings?limit=${PAGE_SIZE}&offset=${offset}`)
       return data
     },
     [apiClient],
@@ -106,7 +102,7 @@ function TastingsPage() {
     async (id: number) => {
       setViewNote(null)
       // Capture removed item + index inside the updater so this callback doesn't depend on `notes`
-      let removed: TastingNoteOut | undefined
+      let removed: TastingOut | undefined
       let removedIdx = -1
       setNotes((prev) => {
         removedIdx = prev.findIndex((n) => n.id === id)
@@ -131,12 +127,12 @@ function TastingsPage() {
     [apiClient],
   )
 
-  const handleNoteSaved = useCallback((note: TastingNoteOut) => {
+  const handleNoteSaved = useCallback((note: TastingOut) => {
     setNotes((prev) => [note, ...prev])
     setAddNoteOpen(false)
   }, [])
 
-  const handleNoteUpdated = useCallback((updated: TastingNoteOut) => {
+  const handleNoteUpdated = useCallback((updated: TastingOut) => {
     setNotes((prev) => prev.map((n) => (n.id === updated.id ? updated : n)))
     setViewNote({ note: updated, mode: 'view' })
   }, [])
@@ -170,7 +166,7 @@ function TastingsPage() {
   const grouped = useMemo(
     () =>
       sort === 'rating-desc' || sort === 'rating-asc'
-        ? [['', filtered] as [string, TastingNoteOut[]]]
+        ? [['', filtered] as [string, TastingOut[]]]
         : groupByDate(filtered, t),
     [filtered, sort, t],
   )

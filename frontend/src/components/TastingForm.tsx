@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useApiClient, ApiError } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import WineSearch from '@/components/WineSearch'
-import type { TastingNoteOut, ProductOut } from '@/lib/types'
+import type { TastingOut, ProductOut } from '@/lib/types'
 
 import { getBucket } from '@/lib/rating'
 
@@ -23,7 +23,7 @@ interface TastingFormProps {
   initialNotes?: string
   initialPairing?: string
   initialTastedAt?: string
-  onSave: (note: TastingNoteOut) => void
+  onSave: (note: TastingOut) => void
   onCancel: () => void
 }
 
@@ -62,11 +62,11 @@ function TastingForm({
         tasted_at: tastedAt,
       }
       const note = noteId
-        ? await apiClient<TastingNoteOut>(`/tastings/${noteId}`, {
+        ? await apiClient<TastingOut>(`/tastings/${noteId}`, {
             method: 'PATCH',
             body: JSON.stringify(body),
           })
-        : await apiClient<TastingNoteOut>('/tastings', {
+        : await apiClient<TastingOut>('/tastings', {
             method: 'POST',
             body: JSON.stringify({ sku: product.sku, ...body }),
           })

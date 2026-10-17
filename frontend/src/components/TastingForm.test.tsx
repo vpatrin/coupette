@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { useApiClient, ApiError } from '@/lib/api'
 import { product, fakeNote } from '@/tests/factories'
 import TastingForm from './TastingForm'
-import type { TastingNoteOut } from '@/lib/types'
+import type { TastingOut } from '@/lib/types'
 
 vi.mock('@/lib/api', () => ({
   useApiClient: vi.fn(),
@@ -65,8 +65,8 @@ describe('TastingForm', () => {
   })
 
   it('shows saving label and disables button while request is in flight', async () => {
-    let resolve: (n: TastingNoteOut) => void
-    const pending = new Promise<TastingNoteOut>((r) => {
+    let resolve: (n: TastingOut) => void
+    const pending = new Promise<TastingOut>((r) => {
       resolve = r
     })
     mockApiClient.mockReturnValue(pending)
