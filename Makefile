@@ -72,8 +72,8 @@ dev-bot:
 API_TYPES := src/lib/api.gen.ts
 types:
 	cd backend && poetry run python ../scripts/dump_openapi.py ../frontend/openapi.json
-	cd frontend && yarn -s openapi-typescript openapi.json -o $(API_TYPES) --root-types --root-types-no-schema-prefix \
-		&& rm openapi.json
+	cd frontend && yarn -s openapi-typescript openapi.json -o $(API_TYPES) --root-types --root-types-no-schema-prefix; \
+		status=$$?; rm -f openapi.json; exit $$status
 
 types-check: types
 	@git diff --exit-code -- frontend/$(API_TYPES) \
