@@ -24,7 +24,7 @@ pip-audit = ">=2.10.1"
 pytest = ">=9.1.1"
 pytest-asyncio = ">=1.4.0"
 pytest-cov = ">=6.0"
-ruff = "^0.17.0"
+ruff = "^0.17.1"
 diff-cover = "^10.6.0"
 
 [tool.pytest.ini_options]
