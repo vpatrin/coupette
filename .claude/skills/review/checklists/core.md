@@ -25,7 +25,7 @@ Cite the ID in each finding. A failed item here is a BLOCK.
 ## Hard rules
 
 - **HR-1** No user-facing text implies SAQ affiliation (prompts, bot messages, UI copy, API errors).
-- **HR-2** No deploy, prod docker, `make migrate`, or `make dev` against the shared DB was run (a workspace's own DB from `.env.local`, or an ephemeral DB via `DB_PORT` + blank `DATABASE_URL`, is fine).
+- **HR-2** No deploy, prod docker, `make migrate`, or `make dev` against the shared DB was run (a workspace's own DB, `.env.local` with `DB_NAME=coupette_*`, or an ephemeral DB via `DB_PORT` + blank `DATABASE_URL`, is fine).
 - **HR-3** New constants, timeouts, thresholds, and flags are surfaced in the PR Decisions, not silently picked.
 - **HR-4** User-written comments preserved, including BetterComments (`#!`, `#?`, `#*`, `#TODO`).
 
