@@ -54,7 +54,7 @@ Each `up` starts from an empty DB, so runs are deterministic: 58 products (51 li
 
 ## Run (human path)
 
-`make dev` in a terminal: shared DB, real `.env` admin, OAuth login on http://localhost:5173. See `docs/DEVELOPMENT.md`.
+`make dev` in a terminal: shared DB by default (own DB if `.env.local` sets one), real `.env` admin, OAuth login on http://localhost:5173. See `docs/DEVELOPMENT.md`.
 
 ## Test
 

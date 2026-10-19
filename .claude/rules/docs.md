@@ -48,6 +48,7 @@ The coding session updates docs in the same PR as the behavior change; the revie
 - `docs/specs/<subsystem>.md` — when a public contract, data flow, operational gotcha (env var, secret, ordering), or file map changes. Edit only the affected sections; if more than ~30% of a spec is stale, flag it in the PR instead of rewriting it.
 - `.claude/rules/*.md` — when a convention changes. Rules hold instructions and link to specs; they never restate them.
 - `CHANGELOG.md` and `docs/ROADMAP.md` — see below.
+- When a change makes a fixed behavior conditional (shared → shared by default), grep `.claude/skills .claude/rules docs` for sentences that still state the old behavior as a fact.
 
 ## Versioning + Release
 

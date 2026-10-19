@@ -31,6 +31,9 @@ docker exec "$PG" pg_isready -q 2>/dev/null || die "$PG is not running: make sta
 # psql runs inside the container as POSTGRES_USER, so no .env parsing here.
 pg_sql() { docker exec -i "$PG" sh -c 'psql -U "$POSTGRES_USER" -d postgres -v ON_ERROR_STOP=1 -qtA'; }
 if [ "$(echo "SELECT 1 FROM pg_database WHERE datname = '$db'" | pg_sql)" = 1 ]; then
+  #! No marker yet means another workspace (a branch with the same truncated name) or a
+  #! leftover owns it: reusing it would migrate theirs and teardown would drop it for both.
+  [ -f .env.local ] || die "$db already exists but this workspace did not create it. Drop it by hand if it is a leftover."
   echo "▶ $db already exists, reusing it"
 else
   echo "CREATE DATABASE \"$db\"" | pg_sql

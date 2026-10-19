@@ -330,7 +330,8 @@ start-db:
 	@if [ -f .git ] && [ ! -L .env ]; then \
 		echo '⚠️  .env is a regular file here, so it no longer follows the root .env. Relink: ln -sf "$$SUPERSET_ROOT_PATH/.env" .env'; \
 	fi
-	@docker network inspect internal >/dev/null 2>&1 || docker network create internal
+	@# || true: two workspaces created at once can race on the create; the loser finds it made.
+	@docker network inspect internal >/dev/null 2>&1 || docker network create internal || true
 	env -u DB_NAME docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --wait postgres redis
 
 stop-db:
