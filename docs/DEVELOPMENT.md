@@ -12,7 +12,7 @@ Prerequisites: Python 3.12+, [Poetry](https://python-poetry.org/docs/#installati
 
 ```bash
 make install              # Python + frontend deps (a Superset workspace runs this in setup.sh)
-cp .env.example .env      # fill in values: the file documents itself (setup.sh copies the root .env)
+cp .env.example .env      # fill in values: the file documents itself (setup.sh links the root .env)
 make dev                  # everything below, then backend :8001 + frontend :5173
 ```
 
@@ -25,13 +25,28 @@ make dev                  # everything below, then backend :8001 + frontend :517
 
 Things to know:
 
-- **The database is shared.** Every workspace and the root checkout use the same `coupette-postgres` container, so a branch with a new migration migrates all of them. A ticket that needs its own database will opt in at workspace creation (planned, VPA-52).
+- **The database is shared by default.** Every workspace and the root checkout use `saq_sommelier` on the same `coupette-postgres` container, so a branch with a new migration migrates all of them. A branch that adds a migration should use its own database ([below](#own-database-per-workspace)). Nothing stops `make migrate` on the shared one.
+- **`.env` is a symlink in workspaces.** `setup.sh` links the root checkout's `.env`, so one edit reaches every workspace. Per-workspace values go in `.env.local`, which the Makefile includes after `.env` (the later include wins) and Vite also loads (only `VITE_*` keys reach the browser). A workspace created before this has a copied `.env`; switch it with `ln -sf "$SUPERSET_ROOT_PATH/.env" .env`. Some tools rewrite a file through a temp file and a rename (BSD `sed -i`, some editors), which replaces the link with a regular file: `make start-db` then warns.
 - **Ports are fixed** (8001, 5173): the OAuth redirect URIs are registered against them, so only one workspace can run the app at a time.
 - **Seed data has no embeddings.** Search and browse work. Chat and recommendations return nothing until you run `make embed-sync` (needs `OPENAI_API_KEY`, costs a few cents).
 - **Real catalog data:** run the scraper instead (`make scrape-stores scrape-products`, then `make scrape-enrich embed-sync`). It fetches from the live site at 2–3 s per page; `SCRAPE_LIMIT` in `.env` caps the product count.
 - The bot is not started: two instances polling one Telegram token conflict. Run `make dev-bot` by hand.
 - **Frontend API types are generated.** `make types` writes `frontend/src/lib/api.gen.ts` from the backend's OpenAPI schema (no database needed). Run it after changing a Pydantic schema or a route, and commit the result: CI's `make types-check` fails on a stale file.
 - **Login is OAuth here.** The dev-only login (`POST /api/auth/dev-login`, see [SECURITY.md](SECURITY.md#dev-only-login-local-agents)) stays off under `make dev`. Agents use `.claude/skills/run-coupette/driver.sh`, which enables it on a throwaway database.
+
+### Own database per workspace
+
+Opt-in, for a branch that adds a migration or needs data the others must not see. The workspace gets `coupette_<branch>` on the shared `coupette-postgres` container, migrated and seeded with the synthetic catalog. The shared DB and the other workspaces stay untouched.
+
+- **At creation:** Superset passes no environment variables to `setup.sh`, so the trigger is a git config flag on the branch. Set it in the root checkout before creating the workspace (git config is shared by every worktree):
+
+  ```bash
+  git config branch.<branch>.coupetteOwnDb true   # the branch name the workspace will check out
+  ```
+
+- **Later, in an existing workspace:** `make own-db`, before the first `make migrate`. It is idempotent.
+
+`own-db.sh` writes `DB_NAME` (and a blank `DATABASE_URL`) into `.env.local`, so every `make` target in that workspace uses the own DB. `make start-db` keeps the shared container as it is: it hides `DB_NAME` from compose, because the value would otherwise change `POSTGRES_DB` and make compose recreate `coupette-postgres`. Deleting the workspace runs `teardown.sh`, which drops the DB only when `own-db.sh` wrote `.env.local`.
 
 ## How the pieces connect
 
