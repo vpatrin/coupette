@@ -2,7 +2,7 @@
 	dev dev-backend dev-frontend dev-bot seed types types-check \
 	scrape-stores scrape-products scrape-enrich scrape-availability scrape-all embed-sync \
 	eval load \
-	migrate create-admin revision \
+	migrate create-admin revision own-db \
 	lint lint-backend lint-scraper lint-core lint-bot lint-frontend \
 	format format-backend format-scraper format-core format-bot format-frontend \
 	test test-backend test-scraper test-bot test-frontend \
@@ -17,6 +17,8 @@
 # -include: don't fail if .env is missing (CI, fresh clone).
 # export: make vars available to commands (poetry run, scripts/create_admin.py, etc.).
 -include .env
+# Per-workspace overrides (own DB, see .superset/own-db.sh). Included last, so it wins.
+-include .env.local
 export
 
 # --- Help ---
@@ -26,7 +28,7 @@ help:
 	@echo "Dev:       dev  dev-backend  dev-frontend  dev-bot  seed  types  types-check"
 	@echo "Scraper:   scrape-stores  scrape-products  scrape-enrich  scrape-availability  scrape-all  embed-sync"
 	@echo "Benchmarks: eval  load  load SKIP_CHAT=1  load VUS=5"
-	@echo "Database:  migrate  create-admin  revision"
+	@echo "Database:  migrate  create-admin  revision  own-db"
 	@echo "Lint:      lint  lint-{backend,scraper,core,bot,frontend}"
 	@echo "Format:    format  format-{backend,scraper,core,bot,frontend}"
 	@echo "Test:      test  test-{backend,scraper,bot,frontend}"
@@ -52,7 +54,7 @@ install:
 # One command from a fresh workspace to a running app with data.
 # Sub-makes, not prerequisites, so the order holds even under `make -j`.
 #! By default `migrate` runs on the database every workspace shares: a branch with a new
-#! migration migrates all of them. A workspace can opt into its own DB (VPA-52 slice 5).
+#! migration migrates all of them. A workspace can opt into its own DB: make own-db.
 dev:
 	$(MAKE) start-db
 	$(MAKE) migrate
@@ -159,6 +161,10 @@ revision:
 	@docker rm -f $(REVISION_CONTAINER) >/dev/null
 	make format
 	@echo "✅ Migration generated cleanly."
+
+# This workspace's own DB (coupette_<branch>), migrated and seeded. Idempotent.
+own-db:
+	./.superset/own-db.sh
 
 # --- Lint ---
 
@@ -317,10 +323,16 @@ scan: scan-backend scan-scraper scan-bot
 
 #! Gated on .env: the dev overlay sets POSTGRES_USER/PASSWORD/DB from it, and without it
 #! compose would recreate the shared postgres container with empty credentials.
+#! env -u DB_NAME: an own DB_NAME from .env.local must not reach POSTGRES_DB, or compose
+#! would recreate the shared container (and again from the next workspace without it).
 start-db:
-	@test -f .env || (echo "❌ No .env — copy it from the root checkout first (docs/DEVELOPMENT.md)." && exit 1)
-	@docker network inspect internal >/dev/null 2>&1 || docker network create internal
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --wait postgres redis
+	@test -f .env || (echo "❌ No .env — link it from the root checkout first (docs/DEVELOPMENT.md)." && exit 1)
+	@if [ -f .git ] && [ ! -L .env ]; then \
+		echo '⚠️  .env is a regular file here, so it no longer follows the root .env. Relink: ln -sf "$$SUPERSET_ROOT_PATH/.env" .env'; \
+	fi
+	@# || true: two workspaces created at once can race on the create; the loser finds it made.
+	@docker network inspect internal >/dev/null 2>&1 || docker network create internal || true
+	env -u DB_NAME docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --wait postgres redis
 
 stop-db:
 	docker compose -f docker-compose.yml -f docker-compose.dev.yml down
