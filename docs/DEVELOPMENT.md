@@ -44,6 +44,8 @@ Opt-in, for a branch that adds a migration or needs data the others must not see
   git config branch.<branch>.coupetteOwnDb true   # the branch name the workspace will check out
   ```
 
+  The name must match exactly: pass `--skip-branch-prefix` to `superset workspaces create`, or a project branch prefix makes the flag miss and the workspace stays on the shared DB. `git branch -D` removes the flag with the branch.
+
 - **Later, in an existing workspace:** `make own-db`, before the first `make migrate`. It is idempotent.
 
 `own-db.sh` writes `DB_NAME` (and a blank `DATABASE_URL`) into `.env.local`, so every `make` target in that workspace uses the own DB. `make start-db` keeps the shared container as it is: it hides `DB_NAME` from compose, because the value would otherwise change `POSTGRES_DB` and make compose recreate `coupette-postgres`. Deleting the workspace runs `teardown.sh`, which drops the DB only when `own-db.sh` wrote `.env.local`.

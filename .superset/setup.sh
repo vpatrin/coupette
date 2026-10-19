@@ -71,5 +71,6 @@ if [ "${COUPETTE_OWN_DB:-}" = 1 ] || [ "$(git config --bool "branch.$branch.coup
 fi
 
 # Migrations are deliberately NOT run here: the DB is shared, so a branch with a
-# new migration would migrate every other workspace too. Run `make migrate` by hand.
-echo "✅ Workspace ready. Run migrations manually if this branch needs them: make migrate"
+# new migration would migrate every other workspace too. Run `make migrate` by hand,
+# or `make own-db` first when this branch adds a migration.
+echo "✅ Workspace ready on the shared DB. A branch that adds a migration: make own-db, before any make migrate"
