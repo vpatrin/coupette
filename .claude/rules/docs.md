@@ -45,7 +45,26 @@ Format: Context, Options, Decision, Rationale, Consequences. `NNNN-short-descrip
 
 The coding session updates docs in the same PR as the behavior change; the reviewer blocks on a stale doc, rule, or spec.
 
-- `docs/specs/<subsystem>.md` — when a public contract, data flow, operational gotcha (env var, secret, ordering), or file map changes. Edit only the affected sections; if more than ~30% of a spec is stale, flag it in the PR instead of rewriting it.
+Every doc in `docs/` has one update trigger, listed here and nowhere else. A doc with no trigger gets merged into another one or deleted.
+
+| Doc (under `docs/` unless noted) | Update trigger |
+|---|---|
+| `README.md` | A doc is added, removed, or renamed |
+| `ARCHITECTURE.md` | A new container or subsystem |
+| `adrs/` | The 4-test ADR gate passes |
+| `specs/` | A contract changes |
+| `SECURITY.md` | An auth or risky-lane change |
+| `DEVELOPMENT.md` | A dev tooling change |
+| `CHANGELOG.md` (repo root) | Every user-visible PR |
+| `PRODUCT_VISION.md` | The product direction changes (rare) |
+| `ROADMAP.md` | A phase starts or ends |
+| `ENGINEERING.md` | A target changes, or an engineering idea is added or done (delete its line) |
+| `SCALING.md` | A tier changes |
+| `session-logs/` | None: frozen history |
+
+A folder's `README.md` and template follow the folder's trigger.
+
+- `docs/specs/<subsystem>.md` — a contract here means a public contract, data flow, operational gotcha (env var, secret, ordering), or file map. Edit only the affected sections; if more than ~30% of a spec is stale, flag it in the PR instead of rewriting it.
 - `.claude/rules/*.md` — when a convention changes. Rules hold instructions and link to specs; they never restate them.
 - `CHANGELOG.md` and `docs/ROADMAP.md` — see below.
 - When a change makes a fixed behavior conditional (shared → shared by default), grep `.claude/skills .claude/rules docs` for sentences that still state the old behavior as a fact.
@@ -77,4 +96,4 @@ No new session logs. Decisions live in the ticket (before code), then in the bod
 
 ## Roadmap maintenance
 
-When work completes a capability tracked in `docs/ROADMAP.md`, mark it `[x]` with the issue/PR ref. Only add new items for meaningful capabilities — roadmaps are strategic, not operational. `/pr` checks it.
+`docs/ROADMAP.md` holds phases and cross-cutting sections, one line or one paragraph per capability, with no per-issue checkboxes: issue progress lives in the phase's Linear project. A PR that starts a phase marks it *(in progress)* under Next; a PR that ends one moves it to Shipped. Only add meaningful capabilities — roadmaps are strategic, not operational. `/pr` checks it.

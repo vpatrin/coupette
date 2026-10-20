@@ -10,7 +10,7 @@ Create or finish the PR for the current branch.
 1. `git fetch -q origin main`, then `git log --oneline origin/main..HEAD` and `git diff origin/main...HEAD` to see the whole branch.
 2. Push the branch if needed: `git push -u origin <branch>` (branch only — never tags).
 3. Take the Linear issue id from the branch name (`type/vpa-NN-…`).
-4. User-visible change without a matching `[Unreleased]` line in `CHANGELOG.md` → add it first. Completed `docs/ROADMAP.md` capability → mark it `[x]` (`rules/docs.md`).
+4. User-visible change without a matching `[Unreleased]` line in `CHANGELOG.md` → add it first. A PR that starts or ends a phase → update `docs/ROADMAP.md` (`rules/docs.md` → Roadmap maintenance).
 5. Frontend files changed → `cd frontend && yarn lint && yarn build` must pass.
 6. Body: follow `.github/pull_request_template.md`.
    - **Related issue:** `Fixes VPA-NN` (moves the Linear issue to Done on squash merge); "none" if the branch has no id.
