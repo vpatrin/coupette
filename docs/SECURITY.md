@@ -218,12 +218,12 @@ The Telegram bot checks user registration before handling any message:
 
 | Threat                  | Mitigation                                                     | Residual risk                                                   |
 |-------------------------|----------------------------------------------------------------|-----------------------------------------------------------------|
-| OAuth callback forgery  | Random single-use state token in Redis (10 min TTL)            | The PKCE + signed state of [ADR 0008](adrs/0008-oauth2-security-design.md) is not implemented |
+| OAuth state reuse       | Random single-use state in Redis, atomic `DELETE`, 10 min TTL  | None                                                            |
 | OAuth code interception | Exchange codes are single-use (GETDEL), 60s TTL                | 60s window if code is intercepted (HTTPS mitigates)             |
 | HMAC forgery (Telegram) | `hmac.compare_digest` (timing-safe), SHA256 key derivation     | None — standard Telegram spec                                   |
 | Auth replay (Telegram)  | 24h `auth_date` freshness check                                | Replay within 24h window (acceptable)                           |
 | JWT theft               | 7-day expiry, `is_active` check on every request               | No revocation before expiry                                     |
-| Bot impersonation       | `X-Bot-Secret` required in production                          | Compromised secret = full bot access                            |
+| Forged bot secret       | `X-Bot-Secret` compared when `BOT_SECRET` is set (required in production); mismatch → 403 | Compromised secret = full bot access |
 | Deactivated user access | `is_active` checked on every JWT request and at `/check`       | Cached auth in bot (up to 1h stale)                             |
 | Backend down            | Bot fails open; every command still needs the backend          | Unregistered users pass the gate while the check fails          |
 | XSS -> token theft      | React JSX auto-escaping, no `dangerouslySetInnerHTML`          | localStorage accessible to XSS; no CSP is set in this repo (any CSP header comes from the proxy, infra repo) |
@@ -236,6 +236,7 @@ The Telegram bot checks user registration before handling any message:
 ## Known Limitations
 
 - **No JWT revocation** — can't invalidate a token before its 7-day expiry. Mitigated by `is_active` flag checked on every API call.
+- **No PKCE** — the PKCE + signed state of [ADR 0008](adrs/0008-oauth2-security-design.md) is not implemented; the backend uses the opaque single-use state token above.
 - **No admin promotion** — the bootstrap creates one admin from `ADMIN_EMAIL`; there is no endpoint to promote another user.
 - **Docker secrets not adopted** — credentials live in `.env` on disk.
 - **Bot auth cache** — up to 1 hour stale. A deactivated user can keep using the bot for up to 1 hour after deactivation.

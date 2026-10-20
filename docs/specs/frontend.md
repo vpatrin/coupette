@@ -58,7 +58,7 @@ A typical user flow:
 - **Prod build:** no frontend container. The CD workflow (`.github/workflows/cd.yml`) runs `yarn build` on the runner, clears `/srv/coupette` on the VPS, and copies `frontend/dist/*` there with scp; Caddy serves it as static files.
 - **Node version:** `engines: >=24` in `frontend/package.json`; CI and CD use Node 24. No `.nvmrc` pin.
 - **No env vars at runtime** — the build embeds `VITE_*` env vars at build time. New env var = rebuild required.
-- **Visual review:** UI changes are verified with a browser screenshot (browser tool or the `run` skill), attached to the PR evidence table.
+- **Visual review:** UI changes are verified with a browser screenshot (browser tool or the `run-coupette` skill), attached to the PR evidence table.
 
 ## Related
 
