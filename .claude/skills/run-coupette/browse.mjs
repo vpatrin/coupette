@@ -6,7 +6,7 @@ import { createRequire } from 'node:module'
 const require = createRequire(`${process.env.PW_PREFIX}/noop.js`)
 const { chromium } = require('playwright-core')
 
-const BASE = 'http://localhost:5173'
+const BASE = process.env.BASE_URL // the run's frontend, set by driver.sh
 const [path, ...rest] = process.argv.slice(2)
 const steps = []
 for (let i = 0; i < rest.length; i += 2) steps.push([rest[i], rest[i + 1]])

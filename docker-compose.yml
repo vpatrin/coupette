@@ -6,7 +6,7 @@
 # Key order: image/build → container_name → command → shm_size → volumes/tmpfs →
 #   env_file → ports → depends_on → networks → healthcheck → restart/mem_limit →
 #   read_only → security_opt/cap_drop/cap_add → logging
-name: coupette
+name: coupette-exp
 services:
   backend:
     build:

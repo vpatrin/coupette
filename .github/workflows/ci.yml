@@ -2,7 +2,7 @@ name: CI
 
 on:
   pull_request:
-    branches: [main, "feat/*"]
+    branches: [main, "feat/*", "exp/*"]
 
 permissions:
   contents: read
@@ -75,7 +75,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           poetry-version: ${{ env.POETRY_VERSION }}
           install-args: --only dev
-      - run: make lint-backend
+      - run: cd backend && poetry run ruff check . && poetry run ruff format --check .
 
   lint-scraper:
     needs: [changes]
@@ -90,7 +90,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           poetry-version: ${{ env.POETRY_VERSION }}
           install-args: --only dev
-      - run: make lint-scraper
+      - run: cd scraper && poetry run ruff check . && poetry run ruff format --check .
 
   lint-core:
     needs: [changes]
@@ -105,7 +105,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           poetry-version: ${{ env.POETRY_VERSION }}
           install-args: --only dev
-      - run: make lint-core
+      - run: cd core && poetry run ruff check . && poetry run ruff format --check .
 
   lint-bot:
     needs: [changes]
@@ -120,7 +120,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           poetry-version: ${{ env.POETRY_VERSION }}
           install-args: --only dev
-      - run: make lint-bot
+      - run: cd bot && poetry run ruff check . && poetry run ruff format --check .
 
   lint-dockerfiles:
     needs: [changes]
@@ -155,7 +155,7 @@ jobs:
           cache: yarn
           cache-dependency-path: frontend/yarn.lock
       - run: cd frontend && yarn --frozen-lockfile
-      - run: make lint-frontend
+      - run: cd frontend && yarn eslint . && yarn tsc --noEmit && yarn prettier --check src/
 
   # Generated frontend types must match the backend's OpenAPI schema (make types).
   lint-api-types:
@@ -176,7 +176,7 @@ jobs:
           cache: yarn
           cache-dependency-path: frontend/yarn.lock
       - run: cd frontend && yarn --frozen-lockfile
-      - run: make types-check
+      - run: make types-check  # stays on make: OpenAPI dump, codegen, then a diff
 
   # ── Test ──────────────────────────────────────────────────────
 
@@ -187,12 +187,19 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0  # diff-cover needs the merge-base with origin/<base>
       - uses: ./.github/actions/setup-python-service
         with:
           service: backend
           python-version: ${{ env.PYTHON_VERSION }}
           poetry-version: ${{ env.POETRY_VERSION }}
-      - run: make coverage-backend
+      - run: cd backend && poetry run pytest --cov --cov-branch --cov-report=xml --cov-report=term -v
+      - name: Diff coverage ≥ 80% (exp PRs)
+        if: startsWith(github.base_ref, 'exp/')
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: cd backend && poetry run diff-cover coverage.xml --compare-branch="origin/$BASE_REF" --fail-under=80
       - uses: codecov/codecov-action@v7
         with:
           files: backend/coverage.xml
@@ -206,12 +213,19 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0  # diff-cover needs the merge-base with origin/<base>
       - uses: ./.github/actions/setup-python-service
         with:
           service: scraper
           python-version: ${{ env.PYTHON_VERSION }}
           poetry-version: ${{ env.POETRY_VERSION }}
-      - run: make coverage-scraper
+      - run: cd scraper && poetry run pytest --cov --cov-branch --cov-report=xml --cov-report=term -v
+      - name: Diff coverage ≥ 80% (exp PRs)
+        if: startsWith(github.base_ref, 'exp/')
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: cd scraper && poetry run diff-cover coverage.xml --compare-branch="origin/$BASE_REF" --fail-under=80
       - uses: codecov/codecov-action@v7
         with:
           files: scraper/coverage.xml
@@ -225,12 +239,19 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0  # diff-cover needs the merge-base with origin/<base>
       - uses: ./.github/actions/setup-python-service
         with:
           service: bot
           python-version: ${{ env.PYTHON_VERSION }}
           poetry-version: ${{ env.POETRY_VERSION }}
-      - run: make coverage-bot
+      - run: cd bot && poetry run pytest --cov --cov-branch --cov-report=xml --cov-report=term -v
+      - name: Diff coverage ≥ 80% (exp PRs)
+        if: startsWith(github.base_ref, 'exp/')
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: cd bot && poetry run diff-cover coverage.xml --compare-branch="origin/$BASE_REF" --fail-under=80
       - uses: codecov/codecov-action@v7
         with:
           files: bot/coverage.xml
@@ -250,12 +271,190 @@ jobs:
           cache: yarn
           cache-dependency-path: frontend/yarn.lock
       - run: cd frontend && yarn --frozen-lockfile
-      - run: make coverage-frontend
+      - run: cd frontend && yarn vitest run --coverage
+      - run: cp frontend/coverage/cobertura-coverage.xml frontend/coverage.xml
       - uses: codecov/codecov-action@v7
         with:
           files: frontend/coverage.xml
           flags: frontend
           token: ${{ secrets.CODECOV_TOKEN }}
+
+  # Red-test integrity (ops/CONTRACTS.md §1): the tests in the files the red commit touched
+  # survive to the PR head, not removed, newly skipped, or with fewer assertions.
+  # Inline on purpose: a script in the repo could be edited by the PR it checks.
+  red-integrity:
+    if: startsWith(github.base_ref, 'exp/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Check the Red line and the red tests
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          python3 - <<'PY'
+          import ast, os, re, subprocess, sys
+
+          def git(*args):
+              return subprocess.run(["git", *args], capture_output=True, text=True)
+
+          def error(msg):
+              # Workflow-command escaping: names come from the PR and may hold % or newlines.
+              print("::error::" + msg.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A"))
+
+          def fail(msg):
+              error(msg)
+              sys.exit(1)
+
+          RED = re.compile(r"Red: ([0-9a-f]{7,40}|none — .{10,})")
+          lines = [line.rstrip("\r") for line in (os.environ.get("PR_BODY") or "").split("\n")]
+          red_lines = [line for line in lines if line.startswith("Red:")]
+          match = RED.fullmatch(red_lines[0]) if len(red_lines) == 1 else None
+          if not match:
+              fail("The PR body needs exactly one line `Red: <sha>` or `Red: none — <reason, 10+ characters>` (ops/CONTRACTS.md §1).")
+          if match[1].startswith("none"):
+              print("No red commit: " + match[1])
+              sys.exit(0)
+
+          red = git("rev-parse", "--verify", "--quiet", match[1] + "^{commit}").stdout.strip()
+          if not red:
+              fail(f"Red commit {match[1]} is not a commit in this repository.")
+          head, base = os.environ["HEAD_SHA"], os.environ["BASE_SHA"]
+          if git("merge-base", "--is-ancestor", red, head).returncode or not git("merge-base", "--is-ancestor", red, base).returncode:
+              fail(f"Red commit {red[:12]} is not a commit of this PR.")
+
+          touched = git("diff-tree", "--root", "--no-commit-id", "--name-only", "-r", "-z", "--diff-filter=AM", red).stdout.split("\0")
+          test_files = [p for p in touched if re.search(r"(^|/)(test_[^/]*|[^/]*_test)\.py$|\.(test|spec)\.[cm]?[jt]sx?$", p)]
+          if not test_files:
+              fail(f"Red commit {red[:12]} adds or changes no test file.")
+
+          # Python: test functions by AST. Checks = assert statements, assert*() calls, pytest.raises/warns.
+          PY_SKIPS = {"skip", "skipif", "xfail", "importorskip"}
+
+          def py_skips(node):
+              return sum(isinstance(n, ast.Attribute) and n.attr in PY_SKIPS or isinstance(n, ast.Name) and n.id in PY_SKIPS
+                         for n in ast.walk(node))
+
+          def py_checks(node):
+              return sum(isinstance(n, ast.Assert) or isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                         and (n.func.attr.startswith("assert") or n.func.attr in ("raises", "warns"))
+                         for n in ast.walk(node))
+
+          def py_tests(src):
+              tree, tests = ast.parse(src), {}
+              def visit(body, prefix):
+                  for node in body:
+                      if isinstance(node, ast.ClassDef) and node.name.startswith("Test"):
+                          visit(node.body, f"{prefix}{node.name}::")
+                      elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name.startswith("test"):
+                          tests[prefix + node.name] = (py_checks(node), py_skips(node) > 0)
+              visit(tree.body, "")
+              return tests, py_skips(tree)
+
+          # TypeScript: comments and string contents blanked, then it/test/describe calls matched by regex.
+          TS_CALL = re.compile(r"(?<![\w.$])(x?(?:describe|it|test))((?:\.\w+)*)\s*\(")
+          TS_SKIP = re.compile(r"\.(?:skip|skipIf|runIf|todo|fails)\b|(?<![\w.$])x(?:describe|it|test)\s*\(")
+          TS_CHECK = re.compile(r"(?<![\w.$])(?:expect|assert)(?:\.\w+)*\s*\(")
+
+          def ts_mask(src):
+              out, i, n = list(src), 0, len(src)
+              while i < n:
+                  if src.startswith("//", i):
+                      j, keep = src.find("\n", i), 0
+                  elif src.startswith("/*", i):
+                      j, keep = src.find("*/", i + 2), 0
+                      j = j + 2 if j >= 0 else j
+                  elif src[i] in "'\"`":
+                      q, j = src[i], i + 1
+                      while j < n and src[j] != q and not (q != "`" and src[j] == "\n"):
+                          j += 2 if src[j] == "\\" else 1
+                      i, j, keep = i + 1, min(j, n), 1
+                  else:
+                      i += 1
+                      continue
+                  j = n if j < 0 else j
+                  for k in range(i, j):
+                      if out[k] != "\n":
+                          out[k] = " "
+                  i = j + keep
+              return "".join(out)
+
+          def group_end(masked, i):
+              depth = 0
+              for j in range(i, len(masked)):
+                  depth += {"(": 1, ")": -1}.get(masked[j], 0)
+                  if depth == 0:
+                      return j
+              return len(masked)
+
+          def ts_tests(src):
+              masked, blocks, tests = ts_mask(src), [], {}
+              for m in TS_CALL.finditer(masked):
+                  start = m.end() - 1
+                  end = group_end(masked, start)
+                  # it.each(table)(name, fn) and describe.skipIf(cond)(name, fn): the second group holds the name.
+                  if re.search(r"\.(each|for|skipIf|runIf)\b", m[2]):
+                      nxt = re.match(r"\s*\(", masked[end + 1:])
+                      if nxt:
+                          start = end + nxt.end()
+                          end = group_end(masked, start)
+                  arg = re.match(r"\s*(['\"`])", masked[start + 1:])
+                  name = "?"
+                  if arg:
+                      q = start + 1 + arg.start(1)
+                      name = src[q + 1:masked.find(arg[1], q + 1)]
+                  blocks.append((m[1].lstrip("x"), name, m.start(), start, end))
+              describes = [b for b in blocks if b[0] == "describe"]
+              for kind, name, call, start, end in blocks:
+                  if kind == "describe":
+                      continue
+                  key = " > ".join([d[1] for d in describes if d[3] < start <= d[4]] + [name])
+                  unique, i = key, 2
+                  while unique in tests:
+                      unique, i = f"{key} #{i}", i + 1
+                  tests[unique] = (len(TS_CHECK.findall(masked, start, end)), bool(TS_SKIP.search(masked, call, end)))
+              return tests, len(TS_SKIP.findall(masked))
+
+          problems, seen = [], 0
+          for path in test_files:
+              parse = py_tests if path.endswith(".py") else ts_tests
+              try:
+                  before, skips_before = parse(git("show", f"{red}:{path}").stdout)
+              except SyntaxError as exc:
+                  fail(f"{path} does not parse at the red commit: {exc.msg}")
+              seen += len(before)
+              shown = git("show", f"{head}:{path}")
+              if shown.returncode:
+                  problems.append(f"{path}: deleted since the red commit")
+                  continue
+              try:
+                  after, skips_after = parse(shown.stdout)
+              except SyntaxError as exc:
+                  problems.append(f"{path}: does not parse at the PR head: {exc.msg}")
+                  continue
+              if skips_after > skips_before:
+                  problems.append(f"{path}: {skips_after - skips_before} more skip marker(s) than at the red commit")
+              for name, (checks, skipped) in before.items():
+                  if name not in after:
+                      problems.append(f"{path}: {name} removed or renamed since the red commit")
+                      continue
+                  checks_now, skipped_now = after[name]
+                  if skipped_now and not skipped:
+                      problems.append(f"{path}: {name} is skipped now")
+                  if checks_now < checks:
+                      problems.append(f"{path}: {name} has {checks_now} assertion(s), {checks} at the red commit")
+          if not seen:
+              fail(f"No test found in the red commit's test files: {', '.join(test_files)}")
+          for problem in problems:
+              error(problem)
+          if problems:
+              sys.exit(1)
+          print(f"Red commit {red[:12]}: {seen} test(s) in {len(test_files)} file(s) intact at the PR head.")
+          PY
 
   # ── Migrations ────────────────────────────────────────────────
 
@@ -308,7 +507,11 @@ jobs:
           service: core
           python-version: ${{ env.PYTHON_VERSION }}
           poetry-version: ${{ env.POETRY_VERSION }}
-      - run: make audit-core
+      - name: pip-audit (ignores .pip-audit-ignore)
+        run: |
+          args=()
+          while read -r id _; do args+=(--ignore-vuln "$id"); done < <(grep -v -e '^#' -e '^$' .pip-audit-ignore || true)
+          cd core && poetry run pip-audit "${args[@]}"
 
   audit-backend:
     needs: [changes]
@@ -322,7 +525,11 @@ jobs:
           service: backend
           python-version: ${{ env.PYTHON_VERSION }}
           poetry-version: ${{ env.POETRY_VERSION }}
-      - run: make audit-backend
+      - name: pip-audit (ignores .pip-audit-ignore)
+        run: |
+          args=()
+          while read -r id _; do args+=(--ignore-vuln "$id"); done < <(grep -v -e '^#' -e '^$' .pip-audit-ignore || true)
+          cd backend && poetry run pip-audit "${args[@]}"
 
   audit-scraper:
     needs: [changes]
@@ -336,7 +543,11 @@ jobs:
           service: scraper
           python-version: ${{ env.PYTHON_VERSION }}
           poetry-version: ${{ env.POETRY_VERSION }}
-      - run: make audit-scraper
+      - name: pip-audit (ignores .pip-audit-ignore)
+        run: |
+          args=()
+          while read -r id _; do args+=(--ignore-vuln "$id"); done < <(grep -v -e '^#' -e '^$' .pip-audit-ignore || true)
+          cd scraper && poetry run pip-audit "${args[@]}"
 
   audit-bot:
     needs: [changes]
@@ -350,7 +561,11 @@ jobs:
           service: bot
           python-version: ${{ env.PYTHON_VERSION }}
           poetry-version: ${{ env.POETRY_VERSION }}
-      - run: make audit-bot
+      - name: pip-audit (ignores .pip-audit-ignore)
+        run: |
+          args=()
+          while read -r id _; do args+=(--ignore-vuln "$id"); done < <(grep -v -e '^#' -e '^$' .pip-audit-ignore || true)
+          cd bot && poetry run pip-audit "${args[@]}"
 
   audit-frontend:
     needs: [changes]
@@ -365,7 +580,7 @@ jobs:
           cache: yarn
           cache-dependency-path: frontend/yarn.lock
       - run: cd frontend && yarn --frozen-lockfile
-      - run: make audit-frontend
+      - run: make audit-frontend  # stays on make: yarn audit through scripts/yarn_audit_filter.jq
 
   gitleaks:
     runs-on: ubuntu-latest
@@ -431,20 +646,23 @@ jobs:
           cache: yarn
           cache-dependency-path: frontend/yarn.lock
       - run: cd frontend && yarn --frozen-lockfile
-      - run: make build-frontend
+      - run: cd frontend && yarn tsc -b && yarn vite build
       - name: Bundle size check
-        run: cd frontend && yarn size
+        run: cd frontend && yarn size-limit
 
   # ── Summary gates ─────────────────────────────────────────────
 
   build:
-    needs: [build-backend, build-scraper, build-bot, build-frontend]
+    needs: [changes, build-backend, build-scraper, build-bot, build-frontend]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions: {}
     if: always()
     steps:
       - run: |
+          if [ "${{ needs.changes.result }}" != "success" ]; then
+            exit 1
+          fi
           for result in \
             "${{ needs.build-backend.result }}" \
             "${{ needs.build-scraper.result }}" \
@@ -456,13 +674,16 @@ jobs:
           done
 
   lint:
-    needs: [lint-backend, lint-scraper, lint-core, lint-bot, lint-dockerfiles, lint-frontend, lint-api-types]
+    needs: [changes, lint-backend, lint-scraper, lint-core, lint-bot, lint-dockerfiles, lint-frontend, lint-api-types]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions: {}
     if: always()
     steps:
       - run: |
+          if [ "${{ needs.changes.result }}" != "success" ]; then
+            exit 1
+          fi
           for result in \
             "${{ needs.lint-backend.result }}" \
             "${{ needs.lint-scraper.result }}" \
@@ -477,32 +698,42 @@ jobs:
           done
 
   test:
-    needs: [test-backend, test-scraper, test-bot, test-frontend, migrate]
+    needs: [changes, test-backend, test-scraper, test-bot, test-frontend, migrate, red-integrity]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions: {}
     if: always()
     steps:
       - run: |
+          if [ "${{ needs.changes.result }}" != "success" ]; then
+            exit 1
+          fi
+          if [ "${{ startsWith(github.base_ref, 'exp/') }}" = "true" ] && [ "${{ needs.red-integrity.result }}" != "success" ]; then
+            exit 1
+          fi
           for result in \
             "${{ needs.test-backend.result }}" \
             "${{ needs.test-scraper.result }}" \
             "${{ needs.test-bot.result }}" \
             "${{ needs.test-frontend.result }}" \
-            "${{ needs.migrate.result }}"; do
+            "${{ needs.migrate.result }}" \
+            "${{ needs.red-integrity.result }}"; do
             if [ "$result" != "success" ] && [ "$result" != "skipped" ]; then
               exit 1
             fi
           done
 
   security:
-    needs: [audit-core, audit-backend, audit-scraper, audit-bot, audit-frontend, gitleaks]
+    needs: [changes, audit-core, audit-backend, audit-scraper, audit-bot, audit-frontend, gitleaks]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions: {}
     if: always()
     steps:
       - run: |
+          if [ "${{ needs.changes.result }}" != "success" ]; then
+            exit 1
+          fi
           for result in \
             "${{ needs.audit-core.result }}" \
             "${{ needs.audit-backend.result }}" \

@@ -12,11 +12,13 @@ export default defineConfig({
     },
   },
   server: {
+    // Ports from the environment for parallel worktrees; defaults match main.
+    port: Number(process.env.FRONTEND_PORT || 5173),
     allowedHosts: true,
     host: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:8001',
+        target: `http://localhost:${process.env.BACKEND_PORT || 8001}`,
         changeOrigin: true,
       },
     },
