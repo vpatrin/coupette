@@ -187,12 +187,19 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0  # diff-cover needs the merge-base with origin/<base>
       - uses: ./.github/actions/setup-python-service
         with:
           service: backend
           python-version: ${{ env.PYTHON_VERSION }}
           poetry-version: ${{ env.POETRY_VERSION }}
       - run: cd backend && poetry run pytest --cov --cov-branch --cov-report=xml --cov-report=term -v
+      - name: Diff coverage ≥ 80% (exp PRs)
+        if: startsWith(github.base_ref, 'exp/')
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: cd backend && poetry run diff-cover coverage.xml --compare-branch="origin/$BASE_REF" --fail-under=80
       - uses: codecov/codecov-action@v7
         with:
           files: backend/coverage.xml
@@ -206,12 +213,19 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0  # diff-cover needs the merge-base with origin/<base>
       - uses: ./.github/actions/setup-python-service
         with:
           service: scraper
           python-version: ${{ env.PYTHON_VERSION }}
           poetry-version: ${{ env.POETRY_VERSION }}
       - run: cd scraper && poetry run pytest --cov --cov-branch --cov-report=xml --cov-report=term -v
+      - name: Diff coverage ≥ 80% (exp PRs)
+        if: startsWith(github.base_ref, 'exp/')
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: cd scraper && poetry run diff-cover coverage.xml --compare-branch="origin/$BASE_REF" --fail-under=80
       - uses: codecov/codecov-action@v7
         with:
           files: scraper/coverage.xml
@@ -225,12 +239,19 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0  # diff-cover needs the merge-base with origin/<base>
       - uses: ./.github/actions/setup-python-service
         with:
           service: bot
           python-version: ${{ env.PYTHON_VERSION }}
           poetry-version: ${{ env.POETRY_VERSION }}
       - run: cd bot && poetry run pytest --cov --cov-branch --cov-report=xml --cov-report=term -v
+      - name: Diff coverage ≥ 80% (exp PRs)
+        if: startsWith(github.base_ref, 'exp/')
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: cd bot && poetry run diff-cover coverage.xml --compare-branch="origin/$BASE_REF" --fail-under=80
       - uses: codecov/codecov-action@v7
         with:
           files: bot/coverage.xml
