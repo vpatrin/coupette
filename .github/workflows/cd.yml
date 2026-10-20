@@ -41,6 +41,10 @@ jobs:
       - name: Fail unless the commit is on main
         run: |
           sha=$(git rev-parse HEAD)
+          if ! git rev-parse --verify --quiet origin/main >/dev/null; then
+            echo "::error::origin/main is missing from the checkout; cannot check $sha."
+            exit 1
+          fi
           if ! git merge-base --is-ancestor "$sha" origin/main; then
             echo "::error::$sha is not on main. CD deploys only commits on main."
             exit 1
