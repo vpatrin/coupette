@@ -8,23 +8,22 @@ Application-level security model. VPS-level hardening (firewall, SSH, TLS) lives
 
 ### OAuth providers (identity)
 
-Users authenticate via third-party OAuth providers. The backend handles the full OAuth 2.0 flow: CSRF state generation, authorization redirect, code exchange, and user info fetch.
+Users authenticate via third-party OAuth providers. The backend handles the full OAuth 2.0 flow: state generation, authorization redirect, code exchange, and user info fetch. Telegram is not a login provider: it is linked from Settings for notifications and bot access (below).
 
 | Provider  | Scopes              | User info endpoint                       |
 |-----------|---------------------|------------------------------------------|
 | GitHub    | `user:email`        | `/user` + `/user/emails` (parallel)      |
 | Google    | `openid email profile` | `/oauth2/v3/userinfo` (single call)   |
-| Telegram  | Widget HMAC         | Payload included in widget callback      |
 
-**CSRF protection:** Random state token stored in Redis (`oauth:state:<token>`, 10 min TTL), consumed atomically on callback via `DELETE`. Prevents cross-site request forgery on OAuth callbacks.
+**State token:** a random token stored in Redis (`oauth:state:<token>`, 10 min TTL) and consumed atomically on callback via `DELETE`, so each state works once. An unknown or reused state redirects with `?error=invalid_state`.
 
-**Exchange code pattern:** After successful OAuth, the backend stores the JWT in Redis under a random single-use code (`oauth:exchange:<code>`, 60s TTL). The browser is redirected to the frontend with `?code=...`, which swaps it for the JWT via `GET /api/auth/exchange`. This avoids putting JWTs in URLs (logs, referrer, browser history).
+**Exchange code pattern:** After successful OAuth, the backend stores the JWT in Redis under a random single-use code (`oauth:exchange:<code>`, 60s TTL, read with `GETDEL`). The browser is redirected to the frontend with `?code=...`, which swaps it for the JWT via `GET /api/auth/exchange`. This avoids putting JWTs in URLs (logs, referrer, browser history).
 
 **Waitlist gate:** New users (no existing account or email match) must have an approved waitlist entry. Unapproved users are redirected to the frontend with `?error=not_approved`.
 
 **Account linking:** If a user logs in with a new OAuth provider but their email matches an existing account, the new provider is linked automatically — one user, multiple login methods.
 
-**Code:** `backend/api/auth.py` (endpoints), `backend/services/auth.py` → `create_oauth_session()`, `backend/services/github_oauth.py`, `backend/services/google_oauth.py`
+**Code:** `backend/api/auth.py` (endpoints), `backend/redis_client.py` (state + exchange code), `backend/services/auth.py` → `create_oauth_session()`, `backend/services/github_oauth.py`, `backend/services/google_oauth.py`
 
 ### Dev-only login (local agents)
 
@@ -32,7 +31,7 @@ Users authenticate via third-party OAuth providers. The backend handles the full
 
 - **Two keys to mount it:** `DEV_LOGIN_ENABLED=true` AND `ENVIRONMENT=development`. `ENVIRONMENT` itself defaults to `development`, so the flag (default `false`) is what keeps the route off when `ENVIRONMENT` is unset.
 - **Why a flag, not the environment alone:** local dev can run behind a tunnel (ngrok, via `FRONTEND_URL`), and Vite proxies `/api`. An environment-only gate would hand admin login to anyone who reaches the tunnel. Only the run driver sets the flag; `make dev` leaves it off. The driver binds Vite to `127.0.0.1` (the config's `host: true` would put it on the LAN) and blanks `RESEND_API_KEY`. What is left during a driver run: a tunnel left open on `:5173`, or a DNS-rebinding page (Vite's `allowedHosts: true`), could reach it. It gets a throwaway database with synthetic data and a token signed with a per-run key the real backend never accepts, but the backend still holds the root `.env`'s LLM keys, so chat calls would spend API credit.
-- **Startup guard:** the backend refuses to boot when the flag is `true` outside development (production and staging). The check runs first in the lifespan, before the secret checks.
+- **Startup guard:** the backend refuses to boot when the flag is `true` in any environment other than development. The check runs first in the lifespan, before the secret checks.
 - **No waitlist bypass:** it never creates a user; unknown email → 401, deactivated → 403. Hidden from OpenAPI, rate limited like the OAuth login routes, logs the user id only.
 
 **Code:** `backend/api/auth.py` → `dev_login()`, `backend/services/auth.py` → `create_dev_session()`, `backend/app.py` → `include_dev_login()` + `lifespan()`
@@ -64,9 +63,9 @@ Two authentication paths through a single `verify_auth()` dependency:
 | Web app        | JWT bearer token | `Authorization: Bearer <token>` |
 | Bot → backend  | Shared secret    | `X-Bot-Secret: <secret>`        |
 
-Bot secret takes priority — if the header is present and valid, JWT validation is skipped and `verify_auth` returns `None` (no user context). Required in production, no-op when empty (dev convenience).
+When `BOT_SECRET` is set, the bot secret takes priority: a matching header skips JWT validation and `verify_auth` returns `None` (no user context); a wrong one returns 403. `BOT_SECRET` is required in production. When it is empty (local dev), `verify_auth` ignores the header and falls back to JWT, and `require_bot_secret` (guarding `GET /api/auth/telegram/check`) lets every call through.
 
-**Code:** `backend/auth.py` → `verify_auth()`
+**Code:** `backend/auth.py` → `verify_auth()`, `require_bot_secret()`
 
 ---
 
@@ -75,9 +74,9 @@ Bot secret takes priority — if the header is present and valid, JWT validation
 ### OAuth login (GitHub / Google)
 
 1. User clicks "Sign in with GitHub/Google" on the login page
-2. `GET /api/auth/{provider}/login` — generates CSRF state token (Redis, 10 min TTL), redirects to provider's authorize URL
+2. `GET /api/auth/{github,google}/login` — generates a state token (Redis, 10 min TTL), redirects to provider's authorize URL
 3. User authenticates on the provider's site
-4. Provider redirects to `GET /api/auth/{provider}/callback?code=...&state=...`
+4. Provider redirects to `GET /api/auth/{github,google}/callback` with `code` and `state`
 5. Backend validates state (atomic Redis DELETE), exchanges code for access token, fetches user info
 6. `create_oauth_session()` — upserts user (existing account → link provider, new user → check waitlist gate), mints JWT
 7. JWT stored in Redis under a random exchange code (60s TTL)
@@ -87,8 +86,8 @@ Bot secret takes priority — if the header is present and valid, JWT validation
 ### Telegram account linking
 
 1. Authenticated user clicks "Connect" in Settings → Telegram Login Widget
-2. `POST /users/me/telegram` — verify HMAC, check for conflicts, set `telegram_id` on user
-3. Unlinking: `DELETE /users/me/telegram` — clears `telegram_id`
+2. `POST /api/users/me/telegram` — verify HMAC, check for conflicts, set `telegram_id` on user
+3. Unlinking: `DELETE /api/users/me/telegram` — clears `telegram_id`
 
 ### Authenticated API request
 
@@ -118,15 +117,15 @@ Telegram user sends message
     → cache hit (<1h, authorized=true) → pass
     → cache miss → GET /api/auth/telegram/check (X-Bot-Secret)
       → 204 → cache authorized=true
-      → 404/403 → reject message, ApplicationHandlerStop
-      → 5xx/timeout → fail open (allow through)
+      → other 4xx (404 unknown, 403 deactivated) → reject message, ApplicationHandlerStop
+      → 5xx/timeout → fail open (allow through, nothing cached)
   → rate_limit_gate() [group -1]
   → handler
 ```
 
 ### Admin bootstrap
 
-Idempotent `make create-admin` command — creates or promotes the admin user from `ADMIN_EMAIL` env var. Safe to run on every deploy.
+Locally, `make create-admin` creates or promotes the admin user from the `ADMIN_EMAIL` env var (idempotent). On deploy, `deploy/deploy_backend.sh` upserts the same row with `psql`. The backend refuses to start without an active admin.
 
 ---
 
@@ -134,9 +133,8 @@ Idempotent `make create-admin` command — creates or promotes the admin user fr
 
 ### Route guards
 
-All API routes require authentication except:
+All `/api/*` routes require authentication except:
 
-- `GET /health` — health check
 - `GET /api/auth/telegram/check` — user existence check (`require_bot_secret` guard)
 - `GET /api/auth/github/login` — OAuth redirect (generates state, no user data)
 - `GET /api/auth/github/callback` — OAuth callback (validates state + code)
@@ -144,6 +142,9 @@ All API routes require authentication except:
 - `GET /api/auth/google/callback` — OAuth callback
 - `GET /api/auth/exchange` — exchange code for JWT (single-use, 60s TTL)
 - `POST /api/waitlist` — public waitlist submission
+- `POST /api/auth/dev-login` — only when mounted (local development, see above)
+
+Outside `/api`, the backend serves `GET /health`, the Prometheus `GET /metrics`, and FastAPI's default `/docs`, `/redoc`, and `/openapi.json` without auth. What the public proxy exposes is set in the infra repo.
 
 JWT-authenticated requests decode the token, look up the user, and reject if `is_active` is false — deactivation is enforced on every request, not just at login.
 
@@ -163,26 +164,26 @@ The Telegram bot checks user registration before handling any message:
 
 1. `access_gate()` middleware runs at handler group -2 (before all handlers)
 2. Calls `GET /api/auth/telegram/check?telegram_id=...` on the backend: check user exists and is active, by telegram id
-3. Caches the result in `context.user_data` for 1 hour (avoids hammering backend)
+3. Caches a positive result in `context.user_data` for 1 hour (avoids hammering backend)
 4. Unauthorized users get a rejection message + `ApplicationHandlerStop`
 
-**Fail-open on backend unavailability:** If the backend is unreachable (timeout, 5xx), the bot allows the user through. Rationale: the bot is the primary interface during closed beta — denying access when the auth service is down helps nobody. Recently-verified users remain cached.
+**Fail-open on backend unavailability:** If the backend is unreachable (timeout, 5xx), the bot allows the user through and caches nothing — any Telegram user passes the gate while the check fails. Rationale: the bot is the primary interface during closed beta — denying access when the auth service is down helps nobody, and every command still goes through the backend.
 
 **Code:** `bot/bot/middleware.py` → `access_gate()`
 
 ### User lifecycle
 
 - `is_active` boolean on the `users` table replaces the old `ALLOWED_USER_IDS` env var
-- Deactivation is instant: checked at JWT decode, at bot middleware, and at the `/check` endpoint
-- Admin bootstrap via `ADMIN_EMAIL` env var + `make create-admin` (idempotent, verified at startup)
+- Deactivation applies at once on the web (checked on every JWT request) and at `/check`; the bot's cached access check can lag up to 1 hour
+- Admin bootstrap via `ADMIN_EMAIL` env var (verified at startup); admin accounts cannot be deactivated
 
 ---
 
 ## Rate Limiting
 
-**Backend (SlowAPI):** Tiered per-user rate limits via `slowapi`. Keyed by user ID (JWT) or IP (unauthenticated). Limits: 100/min global, 10/min auth, 3/min waitlist, 20/min LLM. ADR: [0009-rate-limiting-tiered-strategy](decisions/0009-rate-limiting-tiered-strategy.md).
+**Backend (SlowAPI):** Tiered limits via `slowapi`, keyed by client IP: 100/min global, 10/min on the login routes and dev-login, 3/min on the waitlist. The LLM routes (chat send-message, recommendations) allow 20/min, keyed by the JWT user (IP when there is no token). Counters live in Redis, with an in-memory fallback. ADR: [0009-rate-limiting-tiered-strategy](adrs/0009-rate-limiting-tiered-strategy.md).
 
-**Bot:** Per-user sliding window rate limiter. Silently drops updates from users exceeding the threshold.
+**Bot:** Per-user limit of 3 updates per second. Silently drops updates from users exceeding the threshold.
 
 **Code:** `backend/rate_limit.py`, `bot/bot/middleware.py` → `RateLimiter`, `rate_limit_gate()`
 
@@ -192,23 +193,24 @@ The Telegram bot checks user registration before handling any message:
 
 | Tool       | What it catches                               | Where          |
 |------------|-----------------------------------------------|----------------|
-| Dependabot | Outdated dependencies (pip + GitHub Actions)  | Weekly PRs     |
+| Dependabot | Outdated dependencies (pip, npm, Docker, GitHub Actions) | Weekly PRs; patch/minor auto-merge once CI passes |
 | pip-audit  | Known vulnerabilities in Python packages      | CI per service |
+| yarn audit | Known vulnerabilities in frontend packages (with an ignore filter) | CI |
 | gitleaks   | Secrets committed in code                     | CI             |
 | Hadolint   | Dockerfile anti-patterns                      | CI             |
-| Trivy      | Container image vulnerabilities               | CI on PR       |
+| Trivy      | Container image vulnerabilities               | CI on PR, CD before the image push, weekly scan (`.github/workflows/cve-scan.yml`) |
 | `on-main`  | A tag or dispatch for a commit not on main    | CD, first job  |
 
 ---
 
 ## Application Hardening
 
-- **CORS:** Env-driven `CORS_ORIGINS`, locked to `localhost:5173` in dev
-- **Input validation:** Pydantic models with `max_length` constraints on all string fields
-- **Production startup guards:** Backend refuses to start without `BOT_SECRET`, `JWT_SECRET_KEY`, `TELEGRAM_BOT_TOKEN`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `FRONTEND_URL`, `BACKEND_URL`
+- **CORS:** Env-driven `CORS_ORIGINS`, defaults to `http://localhost:5173` in dev
+- **Input validation:** Pydantic request schemas with `max_length` constraints on most string fields
+- **Production startup guards:** when `ENVIRONMENT=production`, the backend refuses to start without `BOT_SECRET`, `JWT_SECRET_KEY`, `TELEGRAM_BOT_TOKEN`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `FRONTEND_URL`, `BACKEND_URL`. In every environment it refuses to start without an active admin, and outside development with `DEV_LOGIN_ENABLED=true`
 - **DB password encoding:** URL-encoded in connection string to handle special characters
 - **Non-root Docker containers:** All Dockerfiles create and switch to a non-root user
-- **No debug ports in production:** `docker-compose.prod.yml` exposes only what Caddy needs
+- **No debug ports in production:** `docker-compose.prod.yml` publishes no host ports
 
 ---
 
@@ -216,27 +218,28 @@ The Telegram bot checks user registration before handling any message:
 
 | Threat                  | Mitigation                                                     | Residual risk                                                   |
 |-------------------------|----------------------------------------------------------------|-----------------------------------------------------------------|
-| OAuth CSRF              | Random state token in Redis, atomic consume on callback        | None — standard OAuth 2.0 spec                                  |
+| OAuth callback forgery  | Random single-use state token in Redis (10 min TTL)            | The PKCE + signed state of [ADR 0008](adrs/0008-oauth2-security-design.md) is not implemented |
 | OAuth code interception | Exchange codes are single-use (GETDEL), 60s TTL                | 60s window if code is intercepted (HTTPS mitigates)             |
 | HMAC forgery (Telegram) | `hmac.compare_digest` (timing-safe), SHA256 key derivation     | None — standard Telegram spec                                   |
 | Auth replay (Telegram)  | 24h `auth_date` freshness check                                | Replay within 24h window (acceptable)                           |
 | JWT theft               | 7-day expiry, `is_active` check on every request               | No revocation before expiry                                     |
 | Bot impersonation       | `X-Bot-Secret` required in production                          | Compromised secret = full bot access                            |
-| Deactivated user access | `is_active` checked at JWT decode + bot middleware              | Cached auth in bot (up to 1h stale)                             |
-| Backend down            | Bot fails open with cached auth                                | Unauthenticated access during outage (bounded by cache TTL)     |
-| XSS -> token theft      | React JSX auto-escaping, no `dangerouslySetInnerHTML`          | localStorage accessible to XSS (mitigate with CSP — planned)   |
+| Deactivated user access | `is_active` checked on every JWT request and at `/check`       | Cached auth in bot (up to 1h stale)                             |
+| Backend down            | Bot fails open; every command still needs the backend          | Unregistered users pass the gate while the check fails          |
+| XSS -> token theft      | React JSX auto-escaping, no `dangerouslySetInnerHTML`          | localStorage accessible to XSS; no CSP is set in this repo (any CSP header comes from the proxy, infra repo) |
 | LLM API key leak        | Env vars only, never in frontend or logs, sops-encrypted prod  | Billing exposure if VPS compromised                             |
 | OAuth endpoint abuse    | Waitlist gate, state validation, SlowAPI rate limits            | Rate-limited but public endpoints                               |
+| Dev-only login reachable | Two-key mount (flag + development), boot refusal elsewhere, never creates a user, rate limited | A driver run reached through a tunnel or DNS rebinding can log in on a throwaway DB and spend LLM credit |
 
 ---
 
 ## Known Limitations
 
 - **No JWT revocation** — can't invalidate a token before its 7-day expiry. Mitigated by `is_active` flag checked on every API call.
-- **Single admin** — only one admin supported via `ADMIN_EMAIL`. Multi-admin would need a promotion endpoint.
-- **Docker secrets not adopted** — credentials live in `.env` on disk. Planned migration to Docker secrets.
+- **No admin promotion** — the bootstrap creates one admin from `ADMIN_EMAIL`; there is no endpoint to promote another user.
+- **Docker secrets not adopted** — credentials live in `.env` on disk.
 - **Bot auth cache** — up to 1 hour stale. A deactivated user can keep using the bot for up to 1 hour after deactivation.
-- **JWT in localStorage** — accessible to XSS. HttpOnly cookie migration planned in ENGINEERING.md backlog.
+- **JWT in localStorage** — accessible to XSS. HttpOnly cookie migration is in the [ENGINEERING.md](ENGINEERING.md) backlog.
 
 ---
 
