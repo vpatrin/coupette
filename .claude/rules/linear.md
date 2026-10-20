@@ -49,7 +49,7 @@ J2 <title>
 
 - 2 to 5 journeys, written before any code. They are the QA contract (`/verify` parses this shape).
 - Each step is a user action and a result you can see in a screenshot or a response body.
-- Every journey runs on the synthetic seed, without saq.com and without embeddings.
+- Every journey runs on the synthetic seed (58 products, embedded), never on saq.com.
 - Once the first child starts, never edit a journey. Add `J<n+1>` instead.
 
 ## Ticket (child issue)

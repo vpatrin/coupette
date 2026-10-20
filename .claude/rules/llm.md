@@ -37,4 +37,4 @@ Never write user-facing text implying affiliation with SAQ. Applies to system pr
 
 ## Evaluation
 
-`make eval` runs intent + curation scoring, and `/eval-pipeline` tunes scores on existing surfaces. Both need embeddings, which the exp lane doesn't have (CLAUDE.md → Limits). Until then, a prompt change is proven by unit tests on the prompt builder and the parser, and the PR says `eval: not run — no embeddings`.
+`make eval` runs intent + curation scoring, and `/eval-pipeline` tunes scores on existing surfaces. On the exp lane they run on the 58-product seed, so compare scores only with a baseline taken on the same seed, never with main's numbers. Each run spends from the Anthropic key's monthly cap (CLAUDE.md → Limits): run it for risky-lane prompt or retrieval changes only.

@@ -92,21 +92,10 @@ wait_for() { # <seconds> <command…>
 cmd_up() {
   [ -s "$RUN_DIR/backend.pgid" ] && die "a run is in progress here: \`$SKILL_DIR/driver.sh down\` first"
   mkdir -p "$RUN_DIR/shots"
-  # exp-docker recreates this worktree's containers: an empty DB on every up. .env.local gets
-  # the same lines (ops/CONTRACTS.md §2), so make targets reach this DB too.
-  if "$EXP_DOCKER" db up >"$RUN_DIR/db.env" 2>"$RUN_DIR/exp-docker.log"; then
-    cp "$RUN_DIR/db.env" .env.local
-  else
-    # A sandboxed process cannot reach Docker, and its children inherit the sandbox: only a Bash
-    # command that starts with exp-docker runs outside it. Reuse the DB that such a command started.
-    [ -f .env.local ] && load_env .env.local
-    if [ -z "${DB_PORT:-}" ] || ! pg_ready "$DB_PORT"; then
-      cat "$RUN_DIR/exp-docker.log" >&2
-      die "exp-docker db up failed and .env.local has no live DB. Run \`$EXP_DOCKER db up > .env.local\` as its own command, then \`$SKILL_DIR/driver.sh up\`."
-    fi
-    echo "▶ exp-docker cannot reach Docker from here (sandbox): reusing the DB in .env.local"
-    grep -E '^(DB_|REDIS_URL=)' .env.local >"$RUN_DIR/db.env"
-  fi
+  # A sandboxed process can't reach Docker, so the DB comes from `exp-docker db up`, run as its
+  # own command before this one; it writes .env.local (ops/CONTRACTS.md §2).
+  [ -s .env.local ] || die "no .env.local: run \`$EXP_DOCKER db up\` as its own command, then \`$SKILL_DIR/driver.sh up\`"
+  grep -E '^(DB_|REDIS_URL=)' .env.local >"$RUN_DIR/db.env"
   load_env "$RUN_DIR/db.env"
   slot_ports
   for p in "$BACKEND_PORT" "$FRONTEND_PORT"; do
@@ -120,7 +109,7 @@ cmd_up() {
   python3 -c 'import secrets; print(secrets.token_urlsafe(32))' >"$RUN_DIR/jwt.key"
   overrides
 
-  make -s migrate seed "${OVR[@]}" >"$RUN_DIR/setup.log" 2>&1 || { tail -30 "$RUN_DIR/setup.log"; die "migrate/seed failed (log: $RUN_DIR/setup.log)"; }
+  make -s migrate seed embed-sync "${OVR[@]}" >"$RUN_DIR/setup.log" 2>&1 || { tail -30 "$RUN_DIR/setup.log"; die "migrate/seed/embed failed (log: $RUN_DIR/setup.log)"; }
   grep -E "Seeded|skipping seed" "$RUN_DIR/setup.log" | sed 's/^.*| //'
 
   # Own process group per server, so `down` can signal make → poetry → uvicorn / node at once.
@@ -199,14 +188,7 @@ cmd_down() {
     for p in "$BACKEND_PORT" "$FRONTEND_PORT"; do lsof -ti "tcp:$p" -sTCP:LISTEN 2>/dev/null | xargs kill 2>/dev/null || true; done
   fi
   rm -f "$RUN_DIR/token" "$RUN_DIR/env"
-  [ -z "${DB_PORT:-}" ] && [ -f .env.local ] && load_env .env.local
-  "$EXP_DOCKER" db down >/dev/null 2>&1 || true
-  # exp-docker exits 0 on down even when Docker is unreachable: check the DB itself.
-  if [ -n "${DB_PORT:-}" ] && pg_ready "$DB_PORT"; then
-    echo "⚠️  stopped the servers, but Postgres still answers on :$DB_PORT (the sandbox blocks Docker here). Run \`$EXP_DOCKER db down\` as its own command."
-  else
-    echo "✅ stopped the servers, removed this worktree's Postgres and Redis"
-  fi
+  echo "✅ stopped the servers. Postgres and Redis keep running: \`$EXP_DOCKER db down\` as its own command removes them."
 }
 
 case "${1:-}" in

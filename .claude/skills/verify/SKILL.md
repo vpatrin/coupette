@@ -29,27 +29,28 @@ Walk them exactly as written. Don't add, merge or soften a step.
 3. Then:
 
    ```bash
-   DRIVER=.claude/skills/run-coupette/driver.sh
-   $DRIVER up          # reads DB and Redis from .env.local; migrate, seed, backend, frontend, dev login; prints the URLs
-   QA_DIR=~/.cache/coupette-run/qa/EXP-MM/$(date -u +%Y%m%d-%H%M)
-   mkdir -p "$QA_DIR"
+   .claude/skills/run-coupette/driver.sh up    # reads DB and Redis from .env.local; migrate, seed, embed, backend, frontend, dev login; prints the URLs
    ```
+
+4. Create the QA dir `~/.cache/coupette-run/qa/EXP-MM/<YYYYMMDD-HHMM>` (UTC) with `mkdir -p`.
+
+Each Bash call starts a new shell, so variables don't carry over. Write the driver path and the QA dir in full in every command. Below, `<qa dir>` is that path.
 
 The driver makes no Docker calls. Its run files live in `~/.cache/coupette-run/runs/<id>`.
 
-`up` fails? Every journey fails with `observed: "app did not start: <last error line>"`. Write the report (step 4) and stop.
+`up` fails? Every journey fails with `observed: "app did not start: <last error line>"`. Write the report (section 4), then run section 5 and stop.
 
 ## 3. Walk each journey
 
 Map each step to driver calls (step syntax in `.claude/skills/run-coupette/SKILL.md`):
 
-- a UI step → `$DRIVER browse <path> --fill … --click … --wait … --shot J1-s2`
-- an API step → `$DRIVER api <METHOD> <path> [json]`
+- a UI step → `.claude/skills/run-coupette/driver.sh browse <path> --fill … --click … --wait … --shot J1-s2`
+- an API step → `.claude/skills/run-coupette/driver.sh api <METHOD> <path> [json]`
 
 For each step:
 
 1. Run it and read the full output: the step result, console errors, and `/api/*` responses ≥ 400.
-2. Open the screenshot with Read (`browse` prints its path). Copy it into `$QA_DIR`.
+2. Open the screenshot with Read (`browse` prints its path). Copy it into `<qa dir>`.
 3. Write `observed` as what you saw, in one sentence, with numbers and status codes.
 4. The step passes only when `observed` matches `expect`. A driver error, a console error or an API response ≥ 400 during the step fails it.
 
@@ -57,10 +58,10 @@ After the first failed step, the journey is `fail`. Record the remaining steps w
 
 ## 4. Write the report and check it
 
-Write `$QA_DIR/report.json` in the shape of `ops/CONTRACTS.md` §4. `sha` is `git rev-parse HEAD`; `bug` stays `null` until a bug ticket exists. Then:
+Write `<qa dir>/report.json` in the shape of `ops/CONTRACTS.md` §4. `sha` is `git rev-parse HEAD`; `bug` stays `null` until a bug ticket exists. Then:
 
 ```bash
-python3 .claude/skills/verify/check_report.py "$QA_DIR/report.json"
+python3 .claude/skills/verify/check_report.py <qa dir>/report.json
 ```
 
 It prints the summary and owns the exit code: 0 when every journey passed, 1 when one failed, 2 when the report breaks the contract. Fix a 2 and rerun. After bug ids are filled in, rerun with `--require-bugs`.
@@ -68,7 +69,7 @@ It prints the summary and owns the exit code: 0 when every journey passed, 1 whe
 ## 5. Stop the app
 
 ```bash
-$DRIVER down
+.claude/skills/run-coupette/driver.sh down
 ```
 
 Then `/Users/victor/.agent-harness/bin/exp-docker db down`, as its own command.
@@ -79,4 +80,4 @@ Return the report path, the summary line, and the checker's exit code.
 
 - Never fetch `saq.com`. Never run `scrape-*` targets. The seed is the only catalog.
 - Never edit app code, tests or docs here.
-- Embeddings are unavailable (CLAUDE.md → Limits): chat and recommendations return nothing on the seed. A journey that needs them fails, and the bug names the cause.
+- The seed has 58 embedded products. A journey that expects results the seed can't hold fails, and the bug says so.

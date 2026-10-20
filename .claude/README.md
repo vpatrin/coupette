@@ -64,8 +64,8 @@ The research agents have web tools and nothing else: a poisoned page can't read 
 | `run-coupette` | `verify`, the lead's smoke test | start the app on a throwaway DB and drive it |
 | `pr` | the lead | open the PR from §1, without moving the reviewed head |
 | `adr` | the planner's plan | record a hard-to-reverse decision |
-| `eval-pipeline` | nobody yet | needs embeddings, which this lane lacks |
+| `eval-pipeline` | nobody yet | spends from the Anthropic cap; scores only compare on the same seed |
 
 ## Measured on day 7
 
-Cost per merged ticket, CI first-pass rate, reverts, Victor's blind spot-check of 5 PRs, review findings regraded by a stronger model, bugs QA finds per feature, and the strategist's diff against Victor's past docs. Per-ticket rows live in `ops/tasks.jsonl`.
+Cost per merged ticket, CI first-pass rate, reverts, Victor's blind spot-check of 5 PRs (shown without the PR header and `ops/`, which reveal the arm), review findings regraded by a stronger model, bugs QA finds per feature, and the strategist's diff against Victor's past docs. Per-ticket rows live in `ops/tasks.jsonl`.

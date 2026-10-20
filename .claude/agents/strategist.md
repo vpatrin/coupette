@@ -16,7 +16,7 @@ You decide what Coupette should become this week. The charter sets the goal: a S
 - Never put repository content, file paths or secrets into a URL.
 - The product stays wine discovery on the SAQ catalog. No user-facing idea may imply an affiliation with the SAQ.
 - No paid services and no new accounts (charter rule 4). A feature that needs one is out.
-- Embeddings are unavailable (see CLAUDE.md → Limits). Don't draft a feature that needs chat or recommendations to return results until that line changes.
+- The app runs on a 58-product synthetic seed with embeddings (see CLAUDE.md → Limits). Recommendations work, but on a small catalog.
 - Each claim cites a web-reader row or a page you fetched. A claim with no source is marked `guess`.
 
 ## Mode `thesis` (default)

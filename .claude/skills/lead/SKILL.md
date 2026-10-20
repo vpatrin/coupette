@@ -37,7 +37,7 @@ Note the run start time. The gate blocks every tool call once the run is 3 hours
 
 On the first wake, or when a lockfile changed, first run the install steps of `ops/CONTRACTS.md` §2 in the clone (not the `.env` link: the clone has the real file).
 
-It fails? File a bug ticket (Bug template, `.claude/rules/linear.md`) with the failing output, at the top of the queue. It is the next ticket. Count one failure.
+It fails? Run steps 4 and 5 anyway, to free the slot. File a bug ticket (Bug template, `.claude/rules/linear.md`) with the failing output, at the top of the queue. It is the next ticket. Count one failure.
 
 ## 3. Strategy step
 
@@ -94,7 +94,7 @@ When every child of a feature is Done:
 
 ## 7. Model rule
 
-On the first wake of day 2, read `~/.agent-harness/usage.json` (`projected_week_usd`, `budget_usd`). When the projection exceeds the budget, the planner and builder run on Sonnet 5.5 high for the rest of the week (`models=sonnet`). Record it in STATUS. The file is missing? Keep Opus and write "no usage signal" under For Victor.
+On every wake, read `~/.agent-harness/models` (one word). Victor writes `sonnet` there after the day-1 usage review, when the week projects over the Max quota. `sonnet`: the planner and builder run on Sonnet 5.5 high (`models=sonnet`). Missing or `opus`: keep Opus. Record a change in STATUS.
 
 ## 8. Arm rule
 

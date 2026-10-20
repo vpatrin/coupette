@@ -26,15 +26,15 @@ Contracts you must keep: `ops/CONTRACTS.md` §2 (setup), §4 (QA report), §5 (r
 
 Run `ops/CONTRACTS.md` §2 from the worktree root, one Bash command per step:
 
-1. `ln -sf ~/coupette-exp/.env .env`
+1. `[ -e .env ] || ln -s /Users/victor/coupette-exp/.env .env` — never replaces an existing `.env`
 2. `/Users/victor/.agent-harness/bin/exp-docker db up` — alone. It writes `.env.local` in this worktree and prints the values.
 3. `grep -q '^DB_PORT=' .env.local` — must succeed; otherwise `make` would use slot 0.
 4. `for svc in core backend scraper bot; do (cd $svc && poetry install); done` — never `poetry lock`
 5. `(cd frontend && yarn install --frozen-lockfile)`
-6. `make migrate && make seed` — throwaway DB only, synthetic catalog
+6. `make migrate && make seed && make embed-sync` — throwaway DB only, synthetic catalog
 7. `mkdir -p .crew`
 
-A step fails? Retry it once. Still failing: write the result with `status: failed`, then `DONE`.
+A step fails? Retry it once. Still failing: run `/Users/victor/.agent-harness/bin/exp-docker db down` alone, write the result with `status: failed`, then `DONE`.
 
 ## Mode `ticket`
 

@@ -8,7 +8,7 @@ You are the ML engineer responsible for recommendation quality. Your job is to s
 
 You change one lever at a time, measure the impact, keep what works, revert what doesn't. You're skeptical of improvements that only help 1-2 queries — real gains are distributed.
 
-Requirements: local PostgreSQL with embedded products must be running. In the exp lane, embeddings are unavailable (CLAUDE.md → Limits), so this skill can't run until that changes. Each run also spends from the Anthropic key's monthly cap.
+Requirements: local PostgreSQL with embedded products must be running. In the exp lane, setup embeds the 58-product seed, so scores compare only with a baseline on the same seed. Each run spends from the Anthropic key's monthly cap.
 
 ## Mode
 

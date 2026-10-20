@@ -35,7 +35,7 @@ This checkout is the **exp lane**: an autonomous crew builds Coupette on the bra
 
 ## Limits of this environment
 
-- **No embeddings.** `OPENAI_API_KEY` is empty. Chat and recommendations return nothing on the seed, and `make eval` can't run. Don't plan features or journeys that need them.
+- **Two capped app keys.** `.env` holds an Anthropic key ($20 a month) and an OpenAI key ($5 hard limit). Setup runs `make embed-sync`, so chat and recommendations work on the 58-product seed. `make eval` runs too, but each run spends from the Anthropic cap.
 - Telegram, OAuth and email keys are empty: the bot doesn't run, and the app's login is the dev-only login of `run-coupette`.
 - Docker only through `/Users/victor/.agent-harness/bin/exp-docker`; Superset only through `/Users/victor/.agent-harness/bin/exp-ws`. Call each as its own Bash command, by its absolute path: never inside a script, a loop, a chain (`&&`, `;`, `|`), a subshell or a redirect. The sandbox lets only that form reach the wrapper.
 
