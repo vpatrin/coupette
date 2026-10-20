@@ -12,12 +12,12 @@ Typical request/operation flow through the subsystem. 2–4 paragraphs. Mermaid 
 
 ## Files
 
+Only the locations a reader can't guess from the directory tree: the entry point, cross-service pointers, non-obvious homes. File paths, no line numbers (they rot).
+
 | Concern | Where |
 |---|---|
-| Entry point | `path:lineno` |
-| Core logic | `path` |
-| Data access | `path` |
-| Tests | `path` |
+| Entry point | `path` |
+| Non-obvious location | `path` |
 
 ## Dependencies
 

@@ -1,6 +1,6 @@
 # Telegram Bot
 
-> Proactive alerting bot for ~20 friends in a private group — watches wines for availability changes that SAQ.com doesn't surface, alerts via stock-event polling.
+> Invite-only alerting bot — watches wines for availability changes that SAQ.com doesn't surface and sends each watcher a direct message from stock-event polling.
 
 ## Contract
 
@@ -11,20 +11,23 @@ What the bot exposes to Telegram users:
 | `/watch <sku or url>` | Get alerts for availability changes | `/watch 10327701` |
 | `/unwatch <sku or url>` | Stop watching a wine | `/unwatch 10327701` |
 | `/alerts` | List watched wines with inline remove buttons | `/alerts` |
-| `/mystores` | Manage preferred SAQ stores (GPS-based) | `/mystores` |
+| `/mystores` | Manage preferred SAQ stores (shared location) | `/mystores` |
 | `/help` | List available commands | `/help` |
+| `/start` | Help text; `start=watch_{sku}` deep link starts a watch | `t.me/CoupetteBot?start=watch_10327701` |
+| `/recommend` | Deprecated stub — points to the web chat | `/recommend` |
 
-Pasting a SAQ product URL in chat triggers a "Watch this?" prompt automatically. Deep links (`t.me/bot?start=watch_{sku}`) trigger watch directly.
+`/watch` and `/unwatch` parse URLs that start with `https://www.saq.com/fr/`; anything else is sent as a raw SKU. Pasting a SAQ product URL (fr or en) in chat shows the product card with a "Watch this?" prompt. A reply keyboard mirrors `/alerts`, `/mystores`, and `/help`.
 
-What the bot consumes from the backend (HTTP, with `X-Bot-Secret` header):
+What the bot consumes from the backend (HTTP, `X-Bot-Secret` header on every call):
 
-| Bot feature | API endpoint | Status |
-|---|---|---|
-| `/watch` | `POST /watches`, `DELETE /watches/{sku}` | Done (#101) |
-| `/alerts` | `GET /watches?user_id=` | Done (#101) |
-| Product lookup (URL paste) | `GET /products/{sku}` | Done (#34) |
-| Stock alerts | `GET /watches/notifications`, `POST /watches/notifications/ack` | Done (#138, #212) |
-| Stores | `GET /stores/nearby`, `GET/POST/DELETE /users/{id}/stores` | Done (#232) |
+| Bot feature | API endpoint |
+|---|---|
+| Access check | `GET /api/auth/telegram/check` |
+| `/watch`, `/unwatch` | `POST /api/watches`, `DELETE /api/watches/{sku}` |
+| `/alerts` | `GET /api/watches` |
+| Product lookup (URL paste) | `GET /api/products/{sku}` |
+| Stock alerts | `GET /api/watches/notifications`, `PATCH /api/watches/notifications` (ack) |
+| Stores | `GET /api/stores/nearby`, `GET/POST /api/stores/preferences`, `DELETE /api/stores/preferences/{saq_store_id}` |
 
 ## How it works
 
@@ -37,57 +40,57 @@ Telegram API → Bot service → FastAPI backend → PostgreSQL
 **Stock-event flow** (event-driven pub/sub via PostgreSQL as the queue):
 
 ```
-Scraper upsert                        Bot JobQueue (periodic, 6h)
+Scraper (availability, scrape)        Bot JobQueue (every NOTIFICATION_POLL_INTERVAL)
   │                                     │
-  │ availability changed?               │ GET /watches/notifications
+  │ availability changed / delisted?    │ GET /api/watches/notifications
   │         │                           │         │
-  │    INSERT stock_events              │    JOIN stock_events × watches
-  │    (sku, available=True/False)      │    WHERE processed_at IS NULL
+  │    INSERT stock_events              │    stock_events × watches
+  │    (sku, available, store?)         │    (× user_store_preferences for store events)
+  │                                     │    WHERE processed_at IS NULL, max 100
   │                                     │         │
-  │                                     │    Send Telegram messages
+  │                                     │    One DM per (user, product, direction)
   │                                     │         │
-  │                                     │    POST /watches/notifications/ack
+  │                                     │    PATCH /api/watches/notifications
   │                                     │    (set processed_at = now)
 ```
 
-The scraper detects availability transitions during upsert (it has both old and new state) and records them as immutable `stock_events`. The bot polls the backend periodically and fans out notifications to watchers.
+The scraper records availability transitions and delists as immutable `stock_events`. The bot polls the backend, groups events per user and product, and sends one direct message per group.
+
+**Known bug (not fixed here):** the `availability` command writes the new availability before it reads the "previous" state, so online and store transitions never produce an event. Only delist events reach users today.
 
 **Availability model:**
 
-- **Out of stock** — `availability` flips `True → False`
-- **Online restock** — `availability` flips `False → True`
-- **In-store restock/destock** — stock change at user's preferred stores
-- **Delist** — product removed from SAQ catalog entirely (watch auto-removed)
+- **Out of stock** — `online_availability` flips `True → False`, or a product that was online disappears from the Adobe results
+- **Online restock** — `online_availability` flips `False → True`
+- **In-store restock/destock** — stock change at one of the user's preferred stores (event carries `saq_store_id`)
+- **Delist** — product removed from the SAQ catalog; the backend deletes the watches on ack
 
-Delisted products are always excluded from the backend API.
+**Access:** the `access_gate` middleware checks each Telegram user against `GET /api/auth/telegram/check` (registered, active, Telegram linked) and caches a positive answer for 1 hour. If the backend is unreachable, the gate lets the user through.
+
+**Web-app watches:** watches created in the web app are stored as `user:{id}`. The bot only maps `tg:{telegram_id}` ids to a chat, so it skips (and acks) events for web-app watches.
 
 ## Files
 
 | Concern | Where |
 |---|---|
-| Entry point | `bot/bot/__main__.py` |
-| Handlers | `bot/bot/handlers/` (watch, alerts, mystores, start) |
-| Backend HTTP client | `bot/bot/api_client.py` |
-| Formatters (message shape) | `bot/bot/formatters.py` |
-| Reply + inline keyboards | `bot/bot/keyboards.py` |
-| Pre-handler gates (access check cached 1h, per-user rate limit) | `bot/bot/middleware.py` |
-| Application bootstrap, handler registration | `bot/bot/app.py` |
-| Tests | `bot/tests/` (pytest) |
+| Entry point | `bot/bot/__main__.py` → `create_app()` in `bot/bot/app.py` (handler registration, notification job) |
+| Backend HTTP client (the only way to the data) | `bot/bot/api_client.py` |
+| Pre-handler gates (access check, per-user rate limit) | `bot/bot/middleware.py` |
+| `/alerts` handler | `bot/bot/handlers/watch.py` |
 
 ## Dependencies
 
 - **Backend `/api/*`** — every operation goes through the FastAPI backend
-- **`X-Bot-Secret` header** on notification endpoints (shared secret, gitignored, lifespan-validated in prod)
-- **PostgreSQL `stock_events` table** — owned by scraper (writer), backend (reader for `/watches/notifications`), bot (consumer)
+- **PostgreSQL `stock_events` table** — scraper writes, backend reads for `/api/watches/notifications`, bot consumes
 - **python-telegram-bot** library — long-polling client + JobQueue
 
 ## Cross-cutting concerns
 
-- **Auth:** none for users (private group, ~20 friends — see [ADR 0004](../adrs/0004-telegram-first-auth.md) for the broader auth strategy). Bot→backend auth via `X-Bot-Secret`.
+- **Auth:** invite-only via the access gate (above). Bot → backend via `X-Bot-Secret`. See [`../SECURITY.md`](../SECURITY.md) → Bot access gate.
 - **Logging:** `from loguru import logger`, structured placeholders (see [`.claude/rules/backend.md`](../../.claude/rules/backend.md) — same convention).
-- **Errors:** failures sending Telegram messages logged + retried by JobQueue on next pass.
-- **Observability:** none specific to bot beyond Prometheus on the backend side.
-- **Rate limiting:** Telegram's own rate limits respected via python-telegram-bot's built-in queue.
+- **Errors:** a failed Telegram send is logged and the events are acked anyway (a user who blocked the bot would otherwise be retried forever). A failed ack leaves the batch pending, so it is sent again on the next poll.
+- **Observability:** none specific to the bot (no Prometheus).
+- **Rate limiting:** inbound only — `rate_limit_gate` drops updates above 3 per second per user. No outbound limiter is configured.
 
 ### Schema: `stock_events`
 
@@ -95,22 +98,23 @@ Delisted products are always excluded from the backend API.
 |---|---|---|
 | `id` | serial PK | |
 | `sku` | FK → products | Which product changed |
-| `available` | boolean | New state: `True` = restock, `False` = destock |
-| `detected_at` | timestamptz | When scraper detected the change |
-| `processed_at` | timestamptz NULL | When bot sent notifications (`NULL` = pending) |
+| `available` | boolean | New state: `True` = restock, `False` = destock or delist |
+| `saq_store_id` | FK → stores, NULL | Store for in-store events; `NULL` = online event |
+| `detected_at` | timestamptz | When the scraper detected the change |
+| `processed_at` | timestamptz NULL | When the bot acked it (`NULL` = pending) |
 
 **Design choices:**
-- **Restock + destock** — scraper emits both transitions; users get notified in both directions
-- **`processed_at` per-event, not per-user** — at 20 users, one event fans out to all watchers in a single pass. A per-user `notifications(event_id, user_id, sent_at)` table would be needed at scale but is over-engineering now
-- **Bot polls via JobQueue** — bot runs 24/7 anyway; periodic 6h check is simpler than chaining a systemd unit after the scraper timer
-- **Periodic cleanup** — old processed events purged to prevent table bloat (#158)
+- **Restock + destock** — the scraper emits both transitions; users get notified in both directions
+- **`processed_at` per-event, not per-user** — one event fans out to all watchers in a single pass. A per-user `notifications(event_id, user_id, sent_at)` table would be needed at scale but is over-engineering now
+- **Bot polls via JobQueue** — the bot runs 24/7 anyway; polling is simpler than chaining a systemd unit after the scraper timer
+- **Retention** — the scraper deletes every event older than `STOCK_EVENT_RETENTION_DAYS` (7), processed or not, after each `availability` and `scrape` run
 
 ## Operational notes
 
-- **Env vars:** `TELEGRAM_BOT_TOKEN` (the bot's Telegram API token), `BOT_SECRET` (shared with backend), `BACKEND_URL`
-- **Lifespan:** bot runs as a long-polling client; restart with `docker compose restart bot`
-- **Failure mode:** if the backend is unreachable, the bot logs the failure and skips that JobQueue cycle — no message loss because `processed_at` stays NULL
-- **Not in scope yet:** weekly LLM-curated digest to the group chat (#120); per-user auth (would need real OAuth — not justified at 20 friends)
+- **Env vars** (`bot/bot/config.py`): `TELEGRAM_BOT_TOKEN` and `NOTIFICATION_POLL_INTERVAL` (seconds; 60 dev, 21600 prod) are required. `BACKEND_URL`, `BOT_SECRET`, `BACKEND_TIMEOUT`, `LOG_LEVEL` have defaults.
+- **Lifespan:** the bot runs as a long-polling client; restart with `docker compose restart bot`. The first notification poll runs at startup.
+- **Failure mode:** if the backend is unreachable, the bot logs the failure and skips that poll — events stay pending (`processed_at` NULL) until the next one, within the 7-day retention.
+- **Not in scope yet:** weekly LLM-curated digest (#120).
 
 ## Related
 

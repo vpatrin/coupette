@@ -6,12 +6,12 @@ For planned features see [`../ROADMAP.md`](../ROADMAP.md). For decisions with re
 
 | Spec | Code surface | Subsystem |
 |---|---|---|
-| [auth](auth.md) | `backend/auth.py` + OAuth services + waitlist | OAuth (Google, GitHub), JWT, Telegram notifications |
-| [bot](bot.md) | `bot/` | Alert-only Telegram bot, stock events, store watches |
-| [chat](chat.md) | `backend/services/sommelier.py` + frontend | Multi-turn chat, intent routing, context windowing |
+| [auth](auth.md) | `backend/auth.py` + OAuth services + waitlist | OAuth (Google, GitHub), JWT, waitlist, Telegram linking, dev-only login |
+| [bot](bot.md) | `bot/` | Invite-only alert bot, stock events, preferred stores |
+| [chat](chat.md) | `backend/services/chat.py` + intent + sommelier | Multi-turn chat, intent routing, context windowing |
 | [frontend](frontend.md) | `frontend/src/` | React SPA, chat UI, sidebar, wine cards |
 | [rag](rag.md) | `backend/services/recommendations.py` + embed | RAG pipeline, hybrid search, curation |
-| [scraper](scraper.md) | `scraper/` | Adobe Live Search API, sitemap-only fetching, embedding sync |
+| [scraper](scraper.md) | `scraper/` | Sitemap scrape, Adobe Live Search, embedding sync, dev seed |
 
 Each spec follows the template at [`_template.md`](_template.md): contract · how it works · files · dependencies · cross-cutting concerns · operational notes · related.
 
