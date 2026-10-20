@@ -65,4 +65,4 @@ Linear project: *Weekly Digest*. A weekly, personalized summary of new and resto
 
 ### DevOps & CD pipeline
 
-Shipped: weekly DB backups with 30-day retention, Trivy scans in CI, build + scan + push to GHCR and automated deploy on tag push, a GitHub Release with the changelog, and a production environment scoped to `main` and `v*` tags, with environment-scoped secrets. Process: [DEVELOPMENT.md](DEVELOPMENT.md#deploy). Open platform work lives in the [infra ROADMAP](https://github.com/vpatrin/infra/blob/main/docs/ROADMAP.md); the engineering backlog lives in [ENGINEERING.md](ENGINEERING.md#backlog).
+Shipped: weekly DB backups with 30-day retention, Trivy scans in CI, build + scan + push to GHCR and automated deploy on tag push, a GitHub Release with the changelog, a production environment scoped to `main` and `v*` tags with environment-scoped secrets, and an `on-main` CD job that rejects commits not on main (VPA-53). Process: [DEVELOPMENT.md](DEVELOPMENT.md#deploy). Open platform work lives in the [infra ROADMAP](https://github.com/vpatrin/infra/blob/main/docs/ROADMAP.md); the engineering backlog lives in [ENGINEERING.md](ENGINEERING.md#backlog).
