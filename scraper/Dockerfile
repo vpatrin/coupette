@@ -1,4 +1,4 @@
-FROM python:3.12-slim@sha256:229a2c5bfa27522db7815ea81f9bed70af17ccb9de9fc7ad142b1877b5830d36 AS builder
+FROM python:3.12-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1 AS builder
 
 ARG POETRY_VERSION=2.3.2
 RUN pip install --no-cache-dir poetry==${POETRY_VERSION}
@@ -18,7 +18,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 RUN poetry install --only main --no-interaction \
     && pip install --no-cache-dir --no-deps --force-reinstall /build/core
 
-FROM python:3.12-slim@sha256:229a2c5bfa27522db7815ea81f9bed70af17ccb9de9fc7ad142b1877b5830d36
+FROM python:3.12-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1
 
 # Logs appear immediately in docker compose logs (no buffering)
 ENV PYTHONUNBUFFERED=1 \
