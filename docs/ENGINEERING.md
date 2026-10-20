@@ -11,14 +11,16 @@ Scheduled work is tracked in Linear; this file keeps the targets and the unsched
 One line per area; the linked doc owns the detail.
 
 - **Testing** — unit tests in every service, Vitest + React Testing Library in the frontend. Rules and coverage thresholds: [`.claude/rules/testing.md`](../.claude/rules/testing.md).
-- **Code quality** — Ruff in the four Python services (rule set and per-file ignores in each `pyproject.toml`); ESLint, Prettier, and strict TypeScript in the frontend. `make lint` checks, `make format` fixes.
+- **Code quality** — Ruff in the four Python services (rule set and per-file ignores in each `pyproject.toml`, e.g. [backend/pyproject.toml](../backend/pyproject.toml)); ESLint, Prettier, and strict TypeScript in the frontend. `make lint` checks, `make format` fixes.
 - **Git hooks** — `.githooks/`, enabled by `make install`. Pre-commit lints the services with staged changes. Pre-push checks lock files and migration coverage, then tests the changed services.
 - **Frontend type check** — `yarn typecheck` runs `tsc --noEmit` on the root `tsconfig.json`, which holds only project references, so it checks no file. Type errors surface in `yarn build` (`tsc -b`), which CI runs in `build-frontend`.
 - **Security** — [SECURITY.md](SECURITY.md): auth model, threat model, CI scanning.
-- **Observability** — Loguru logs, Prometheus `/metrics`, and the `recommendation_logs` table. History: [SCALING.md](SCALING.md#tier-1-measure--baseline--observability). Dashboards and alerts: infra repo.
+- **Observability** — Loguru logs ([core/logging.py](../core/logging.py)), Prometheus `/metrics` with custom `coupette_*` metrics ([backend/metrics.py](../backend/metrics.py)), and the `recommendation_logs` table. History: [SCALING.md](SCALING.md#tier-1-measure--baseline--observability). Dashboards and alerts: infra repo.
+- **Settings** — Pydantic `BaseSettings` in [core/config/settings.py](../core/config/settings.py): startup fails on a missing required var (`DB_USER`, `DB_PASSWORD`, `DB_NAME`), `ENVIRONMENT` gates dev-only behavior, `DATABASE_ECHO` logs SQL.
 - **Platform** — CI on every PR; CD on tag push, with images tagged by the release's semver tag (`sha-<commit>` on a manual dispatch, see `.github/workflows/cd.yml`). Deploy process: [DEVELOPMENT.md](DEVELOPMENT.md#deploy). Local stack: `make dev`.
+- **Containers** — non-root (`USER 1000` in each service Dockerfile); read-only filesystem, `no-new-privileges`, and log rotation (50 MB × 3) in [docker-compose.yml](../docker-compose.yml); memory limits in [docker-compose.prod.yml](../docker-compose.prod.yml).
 - **AI / ML** — RAG pipeline: [ADR 0005](adrs/0005-rag-pipeline.md). Retrieval and eval: [specs/rag.md](specs/rag.md).
-- **Scaling** — tiers, what to monitor, and when to advance: [SCALING.md](SCALING.md).
+- **Scaling** — tiers, what to monitor, and when to advance: [SCALING.md](SCALING.md). Scraper operations (idempotent runs, systemd timers, exit codes): [DEVELOPMENT.md](DEVELOPMENT.md#scraper).
 
 ---
 

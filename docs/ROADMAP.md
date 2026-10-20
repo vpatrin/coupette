@@ -31,7 +31,6 @@ Linear project: *Weekly Digest*. A weekly, personalized summary of new and resto
 ### Later
 
 - **Passkeys (WebAuthn)** — Face ID, Touch ID, or Windows Hello for returning users; OAuth stays required for registration. Credentials table, registration and login ceremonies, management in Settings.
-- **MCP server / Sonnet + tools** — expose Coupette data to Claude Code and Claude Desktop through MCP (`search_wines`, `get_product`, `get_user_watches`), then benchmark Haiku RAG against Sonnet + tools. Dev tooling, not user-facing.
 - **Custom email domain** — `contact@coupette.club` through Proton Mail (MX records on Hetzner DNS), as reply-to for `noreply@coupette.club`.
 
 ### Ideas (unscoped)
@@ -63,6 +62,10 @@ Linear project: *Weekly Digest*. A weekly, personalized summary of new and resto
 - Product card action overflow — an expandable row for 3+ actions (Watch visible, tasting and cellar on expand)
 - Dark / light mode toggle — dark-only today; Tailwind `dark:` variant, `prefers-color-scheme` as the default
 - Infinite scroll — on search results and the journal, with TanStack Query's `useInfiniteQuery` and an `IntersectionObserver` sentinel
+
+### Dev tooling
+
+- MCP server / Sonnet + tools — expose Coupette data to Claude Code and Claude Desktop through MCP (`search_wines`, `get_product`, `get_user_watches`), then benchmark Haiku RAG against Sonnet + tools
 
 ### DevOps & CD pipeline
 
