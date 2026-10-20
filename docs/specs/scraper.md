@@ -198,4 +198,3 @@ Stored as JSONB (not individual columns) because: 10+ portrait fields would bloa
 - **ADRs:** [`0002-sitemap-scraping-and-adobe-api.md`](../adrs/0002-sitemap-scraping-and-adobe-api.md), [`0005-rag-pipeline.md`](../adrs/0005-rag-pipeline.md)
 - **Agent rules (imperative form):** [`.claude/rules/scraper.md`](../../.claude/rules/scraper.md) — legal constraints + rate-limit rules
 - **Related specs:** [`rag.md`](rag.md) (the consumer of embeddings), [`bot.md`](bot.md) (the consumer of `stock_events`)
-- **Recent session logs:** look up via [`../session-logs/INDEX.md`](../session-logs/INDEX.md)

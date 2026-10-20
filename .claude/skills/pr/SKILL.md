@@ -1,29 +1,68 @@
 ---
 name: pr
-description: Create or finish the pull request for the current branch — CHANGELOG and ROADMAP checks, AC → evidence table, Decisions compiled from commit bodies, Review line. Use when asked to open, create, or update a PR.
+description: Open or update the pull request into exp/agentic for a ticket whose worker finished ready — checks the branch, builds the body from ops/CONTRACTS.md §1, validates the Red line. Use when the lead opens a PR for an EXP ticket.
+argument-hint: "EXP-NN <worktree path>"
 ---
 
-Create or finish the PR for the current branch.
+# /pr
+
+Arguments: $ARGUMENTS — the ticket id and its worktree path.
+
+The lead runs this in the clone. It never rebases, merges or pushes: the head of the PR must stay the commit the reviews saw.
 
 ## Steps
 
-1. `git fetch -q origin main`, then `git log --oneline origin/main..HEAD` and `git diff origin/main...HEAD` to see the whole branch.
-2. Push the branch if needed: `git push -u origin <branch>` (branch only — never tags).
-3. Take the Linear issue id from the branch name (`type/vpa-NN-…`).
-4. User-visible change without a matching `[Unreleased]` line in `CHANGELOG.md` → add it first. A PR that starts or ends a phase → update `docs/ROADMAP.md` (`rules/docs.md` → Roadmap maintenance).
-5. Frontend files changed → `cd frontend && yarn lint && yarn build` must pass.
-6. Body: follow `.github/pull_request_template.md`.
-   - **Related issue:** `Fixes VPA-NN` (moves the Linear issue to Done on squash merge); "none" if the branch has no id.
-   - **AC → evidence:** one row per acceptance criterion, built from `.claude/progress.md` — a named test, a runnable command, or an artifact. Commands must run from a fresh clone: no session-scratchpad paths; commit the script or paste it in the PR. UI rows name the screenshot file under `.claude/evidence/` (the CLI can't upload images). Cite the red commit.
-   - **Decisions:** compiled from the branch's commit bodies (`git log --format=%B origin/main..HEAD`) — choices with rejected alternatives, surfaced constants and thresholds, guessed-interface renames. Longer on the risky lane.
-   - **Review:** the reviewer's Review line (verdict + finding IDs fixed).
-   - **How to test:** curl examples use port 8001.
-   - **Harness friction** (optional): what in `.claude/` tripped the session, and which file.
-7. Title: `type: description (VPA-NN)`. Create with `gh pr create`, update with `gh pr edit`.
-8. Return the PR URL.
+1. Read `<worktree>/.crew/result.json`. `status` must be `ready`.
+2. Check the branch:
+
+   ```bash
+   git fetch -q origin exp/agentic exp-task/EXP-NN
+   git rev-parse origin/exp-task/EXP-NN        # must equal reviewed_sha
+   git merge-base --is-ancestor origin/exp/agentic origin/exp-task/EXP-NN   # must succeed
+   ```
+
+   - The head isn't `reviewed_sha`: stop, and report "head moved".
+   - The branch is behind `exp/agentic`: stop, and report "behind". The lead starts a repair worker (`reason=behind`), which merges `exp/agentic` in and re-reviews the new commits.
+3. Gather the body's parts:
+   - the ticket's title, and its feature issue (or `none`), from Linear
+   - `Lane`, `Red` and the counts from `result.json`
+   - the journal entry for EXP-NN in the day's `ops/journal/` file: What changed, and the findings with their fixed counts
+   - test files: `git diff --name-only origin/exp/agentic...origin/exp-task/EXP-NN`, keeping test files only
+4. Write the body to `/private/tmp/exp-lead/EXP-NN.pr.md` in exactly this shape (`ops/CONTRACTS.md` §1):
+
+   ```
+   ## EXP-NN <title>
+   Feature: EXP-MM | none
+   Lane: default | risky
+   Red: <sha> | none — <reason, 10+ characters>
+
+   ### What changed
+   <outcome first; short sentences>
+
+   ### Evidence
+   - Tests: <files>
+   - Code review: <n> Important, <n> Nit (fixed: <n>)
+   - Security review: clean | <n> real findings (fixed: <n>)
+
+   ### Journal
+   ops/journal/<YYYY-MM-DD>.md
+   ```
+
+   - The `Red` line uses a literal em dash (—), never `-` or `--`.
+   - When the change alters a structure or a flow, add a Mermaid diagram under What changed.
+   - Never add the arm, a model, the planner or a round count. The day-7 spot-check is blind.
+5. Validate the Red line before anything reaches GitHub:
+
+   ```bash
+   grep -cE '^Red: ([0-9a-f]{7,40}|none — .{10,})$' /private/tmp/exp-lead/EXP-NN.pr.md   # must print 1
+   ```
+
+6. Title: `<type>: <ticket title> (EXP-NN)`, with the type from the ticket title.
+7. Create it: `gh pr create --base exp/agentic --head exp-task/EXP-NN --title "<title>" --body-file /private/tmp/exp-lead/EXP-NN.pr.md`. It exists already? `gh pr edit <n> --body-file …`.
+8. Return the PR number and URL.
 
 ## Rules
 
-- Push the branch only, never tags — tag pushes deploy.
-- No PR for a user-visible change without a CHANGELOG line.
-- **Scope:** this skill doesn't review code (`/review`) or audit security (`/review security`).
+- Base is always `exp/agentic`. Never `main`.
+- No CHANGELOG line: `CHANGELOG.md` is the main lane's release history.
+- This skill doesn't review code. `/code-review` and `/security-review` ran in the worker.

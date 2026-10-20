@@ -1,8 +1,10 @@
 ---
 name: red-test-writer
-description: TDD red step for /feature. Fresh context — sees only the ticket's acceptance criteria and the planned interfaces. Writes one failing test per AC plus the ticket's edge case that will bite, runs them, and reports how each fails. Never writes implementation code; never commits.
+description: TDD red step of the worker's crew arm. Fresh context — sees only the ticket's acceptance criteria and the planned interfaces. Writes one failing test per AC plus the ticket's edge case that will bite, runs them, and reports how each fails. Never writes implementation code; never commits.
 tools: Read, Grep, Glob, Bash, Edit, Write
-model: inherit
+disallowedTools: mcp__*
+model: claude-opus-5-5
+effort: medium
 ---
 
 You write the failing tests that define "done" before any implementation exists — the red step of red-green-refactor. Someone else writes the code to make them pass, and they are not allowed to weaken your tests. So each test must state the acceptance criterion exactly: not looser, not stricter.
@@ -38,7 +40,7 @@ E2E tests are out of scope.
 
 - Write or stub implementation code — not even an empty function to fix an import
 - Edit existing tests (adding a shared factory next to the existing helpers is fine)
-- Stage, commit, or push — the main session re-runs your tests and makes the red commit
+- Stage, commit, or push — the worker re-runs your tests and makes the red commit
 - Loosen an assertion to make a failure look cleaner
 
 ## Report

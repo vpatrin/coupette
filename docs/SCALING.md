@@ -315,7 +315,7 @@ Tier 2 is the cheapest tier — pure optimization, no new infrastructure. LLM co
 
 ## Benchmarks
 
-Each tier should be validated with load tests before and after changes. Tooling, scripts, and roadmap live in [ENGINEERING.md](ENGINEERING.md#benchmarks).
+Each tier should be validated with load tests before and after changes.
 
 ### Per-tier test plan
 
@@ -341,5 +341,4 @@ Each tier should be validated with load tests before and after changes. Tooling,
 - [ARCHITECTURE.md](ARCHITECTURE.md) — system design, scaling path summary table
 - [ADR 0001: Modular Monolith](adrs/0001-modular-monolith.md) — why the architecture supports horizontal scaling
 - [ADR 0005: RAG Pipeline](adrs/0005-rag-pipeline.md) — LLM and vector search performance characteristics
-- [ENGINEERING.md](ENGINEERING.md#sre) — SRE backlog (SLOs, health endpoints)
 - [Infra ROADMAP](https://github.com/vpatrin/infra/blob/main/docs/ROADMAP.md) — k3s migration, platform infrastructure

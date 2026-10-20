@@ -240,7 +240,7 @@ The Telegram bot checks user registration before handling any message:
 - **No admin promotion** — the bootstrap creates one admin from `ADMIN_EMAIL`; there is no endpoint to promote another user.
 - **Docker secrets not adopted** — credentials live in `.env` on disk.
 - **Bot auth cache** — up to 1 hour stale. A deactivated user can keep using the bot for up to 1 hour after deactivation.
-- **JWT in localStorage** — accessible to XSS. HttpOnly cookie migration is in the [ENGINEERING.md](ENGINEERING.md) backlog.
+- **JWT in localStorage** — accessible to XSS. HttpOnly cookie migration is not done.
 
 ---
 

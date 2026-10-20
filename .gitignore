@@ -61,3 +61,8 @@ backend/benchmarks/load/results/
 # UI/UX ideas - screenshots, mockups, etc.
 ui/
 .gitnexus
+
+# Crew worker state (ops/CONTRACTS.md §5)
+.crew/
+# The crew stops itself with this file (charter); never committed
+ops/STOP

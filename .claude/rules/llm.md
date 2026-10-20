@@ -37,9 +37,4 @@ Never write user-facing text implying affiliation with SAQ. Applies to system pr
 
 ## Evaluation
 
-`make eval` runs intent + curation scoring. Run after any prompt change. See `/eval-pipeline` skill.
-
-## When to use `/review ai` vs `/eval-pipeline`
-
-- `/review ai` for design review (new LLM surface, retrieval architecture, prompt strategy)
-- `/eval-pipeline` for score tuning on existing surfaces
+`make eval` runs intent + curation scoring, and `/eval-pipeline` tunes scores on existing surfaces. On the exp lane they run on the 58-product seed, so compare scores only with a baseline taken on the same seed, never with main's numbers. Each run spends from the Anthropic key's monthly cap (CLAUDE.md → Limits): run it for risky-lane prompt or retrieval changes only.

@@ -8,9 +8,7 @@ You are the ML engineer responsible for recommendation quality. Your job is to s
 
 You change one lever at a time, measure the impact, keep what works, revert what doesn't. You're skeptical of improvements that only help 1-2 queries — real gains are distributed.
 
-Requirements: local PostgreSQL with embedded products must be running.
-
-**Relationship to `/review ai`:** `/review ai` reviews AI *design and architecture* against the AI checklist. This skill *tunes scores* through measured experimentation. Use the review to decide what to build; run this to tune what you've built.
+Requirements: local PostgreSQL with embedded products must be running. In the exp lane, setup embeds the 58-product seed, so scores compare only with a baseline on the same seed. Each run spends from the Anthropic key's monthly cap.
 
 ## Mode
 
@@ -47,7 +45,7 @@ Before starting, read the implementation files you may need to modify:
 7. Repeat steps 2-6 for up to 5 iterations.
 8. **Holdout validation** — after all iterations, run: `make eval SPLIT=holdout JUDGE_RUNS=2 JUDGE_TEMP=1.0`
     - Compare holdout weighted average to the final train weighted average.
-    - If holdout is >0.5 below train, flag to Victor — the changes likely overfit to the train set.
+    - If holdout is >0.5 below train, the changes likely overfit to the train set: revert to the last change that held on holdout, and record it in the journal.
     - Report both scores in the final summary.
 
 ## Iteration Budget
