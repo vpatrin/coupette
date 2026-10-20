@@ -1,6 +1,6 @@
 # RAG & Recommendations
 
-> Hybrid retrieval (pgvector + structured filters) + Claude Haiku curation over ~30.9k SAQ wine products. Powers the recommendation path in chat and the planned new-arrivals digest.
+> Hybrid retrieval (structured filters + pgvector) with a diversity rerank, then Claude Haiku writes the reasons. Powers the recommendation path in chat and `POST /api/recommendations`.
 
 ## Contract
 
@@ -8,189 +8,123 @@ What the RAG layer exposes:
 
 | Caller | Surface | What it returns |
 |---|---|---|
-| `chat.py` (recommendation intent) | `recommendations_service.recommend(...)` | `RecommendationOut`: products + per-product reasons + intent + summary |
-| Bot `/recommend` (planned) | `GET /api/recommendations` | Same shape |
-| New-arrivals digest (planned) | `recommendations_service.curate_arrivals(...)` | LLM-grouped product summaries |
+| Chat (`recommendation` intent) | `recommend(db, query, *, user_id, exclude_skus, conversation_history, available_online=True, in_store=None, intent)` in `backend/services/recommendations.py` | `RecommendationOut`: products + one reason each + intent + summary + `log_id` |
+| HTTP | `POST /api/recommendations`, body `RecommendationIn` (`query`, `user_id`, `available_online`, `in_store`) | Same shape |
 
-Always returns **available wines only** — delisted products are filtered. Default scope: "available somewhere" (online OR in stores). For users with a preferred store: filtered to wines available at that store.
+Always excludes delisted products. Default scope: **available online** (`available_online=True`). `in_store` narrows to one store when the caller passes it. Chat passes neither, so chat recommends online-available wines only.
 
 ## How it works
 
-Hybrid retrieval: extract structured filters first, then semantic search within the filtered set, then Claude curation.
+Extract structured filters first, then semantic search within the filtered set, then a diversity rerank, then Claude curation.
 
 ```
 User: "un rouge fruité autour de 25$"
                     ↓
-1. Parse intent: category=rouge, price_max=30 (buffer above "25$"), available=true
-2. SQL: WHERE category = 'Vin rouge' AND price <= 30
-         AND delisted_at IS NULL
-         AND (online_availability = true
-              OR store_availability IS NOT NULL)
-         AND (user has preferred store?
-              → store_availability @> '["23101"]')
-3. pgvector: ORDER BY embedding <=> query_embedding LIMIT 10
-4. Pass top 10 candidates with full attributes to Claude
-5. Claude selects 3-5 picks with reasoning
+1. Intent (Haiku tool_use, see chat.md): categories=["Vin rouge"], price ≈ 20–30,
+   semantic_query="fruité, souple, … Gamay, Grenache"
+2. Embed semantic_query (text-embedding-3-large, 1536-d)
+3. SQL: delisted_at IS NULL AND embedding IS NOT NULL AND price > 0
+        AND category IN (...)        -- any wine category when the intent has none
+        AND country / price range    -- when extracted
+        AND grape NOT ILIKE <excluded grapes>
+        AND sku NOT IN <already recommended in this session>
+        AND online_availability IS TRUE          -- default
+        AND store_availability @> '["<store>"]'  -- only with in_store
+4. pgvector: ORDER BY embedding <=> query_embedding LIMIT 25 (5 × DEFAULT_RECOMMENDATION_LIMIT)
+5. MMR-style rerank → 5 wines (penalizes a shared producer, taste tag, origin)
+6. Claude (forced `explain` tool) writes one reason per wine + a summary
+7. Write a recommendation_logs row (intent, SKUs, per-stage latency)
 ```
 
-**Why hybrid:** Price and category are exact constraints — vector similarity shouldn't override "$30" meaning $30. Pre-filtering reduces candidates from ~30.9k wine products to hundreds.
+**Why hybrid:** price and category are exact constraints — vector similarity shouldn't override "$30" meaning $30. Pre-filtering shrinks the candidate set before the vector sort.
 
-**Top-k = 10.** Enough diversity for Claude without bloating the prompt.
-
-**Bilingual** — embedding model handles FR/EN; Claude Haiku is natively bilingual.
-
-### Data available
-
-**From `products` table (~30.9k wine products):** `name`, `description` (FR marketing text), `category`, `grape`, `region`, `appellation`, `country`, `producer`, `price`, `alcohol`, `sugar`, `rating`, `review_count`, `classification`, `designation`, `online_availability`, `store_availability`. Only wine products are embedded (vin + champagne/mousseux + porto/fortifié + saké); spirits, beer, cider excluded.
-
-**From Adobe Live Search (`--enrich-wines`):** `taste_tag`, `tasting_profile` JSONB (`portrait_*` — body, acidity, aromas, sweetness, wood, serving temp, aging), `vintage`, `grape_blend` (structured blend with percentages).
-
-**From watch history:** Implicit taste signal — available for personalization without explicit preference collection.
+**Bilingual** — the embedding model handles FR/EN; Claude Haiku is natively bilingual.
 
 ### Embedding strategy
 
-Composite text per product:
+Composite text per product, built by `build_embedding_text()` in `scraper/scraper/embed.py`:
 
 ```
-{taste_tag} | {portrait_corps}, {portrait_sucre}, {portrait_acidite}
-{grape_blend} | {region}, {appellation}, {country} | {vintage}
-Arômes: {portrait_arome}
+{category} | {taste_tag} | {corps}, {sucre}, {acidite}
+{producer} | {grape_blend or grape} | {region}, {appellation}, {designation}, {classification}, {country} | {vintage}
+Arômes: {arome}
 {description}
 ```
 
-`taste_tag` and `portrait_*` are gold — they map to how users describe what they want ("bold and dry"). `description` provides semantic richness for occasion matching.
+`taste_tag` and the `tasting_profile` fields map to how users describe what they want ("bold and dry"). `description` provides semantic richness for occasion matching.
 
 **Not embedded:** price, availability, rating — these go in WHERE clauses. Embedding price would conflate semantic similarity with price proximity.
 
+**Scope:** `embed` embeds every product with non-empty text; retrieval restricts to wine categories at query time (`_WINE_PREFIXES` in `backend/repositories/recommendations.py`).
+
 **Model:** OpenAI `text-embedding-3-large`, truncated to 1536 dims (`core/embedding_constants.py`). Catalog and query embeddings both go through `core/embedding_client.py`.
 
-**Change detection:** `attribute_hash` + `embedded_hash` on Product. `--embed-sync` (in scraper) recomputes embeddings where hashes differ.
-
-### Intent parsing
-
-Lightweight parser extracts structured filters before the pgvector call:
-
-- Category keywords: rouge, blanc, rosé, bulles, mousseux, porto, saké
-- Price signals: "autour de 25$", "moins de 40$", "budget 50$"
-- Availability: default "available somewhere"; narrow to "at your store" for users with preferred store
-
-Regex + keyword matching for MVP. No LLM call needed for filter extraction.
+**Change detection:** `embed` compares a hash computed at sync time with `Product.last_embedded_hash`. The hash covers the model, the dimensions, and the embedded fields, but not the text template — see [`scraper.md`](scraper.md#embedding-contract-with-ragmd).
 
 ### Claude integration
 
-**Pattern: RAG context injection** — retrieve top-k wines, inject as structured text into Claude's prompt, Claude writes the recommendation.
+**Pattern: RAG context injection** — retrieve the wines, inject them as structured text, Claude writes the explanation. The prompt and the wine line format live in `backend/services/curation.py`: the system prompt sets the rules (answer in the user's language, one specific sentence per wine, a 1–2 sentence summary), and the user message carries the history, the query, and one line per wine (name, grape, region, country, price, taste tag).
 
-Tool-use (Claude calling APIs directly) adds latency and non-determinism — reserved for future features like `/versus`.
+Claude selects nothing: it explains the 5 wines retrieval picked. Reasons map to products by position; a short or long list is padded or truncated to match.
 
-**Prompt structure:**
-
-```
-System:
-You are a wine recommendation assistant using SAQ catalog data.
-Recommend wines ONLY from the catalog below. Never invent a wine or a detail.
-If no wine fits, say so — don't hallucinate.
-Respond in the same language as the user's question.
-
-Catalog ({n} wines):
-[1] {name} — {price}$ — {country}, {region} — {grape}
-    {taste_tag} · {portrait_corps}, {portrait_sucre}
-    Arômes: {portrait_arome}
-    {description_excerpt}
-    SKU: {sku}
-...
-
-User: {query}
-```
-
-**Guardrails:**
-1. Prompt constraint: "only from the catalog below" — primary defense
-2. Post-response SKU validation: extract SKUs from Claude's output, verify they exist in PostgreSQL. If missing → retry without that SKU
-3. Graceful degradation: full RAG → SQL + Claude → SQL only
-
-### Graceful degradation
-
-```
-/recommend request
-  │
-  ├─ pgvector available?
-  │     ├─ YES → retrieve top-k → Claude
-  │     └─ NO  → SQL top results (by rating, filtered) → Claude
-  │
-  └─ Claude available?
-        ├─ YES → natural language response with reasoning
-        └─ NO  → SQL results + "AI unavailable, here are top-rated matches"
-```
+**Failure behavior:** no API key or a Claude API error → the products come back with empty reasons and an empty summary. An embedding (OpenAI) error is re-raised and the request fails.
 
 ## Files
 
 | Concern | Where |
 |---|---|
-| Embedding client wrapper | `core/embedding_client.py` |
-| Embedding dim constant | `core/embedding_constants.py` |
-| Batch embed CLI | `scraper/scraper/commands/embed.py` (`make embed-sync`) |
-| pgvector upsert | `scraper/scraper/db/embeddings.py` |
 | Recommendation orchestration | `backend/services/recommendations.py` |
-| Curation (LLM reasons + summary) | `backend/services/curation.py` |
-| Sommelier service (wine_chat persona) | `backend/services/sommelier.py` |
-| Intent parsing | `backend/services/intent.py` |
-| Repository (pgvector query) | `backend/repositories/recommendations.py` |
-| Tests | `backend/tests/test_recommendations*.py` |
-| Eval framework | `backend/benchmarks/eval/` |
-| Eval levers | `backend/benchmarks/eval/levers.md` |
-| Eval queries / rubric | `backend/benchmarks/eval/data/{queries,rubric}.json` |
+| Retrieval query + rerank (read end to end before changing retrieval) | `backend/repositories/recommendations.py` |
+| Curation prompt | `backend/services/curation.py` |
+| Embedding client + dimension | `core/embedding_client.py`, `core/embedding_constants.py` |
+| Embedding text + change hash (scraper side) | `scraper/scraper/embed.py` |
+| Eval framework | `backend/benchmarks/eval/` (levers: `backend/benchmarks/eval/levers.md`; data: `backend/benchmarks/eval/data/{queries,rubric}.json`) |
 
 ## Dependencies
 
 - **pgvector extension** in PostgreSQL — vector storage + similarity ops
 - **OpenAI `text-embedding-3-large`** (1536-d) — embedding model for catalog and queries
-- **Claude Haiku 4.5** — curation + (optional) intent parsing
-- **Scraper-owned ingestion** — `scraper/scraper/embed.py` writes embeddings; backend only reads
+- **Claude Haiku 4.5** — intent (see [`chat.md`](chat.md)) and curation
+- **Scraper-owned ingestion** — `python -m scraper embed` writes embeddings; the backend only reads
 
 ## Cross-cutting concerns
 
-- **Auth:** every `/api/recommendations*` route uses `Depends(verify_auth)`
-- **Logging:** structured loguru — intent classification, retrieval candidate count, Claude latency, token usage
-- **Errors:** graceful degradation cascades through 3 levels (above); always returns something useful
+- **Auth:** `POST /api/recommendations` sits behind the global `verify_auth` (JWT or bot secret)
+- **Logging:** one `recommendation_logs` row per call (intent, returned SKUs, per-stage `latency_ms`); loguru for warnings and errors
+- **Errors:** see Failure behavior above; the pipeline counts failures in `recommendation_pipeline_errors`
 - **Observability:** Prometheus — `recommendation_duration`, `recommendation_candidates`, `llm_call_duration`, `llm_tokens`, `llm_errors`, `intent_classifications`, `recommendation_pipeline_errors`
-- **Rate limiting:** SlowAPI on the `/api/recommendations` endpoint
-- **Cost:** ~$0.002 per recommendation call at Haiku pricing (~$12/month at 20 users × 10 queries/day). `CLAUDE_DAILY_BUDGET_USD` cap + Telegram DM alert at 80% prevents runaway
+- **Rate limiting:** SlowAPI `RATE_LIMIT_LLM` (20/min) on `POST /api/recommendations`
+- **Cost:** ~$0.002 per recommendation call at Haiku pricing (estimate). No budget cap or spend alert exists
 
-### Token budget (per call, top-k=10)
+### Token budget
 
-| Component | Tokens |
-|---|---|
-| System prompt | ~200 |
-| 10 wine cards | ~500 |
-| 3-turn history | ~300 |
-| User query | ~50 |
-| **Total input** | **~1,050** |
-| Claude output | ~300 |
+Curation input = system prompt + up to 10 history messages + the query + 5 wine lines; output capped at `max_tokens=512` (intent: 256). Measure before adding context ([`.claude/rules/rag.md`](../../.claude/rules/rag.md) hard rule 4); `llm_tokens` counts real usage.
 
 ### Memory footprint
 
-~30.9k × 1536 dims × 4 bytes = **~190 MB** in pgvector. Well within the 4GB VPS budget.
+~38k products × 1536 dims × 4 bytes ≈ **~235 MB** in pgvector. Well within the 4GB VPS budget.
 
 ## Operational notes
 
-**Env vars:** `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` (for query embeddings), `CLAUDE_DAILY_BUDGET_USD`
+**Env vars:** `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` (for query embeddings), `HAIKU_TEMPERATURE`
 
 **Embedding lifecycle:**
-- Initial population: `make embed-sync` after first catalog ingest
-- Update: `make embed-sync` runs after monthly scrape — `--availability-check` does NOT touch embeddings
-- Re-embed all: change the embedding model (`core/embedding_constants.py`) or composite text format → all `embedded_hash` ≠ `attribute_hash` → full recompute on next `make embed-sync` (~30 min)
+- Production: systemd runs `scrape` → `enrich` → `embed` weekly (see [`scraper.md`](scraper.md)); `availability` does NOT touch embeddings
+- Local: `make embed-sync` after a scrape (the synthetic seed has no embeddings)
+- Re-embed all: change the embedding model or dimensions (`core/embedding_constants.py`) → every hash changes → full recompute on the next `embed` (~30 min). Editing the text template alone re-embeds nothing
 
 **Hard rules** (SAQ impersonation, re-embedding cost, prompt caching, token discipline, eval gate): [`.claude/rules/rag.md`](../../.claude/rules/rag.md).
 
-**Eval framework** — see `backend/benchmarks/eval/`. LLM-as-judge (Sonnet evaluates Haiku's output against rubric):
-- 20 MW-quality benchmark queries
-- 5 weighted scoring dimensions
-- Sonnet judge scores 1-5 per dimension
+**Eval framework** — see `backend/benchmarks/eval/`. LLM-as-judge (Sonnet scores Haiku's output against the rubric):
+- 19 benchmark queries: 13 train (the default split) + 6 holdout
+- 5 weighted scoring dimensions, judge scores 1–5 per dimension
 - Per-query + weighted averages + diff vs previous run
+- `make eval` runs `recommend()` end to end with `available_online=False`, so it scores a wider candidate pool than chat uses
 - Iterate via `/eval-pipeline` skill (one lever at a time, holdout validation, no overfit)
 
 **Scope constraints:**
-- **Wine-scoped** — only wine products embedded (vin, champagne/mousseux, porto/fortifié, saké)
-- **Montreal MVP** — in-store availability for Montreal stores only (~64 consumer stores)
+- **Wine-scoped** — retrieval only returns wine categories (vin, champagne/mousseux, porto/fortifié, saké)
+- **Montreal MVP** — in-store availability for Montreal stores only
 - **Bilingual** — FR/EN handled natively by embedding model + Claude
 
 ## Related
