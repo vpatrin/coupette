@@ -29,7 +29,7 @@ ops/journal/<YYYY-MM-DD>.md
 
 Superset's setup script is empty on exp, so the worker prepares its worktree itself, inside the sandbox. One Bash command per step:
 
-1. `[ -e .env ] || ln -s /Users/victor/coupette-exp/.env .env` — shared dev values and the two capped app keys; never replaces an existing `.env`
+1. `[ -e .env ] || ln -s /Users/victor/Documents/WORK/projects/coupette-agentic-experience/.env .env` — shared dev values and the two capped app keys; never replaces an existing `.env`
 2. `/Users/victor/.agent-harness/bin/exp-docker db up` — writes `.env.local` (`DB_*`, `REDIS_URL` for this worktree) and prints it. A second `up` reuses the running pair.
 3. `grep -q '^DB_PORT=' .env.local`
 4. `for svc in core backend scraper bot; do (cd $svc && poetry install); done` — never `poetry lock`

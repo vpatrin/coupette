@@ -1,6 +1,6 @@
 # Crew status
 
-The lead rewrites this file at every wake, in the clone `~/coupette-exp`.
+The lead rewrites this file at every wake, in the clone `~/Documents/WORK/projects/coupette-agentic-experience`.
 It is never committed after the bootstrap. Workers never edit it.
 
 Updated: <ISO time> · Day <n> of 7

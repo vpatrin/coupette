@@ -7,7 +7,7 @@ description: The exp crew's wake loop — orient, smoke test, strategy step, up 
 
 You lead the crew for one wake. You decide, dispatch, open PRs and merge. You write no code: workers do, in their own Superset workspaces. Nobody answers questions at run time.
 
-Work in the clone `~/coupette-exp`, on `exp/agentic`. Use absolute paths for crew files: `~/coupette-exp/ops/STATUS.md`, `~/coupette-exp/ops/STOP`.
+Work in the clone `~/Documents/WORK/projects/coupette-agentic-experience`, on `exp/agentic`. Use absolute paths for crew files: `~/Documents/WORK/projects/coupette-agentic-experience/ops/STATUS.md`, `~/Documents/WORK/projects/coupette-agentic-experience/ops/STOP`.
 
 Doors: `gh`, `git`, `/Users/victor/.agent-harness/bin/exp-ws`, `/Users/victor/.agent-harness/bin/exp-docker`, Linear team EXP. Call each wrapper as its own Bash command, by its absolute path: never inside a script, a loop, a chain (`&&`, `;`, `|`), a subshell or a redirect. The sandbox lets only that form reach the wrapper. A guard denies a command? Don't retry it in another form. Note it in STATUS and end the wake (step 9).
 
@@ -16,7 +16,7 @@ Note the run start time. The gate blocks every tool call once the run is 3 hours
 ## 1. Orient
 
 1. Read `~/.agent-harness/charter.md`. It wins over everything here.
-2. `git -C ~/coupette-exp pull --ff-only origin exp/agentic`
+2. `git -C ~/Documents/WORK/projects/coupette-agentic-experience pull --ff-only origin exp/agentic`
 3. Read `ops/STATUS.md`, `ops/CONTRACTS.md` and the newest file in `ops/journal/`.
 4. Linear, team EXP, project "Agentic experiment": open features, the Todo queue, In Progress tickets.
 5. CI: `gh run list --branch exp/agentic --limit 3` and `gh pr list --base exp/agentic`.
@@ -67,7 +67,7 @@ Up to 3 tickets per wake, one at a time. Don't start one after the run is 2 hour
    - `parked` or `failed`: go to step 6.
 5. **CI and merge.**
    - `gh pr checks <n> --watch --interval 60`. The call times out? Run it again.
-   - Green: `gh pr merge <n> --squash --match-head-commit <reviewed_sha>`. Then `/Users/victor/.agent-harness/bin/exp-ws retag <id> merged`, move the issue to Done with a comment, and `git -C ~/coupette-exp pull --ff-only origin exp/agentic`.
+   - Green: `gh pr merge <n> --squash --match-head-commit <reviewed_sha>`. Then `/Users/victor/.agent-harness/bin/exp-ws retag <id> merged`, move the issue to Done with a comment, and `git -C ~/Documents/WORK/projects/coupette-agentic-experience pull --ff-only origin exp/agentic`.
    - Red, first time: CI repair. `rm -f <worktree>/.crew/DONE`, write the prompt `/worker repair EXP-NN reason=ci run=<run id>`, then `/Users/victor/.agent-harness/bin/exp-ws start-session <id> --prompt-file <file>`. Go back to 3. The repair's new `reviewed_sha` is the one you merge.
    - `/pr` says the branch is behind `exp/agentic`: the same, with `reason=behind`.
    - Red after a repair: park it (step 6).
@@ -90,7 +90,7 @@ When every child of a feature is Done:
 - **Run:** 3 tickets, 3 hours, or 2 failures in a row → go to step 9.
 - **Crew:** any hard-rule denial (the guard writes STOP itself), 3 failed wakes in a row, day 7, or a STOP file → no more wakes.
   - A failed wake merges nothing and counts at least one failure. Keep the counts in STATUS.
-  - 3 in a row: write the reason to `~/coupette-exp/ops/STOP`, set STATUS `State: stopped — <reason>`, and end.
+  - 3 in a row: write the reason to `~/Documents/WORK/projects/coupette-agentic-experience/ops/STOP`, set STATUS `State: stopped — <reason>`, and end.
 
 ## 7. Model rule
 
@@ -102,5 +102,5 @@ Solo when the lane is default and the EXP number mod 3 is 0; crew otherwise. It 
 
 ## 9. Exit
 
-1. Rewrite `~/coupette-exp/ops/STATUS.md` from its template. Never commit it.
+1. Rewrite `~/Documents/WORK/projects/coupette-agentic-experience/ops/STATUS.md` from its template. Never commit it.
 2. Your last message, at most 10 lines: merged, parked, QA results, strategy, failures, what the next wake does first.

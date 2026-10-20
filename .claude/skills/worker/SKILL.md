@@ -18,7 +18,7 @@ Contracts you must keep: `ops/CONTRACTS.md` §2 (setup), §4 (QA report), §5 (r
 - Push only your own branch, never with force. Never touch `main`, tags or `exp/agentic` directly.
 - No app run per ticket: tests are the evidence. The app runs only in QA mode.
 - A guard or the sandbox denies a command? Don't retry it in another form. End with `status: failed` and quote the denial in `notes`.
-- To stop the whole crew, write the reason to `~/coupette-exp/ops/STOP` (absolute path; the gate reads only that one).
+- To stop the whole crew, write the reason to `~/Documents/WORK/projects/coupette-agentic-experience/ops/STOP` (absolute path; the gate reads only that one).
 - Record the start time (`date -u +%FT%TZ`) for `ops/tasks.jsonl`.
 - Call `/Users/victor/.agent-harness/bin/exp-docker` and `/Users/victor/.agent-harness/bin/exp-ws` each as its own Bash command, by its absolute path: never inside a script, a loop, a chain (`&&`, `;`, `|`), a subshell or a redirect. The sandbox lets only that form reach the wrapper.
 
@@ -26,7 +26,7 @@ Contracts you must keep: `ops/CONTRACTS.md` §2 (setup), §4 (QA report), §5 (r
 
 Run `ops/CONTRACTS.md` §2 from the worktree root, one Bash command per step:
 
-1. `[ -e .env ] || ln -s /Users/victor/coupette-exp/.env .env` — never replaces an existing `.env`
+1. `[ -e .env ] || ln -s /Users/victor/Documents/WORK/projects/coupette-agentic-experience/.env .env` — never replaces an existing `.env`
 2. `/Users/victor/.agent-harness/bin/exp-docker db up` — alone. It writes `.env.local` in this worktree and prints the values.
 3. `grep -q '^DB_PORT=' .env.local` — must succeed; otherwise `make` would use slot 0.
 4. `for svc in core backend scraper bot; do (cd $svc && poetry install); done` — never `poetry lock`
