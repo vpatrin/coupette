@@ -197,6 +197,7 @@ The Telegram bot checks user registration before handling any message:
 | gitleaks   | Secrets committed in code                     | CI             |
 | Hadolint   | Dockerfile anti-patterns                      | CI             |
 | Trivy      | Container image vulnerabilities               | CI on PR       |
+| `on-main`  | A tag or dispatch for a commit not on main    | CD, first job  |
 
 ---
 
@@ -280,3 +281,8 @@ The Telegram bot checks user registration before handling any message:
 
 **Context:** Admin bootstrap relied on `ADMIN_TELEGRAM_ID`, coupling admin identity to Telegram. Telegram login on the web app was redundant with Google/GitHub OAuth.
 **Action:** Admin identified by `ADMIN_EMAIL`. Telegram removed from login page, moved to Settings as a linked notification channel (`POST /users/me/telegram`). Telegram Login Widget HMAC verification reused for linking.
+
+### 2026-10-19 — Deploy only commits on main (VPA-53)
+
+**Context:** An `exp/agentic` branch will run autonomous agents and never merge. CD deployed any `v*` tag and the `production` environment accepts any `v*` tag, so one tag on that branch would deploy it and run its migrations on prod.
+**Action:** A first CD job (`on-main`) fails unless the tagged or dispatched commit is an ancestor of `origin/main`. The global `git-guard` hook also blocks `gh api` writes to git refs, tags, and releases. Limit: a tag runs the `cd.yml` of its own commit, so a branch commit that edits `cd.yml` drops the check.

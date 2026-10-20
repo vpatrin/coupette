@@ -92,6 +92,8 @@ make format        # ruff + prettier
 
 Two deploy paths via [cd.yml](../.github/workflows/cd.yml):
 
+Both deploy only commits on `main`: the first job (`on-main`) fails the run unless the tagged or dispatched commit is an ancestor of `origin/main`. A tag runs the `cd.yml` stored in its own commit, so only commits that already contain this job are protected.
+
 ### Feature release (tag push)
 
 For user-facing changes. Tag on main, push the tag.

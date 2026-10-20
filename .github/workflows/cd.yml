@@ -25,9 +25,36 @@ env:
   IMAGE_TAG: ${{ github.event_name == 'workflow_dispatch' && format('sha-{0}', inputs.commit) || github.ref_name }}
 
 jobs:
+  # ── Guard: deploy only commits on main ──────────────────────
+
+  # A tag runs the cd.yml of its own commit, so a tag on a branch that never
+  # merges (e.g. exp/agentic) would deploy that branch and migrate prod.
+  on-main:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.commit || github.ref }}
+          fetch-depth: 0 # full history + origin/main for the ancestor check
+
+      - name: Fail unless the commit is on main
+        run: |
+          sha=$(git rev-parse HEAD)
+          if ! git rev-parse --verify --quiet origin/main >/dev/null; then
+            echo "::error::origin/main is missing from the checkout; cannot check $sha."
+            exit 1
+          fi
+          if ! git merge-base --is-ancestor "$sha" origin/main; then
+            echo "::error::$sha is not on main. CD deploys only commits on main."
+            exit 1
+          fi
+          echo "$sha is on main"
+
   # ── Build, scan, push ───────────────────────────────────────
 
   build-scan-push:
+    needs: [on-main]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: production
