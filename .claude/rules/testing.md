@@ -83,4 +83,4 @@ A test that can't fail is not a test — it's a comment with overhead.
 
 ## Auth tests
 
-`backend/tests/conftest.py` overrides `verify_auth` for every test (`_bypass_auth`) and mocks `get_db` with an `AsyncMock`: no backend test hits a real database. Route tests may keep both overrides. Tests of auth logic (JWT decode, `verify_auth`/`verify_admin`, OAuth callbacks, the waitlist gate) must remove the `verify_auth` override so the real code path runs (`_real_auth_client` in `backend/tests/test_auth.py`); mock the DB only at the session boundary. Known gap: no real-DB fixture yet (per-workspace DB, VPA-52).
+`backend/tests/conftest.py` overrides `verify_auth` for every test (`_bypass_auth`) and mocks `get_db` with an `AsyncMock`: no backend test hits a real database. Route tests may keep both overrides. Tests of auth logic (JWT decode, `verify_auth`/`verify_admin`, OAuth callbacks, the waitlist gate) must remove the `verify_auth` override so the real code path runs (`_real_auth_client` in `backend/tests/test_auth.py`); mock the DB only at the session boundary. Known gap: no real-DB fixture yet (`docs/ENGINEERING.md` backlog).

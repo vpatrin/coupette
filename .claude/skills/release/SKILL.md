@@ -21,9 +21,9 @@ You don't run `git commit`, `git tag`, `git push`, or `gh release create` — th
 
 ### Step 1 — Roadmap pre-flight
 
-Scan `docs/ROADMAP.md` for items intended for this release that are still `[ ]`. If found:
-- List them with file:line
-- Ask Victor: proceed anyway, mark done now, or wait?
+Find the phase this release ships in `docs/ROADMAP.md`. If its Linear project still has open issues meant for this release, or the release ends the phase and ROADMAP doesn't list it under Shipped:
+- List them (issue ids, or the ROADMAP file:line)
+- Ask Victor: proceed anyway, update now, or wait?
 
 If `git log <last-tag>..HEAD --oneline` is empty: STOP — "Nothing to release."
 

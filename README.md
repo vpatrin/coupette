@@ -70,14 +70,14 @@ See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for setup and local workflow.
 - [Architecture](docs/ARCHITECTURE.md) — system design, schema boundaries, key decisions
 - [Development & Operations](docs/DEVELOPMENT.md) — cold start, infra coupling, deploy, scraper ops, migrations
 - [Security](docs/SECURITY.md) — auth model, threat model, CI scanning
-- [Engineering](docs/ENGINEERING.md) — testing, observability, SRE, ML/MLOps
+- [Engineering](docs/ENGINEERING.md) — engineering targets, benchmarks, and backlog
 - [Scaling](docs/SCALING.md) — performance journey: measure, optimize, scale up, scale out
 - [Product Vision](docs/PRODUCT_VISION.md) — positioning, core loop, monetization hypotheses
 - [Roadmap](docs/ROADMAP.md) — product phases
-- [Decisions](docs/decisions/) — ADRs for key technical choices
+- [Decisions](docs/adrs/) — ADRs for key technical choices
 - [Changelog](CHANGELOG.md) — release history
 
-**Specs:** [Auth System](docs/specs/AUTH_SYSTEM.md) · [Chat System](docs/specs/CHAT_SYSTEM.md) · [Data Pipeline](docs/specs/DATA_PIPELINE.md) · [Recommendations](docs/specs/RECOMMENDATIONS.md) · [Telegram Bot](docs/specs/TELEGRAM_BOT.md)
+**Specs:** [Auth](docs/specs/auth.md) · [Chat](docs/specs/chat.md) · [Data Pipeline](docs/specs/scraper.md) · [Recommendations](docs/specs/rag.md) · [Telegram Bot](docs/specs/bot.md) · [Frontend](docs/specs/frontend.md)
 
 ## Legal
 
