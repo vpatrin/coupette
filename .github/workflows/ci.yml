@@ -2,7 +2,7 @@ name: CI
 
 on:
   pull_request:
-    branches: [main, "feat/*"]
+    branches: [main, "feat/*", "exp/*"]
 
 permissions:
   contents: read
@@ -455,13 +455,16 @@ jobs:
   # ── Summary gates ─────────────────────────────────────────────
 
   build:
-    needs: [build-backend, build-scraper, build-bot, build-frontend]
+    needs: [changes, build-backend, build-scraper, build-bot, build-frontend]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions: {}
     if: always()
     steps:
       - run: |
+          if [ "${{ needs.changes.result }}" != "success" ]; then
+            exit 1
+          fi
           for result in \
             "${{ needs.build-backend.result }}" \
             "${{ needs.build-scraper.result }}" \
@@ -473,13 +476,16 @@ jobs:
           done
 
   lint:
-    needs: [lint-backend, lint-scraper, lint-core, lint-bot, lint-dockerfiles, lint-frontend, lint-api-types]
+    needs: [changes, lint-backend, lint-scraper, lint-core, lint-bot, lint-dockerfiles, lint-frontend, lint-api-types]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions: {}
     if: always()
     steps:
       - run: |
+          if [ "${{ needs.changes.result }}" != "success" ]; then
+            exit 1
+          fi
           for result in \
             "${{ needs.lint-backend.result }}" \
             "${{ needs.lint-scraper.result }}" \
@@ -494,13 +500,16 @@ jobs:
           done
 
   test:
-    needs: [test-backend, test-scraper, test-bot, test-frontend, migrate]
+    needs: [changes, test-backend, test-scraper, test-bot, test-frontend, migrate]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions: {}
     if: always()
     steps:
       - run: |
+          if [ "${{ needs.changes.result }}" != "success" ]; then
+            exit 1
+          fi
           for result in \
             "${{ needs.test-backend.result }}" \
             "${{ needs.test-scraper.result }}" \
@@ -513,13 +522,16 @@ jobs:
           done
 
   security:
-    needs: [audit-core, audit-backend, audit-scraper, audit-bot, audit-frontend, gitleaks]
+    needs: [changes, audit-core, audit-backend, audit-scraper, audit-bot, audit-frontend, gitleaks]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions: {}
     if: always()
     steps:
       - run: |
+          if [ "${{ needs.changes.result }}" != "success" ]; then
+            exit 1
+          fi
           for result in \
             "${{ needs.audit-core.result }}" \
             "${{ needs.audit-backend.result }}" \
