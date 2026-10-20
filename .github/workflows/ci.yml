@@ -35,9 +35,12 @@ jobs:
       api_types: ${{ steps.filter.outputs.api_types }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2  # the PR merge commit and its base parent
       - uses: dorny/paths-filter@v4
         id: filter
         with:
+          list-files: json
           filters: |
             backend:
               - 'backend/**'
@@ -59,6 +62,41 @@ jobs:
             api_types:
               - 'scripts/dump_openapi.py'
               - 'Makefile'
+      # Catch-all: every changed file belongs to a filter above (so a job checks it) or to the
+      # allowlist. Protected paths and new top-level folders fail even when allowlisted.
+      # Inline on purpose: a script in the repo could be edited by the PR it checks.
+      - name: Every changed path is checked or allowlisted
+        env:
+          FILTER_OUTPUTS: ${{ toJSON(steps.filter.outputs) }}
+        run: |
+          python3 - <<'PY'
+          import json, os, re, subprocess, sys
+
+          def git(*args):
+              out = subprocess.run(["git", *args], capture_output=True, text=True, check=True).stdout
+              return [p for p in out.split("\0") if p]
+
+          changed = git("diff", "--name-only", "--no-renames", "-z", "HEAD^1", "HEAD")
+          top_level = set(git("ls-tree", "--name-only", "-z", "HEAD^1"))
+          outputs = json.loads(os.environ["FILTER_OUTPUTS"])
+          filtered = {p for key, value in outputs.items() if key.endswith("_files") for p in json.loads(value)}
+
+          PROTECTED = re.compile(r"\.claude/settings[^/]*\.json|\.claude/hooks/.*|\.mcp\.json|\.superset/.*|deploy/.*|secrets/.*|\.sops\.yaml")
+          ALLOWED = re.compile(r"(docs|ops|benchmarks|\.claude/(agents|skills|rules))/.*|.*\.md|CLAUDE\.md|\.gitignore|\.dockerignore")
+          problems = []
+          for path in changed:
+              if PROTECTED.fullmatch(path):
+                  problems.append(f"{path}: protected path, changed by Victor only")
+              elif "/" in path and path.split("/")[0] not in top_level:
+                  problems.append(f"{path}: new top-level folder")
+              elif path not in filtered and not ALLOWED.fullmatch(path):
+                  problems.append(f"{path}: no CI job checks it and it is not allowlisted")
+          for problem in problems:
+              print("::error::" + problem.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A"))
+          if problems:
+              sys.exit(1)
+          print(f"{len(changed)} changed path(s): all checked or allowlisted.")
+          PY
 
   # ── Lint ──────────────────────────────────────────────────────
 
