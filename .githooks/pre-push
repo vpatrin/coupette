@@ -6,8 +6,8 @@ set -e
 
 echo "🔍 Running pre-push checks..."
 
-# Local main is often stale in worktrees; compare against origin/main when it exists.
-BASE=$(git merge-base origin/main HEAD 2>/dev/null || echo main)
+# The local branch is often stale in worktrees; compare against origin/exp/agentic when it exists.
+BASE=$(git merge-base origin/exp/agentic HEAD 2>/dev/null || echo exp/agentic)
 
 echo ""
 echo "📦 Checking lock files..."
