@@ -27,11 +27,9 @@ When pip-audit or Trivy flags a transitive dep:
 2. If the fix requires a major version of a transitive dep (e.g. starlette 1.x), evaluate the upgrade path before forcing it
 3. Only when the fix is blocked by a hard dependency constraint, add the CVE to the matching ignore file — `.pip-audit-ignore` for pip-audit findings (Python deps), `.trivyignore` for Trivy findings (Docker images); a CVE flagged by both scanners goes in both. Always include a comment explaining why and a reference to the blocking dep
 
-## Dependabot auto-merge policy
+## Dependabot
 
-- **semver-patch / minor** — auto-merged unattended via `.github/workflows/dependabot-auto-merge.yml` (arms `gh pr merge --auto --squash` on open). The `/garden` gardener re-arms any that were red on open and only went green after a rebase.
-- **semver-major** — never auto-merged. The gardener emits a **decision card** (breaking changes + blast radius + recommendation) in its digest; Victor approves and merges manually with `gh pr merge --squash`. Branch protection can't gate by update-type — it's per-branch and `main` requires no review — so the human gate is the decision card, not a required GitHub review.
-- **Gardener fix PRs** (label `gardener`) — the CI-unblocking PRs that `/garden` opens itself (lockfiles, ignore files, Docker/CI config, no application code). `/garden` arms `gh pr merge --auto --squash` on them once no check fails. Checklist in `.claude/agents/gardener.md` → Gardener fix PRs.
+Dependabot PRs target `main` and belong to the main lane. The crew never touches them. A dependency the crew needs goes in through a ticket (`poetry add`, `yarn add`). A new framework or service is a stack change: ADR first (charter rule 7).
 
 ## Frontend (Yarn)
 

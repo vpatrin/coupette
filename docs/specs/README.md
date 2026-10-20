@@ -2,7 +2,7 @@
 
 Per-subsystem deep dives — how each part of Coupette actually works. Read before editing the subsystem.
 
-For planned features see [`../ROADMAP.md`](../ROADMAP.md). For decisions with rejected alternatives see [`../adrs/`](../adrs/). For per-pipeline-run archaeology see [`../session-logs/`](../session-logs/).
+For decisions with rejected alternatives see [`../adrs/`](../adrs/).
 
 | Spec | Code surface | Subsystem |
 |---|---|---|

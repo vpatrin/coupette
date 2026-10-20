@@ -41,4 +41,3 @@ Env vars, secrets, prod gotchas, things that page someone at 3am.
 
 - **ADRs:** `docs/adrs/NNNN-*.md`, etc.
 - **Agent rules (imperative form):** [`.claude/rules/<name>.md`](../../.claude/rules/<name>.md)
-- **Recent session logs:** look up via [`../session-logs/INDEX.md`](../session-logs/INDEX.md)

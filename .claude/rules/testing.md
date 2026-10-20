@@ -58,7 +58,7 @@ Assert what a user or caller observes. Never assert internal state, intermediate
 | Core     | none             | pytest-cov |
 | Frontend | no threshold yet | Vitest     |
 
-Frontend threshold set at ~60% once component extraction is complete (tracked in `docs/ENGINEERING.md`).
+Frontend threshold set at ~60% once component extraction is complete.
 
 ## 5. Tests must be falsifiable
 
@@ -76,11 +76,11 @@ A test that can't fail is not a test — it's a comment with overhead.
 
 ## 6. Test-first
 
-- In `/feature`, the `red-test-writer` agent writes one failing test per acceptance criterion, plus the ticket's edge case that will bite, before any code exists — from the ACs and the planned interfaces only. The main session re-runs them and commits them alone as the **red commit**.
-- The coder makes the red tests pass and never weakens or deletes one. Only exception: renaming a guessed interface (path, schema, prop), recorded in the PR's Decisions section.
+- In the worker's crew arm, the `red-test-writer` agent writes one failing test per acceptance criterion, plus the ticket's edge case that will bite, before any code exists — from the ACs and the planned interfaces only. The worker re-runs them and commits them alone as the **red commit**. In the solo arm, the `solo-builder` writes and commits them itself, before any code.
+- The coder makes the red tests pass and never weakens or deletes one. Only exception: renaming a guessed interface (path, schema, prop), recorded in the commit body.
 - Bug tickets: the red test is the reproduction.
-- **Diff coverage ≥ 80%** on new and changed Python lines — total coverage can stay high while new code is untested. Run `make coverage-<service>` (writes `coverage.xml`), then from the service dir `poetry run diff-cover coverage.xml --compare-branch=origin/main --fail-under=80`. Frontend: no tooled threshold yet (§4) — cover every new branch.
+- **Diff coverage ≥ 80%** on new and changed Python lines — total coverage can stay high while new code is untested. Run `make coverage-<service>` (writes `coverage.xml`), then from the service dir `poetry run diff-cover coverage.xml --compare-branch=origin/exp/agentic --fail-under=80`. Frontend: no tooled threshold yet (§4) — cover every new branch.
 
 ## Auth tests
 
-`backend/tests/conftest.py` overrides `verify_auth` for every test (`_bypass_auth`) and mocks `get_db` with an `AsyncMock`: no backend test hits a real database. Route tests may keep both overrides. Tests of auth logic (JWT decode, `verify_auth`/`verify_admin`, OAuth callbacks, the waitlist gate) must remove the `verify_auth` override so the real code path runs (`_real_auth_client` in `backend/tests/test_auth.py`); mock the DB only at the session boundary. Known gap: no real-DB fixture yet (`docs/ENGINEERING.md` backlog).
+`backend/tests/conftest.py` overrides `verify_auth` for every test (`_bypass_auth`) and mocks `get_db` with an `AsyncMock`: no backend test hits a real database. Route tests may keep both overrides. Tests of auth logic (JWT decode, `verify_auth`/`verify_admin`, OAuth callbacks, the waitlist gate) must remove the `verify_auth` override so the real code path runs (`_real_auth_client` in `backend/tests/test_auth.py`); mock the DB only at the session boundary. Known gap: no real-DB fixture yet.

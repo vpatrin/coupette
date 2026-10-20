@@ -5,9 +5,9 @@ paths:
   - "CHANGELOG.md"
 ---
 
-# Documentation, ADRs, Release
+# Documentation and ADRs
 
-> Read whenever editing docs, README, CHANGELOG, or preparing a release.
+> Read whenever editing docs or the README.
 
 ## Documentation rules
 
@@ -18,21 +18,15 @@ paths:
 - Update docs when architecture changes, not as a standalone task
 - README lists all docs with a one-liner
 
-## Documentation boundaries (avoid mis-filing)
+## Where plans live
 
-| Document | Repo | Scope |
-|---|---|---|
-| `docs/ROADMAP.md` | coupette | Product phases + cross-cutting UX/CD pipeline |
-| `docs/ENGINEERING.md` backlog | coupette | App-level engineering quality |
-| `docs/ROADMAP.md` | infra | Platform infrastructure |
-
-User-noticeable change → coupette ROADMAP. Builds-better-not-user-visible → ENGINEERING. VPS / shared services → infra ROADMAP.
+Product direction, features and their tickets live in Linear (team EXP), not in `docs/`. The crew's running state lives in `ops/` (`STATUS.md`, the journal, `tasks.jsonl`). `ops/inherited/` is Victor's past bets: only the strategist reads it (its README says how).
 
 ## ADRs (`docs/adrs/`)
 
 Format: Context, Options, Decision, Rationale, Consequences. `NNNN-short-description.md`, 30-50 lines. Capture *why*, not *how*. Expect 5–15 a year.
 
-**Write one only when all 4 tests pass** — otherwise the decision goes in the PR's Decisions section:
+**Write one only when all 4 tests pass** — otherwise the decision goes in the commit body and the journal's Decisions line. A stack change always needs one (charter rule 7).
 
 1. Real alternatives existed and were considered — a framework convention is not a decision.
 2. Hard to reverse or expensive to change later: schema shape, public API contract, dependency choice, retrieval architecture, auth strategy. Not internal refactors, naming, or one-off tuning.
@@ -43,7 +37,7 @@ Format: Context, Options, Decision, Rationale, Consequences. `NNNN-short-descrip
 
 ## Keeping docs current
 
-The coding session updates docs in the same PR as the behavior change; the reviewer blocks on a stale doc, rule, or spec.
+The builder updates docs in the same PR as the behavior change. A spec that no longer matches the code is an Important review finding: other agents plan from it.
 
 Every doc in `docs/` has one update trigger, listed here and nowhere else. A doc with no trigger gets merged into another one or deleted.
 
@@ -55,45 +49,21 @@ Every doc in `docs/` has one update trigger, listed here and nowhere else. A doc
 | `specs/` | A contract changes |
 | `SECURITY.md` | An auth or risky-lane change |
 | `DEVELOPMENT.md` | A dev tooling change |
-| `CHANGELOG.md` (repo root) | Every user-visible PR |
-| `PRODUCT_VISION.md` | The product direction changes (rare) |
-| `ROADMAP.md` | A phase starts or ends |
-| `ENGINEERING.md` | A target changes, or an engineering idea is added or done (delete its line) |
 | `SCALING.md` | A tier changes |
-| `session-logs/` | None: frozen history |
+| `ops/journal/` (repo root) | Every ticket (the worker appends its entry) |
+| `ops/STATUS.md` (repo root) | Every wake (the lead, never committed) |
+| `ops/inherited/` (repo root) | None: frozen past bets |
 
 A folder's `README.md` and template follow the folder's trigger.
 
-- `docs/specs/<subsystem>.md` — a contract here means a public contract, data flow, operational gotcha (env var, secret, ordering), or file map. Edit only the affected sections; if more than ~30% of a spec is stale, flag it in the PR instead of rewriting it.
+- `docs/specs/<subsystem>.md` — a contract here means a public contract, data flow, operational gotcha (env var, secret, ordering), or file map. Edit only the affected sections; if more than ~30% of a spec is stale, say so in the journal's Friction line; the lead files an `improvement` ticket to rewrite it.
 - `.claude/rules/*.md` — when a convention changes. Rules hold instructions and link to specs; they never restate them.
-- `CHANGELOG.md` and `docs/ROADMAP.md` — see below.
 - When a change makes a fixed behavior conditional (shared → shared by default), grep `.claude/skills .claude/rules docs` for sentences that still state the old behavior as a fact.
 
-## Versioning + Release
+## No releases
 
-Single product version via git tags. No version bumps in `pyproject.toml`.
-
-- **Semver**: PATCH for fixes, MINOR for new user-facing capabilities, MAJOR when it matters (not now)
-- **Tag on main at deploy time:** Victor runs it; `/release` prints the exact commands. Cadence: after each shipped feature or milestone.
-- **CHANGELOG.md** at root, [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format
-
-## Changelog workflow
-
-- Every PR that changes deployed behavior: add one line under `[Unreleased]` in the right category (part of `/pr` flow)
-- Internal-only changes (CI, refactors, tests, docs, dependabot) stay out
-- At deploy time: promote `[Unreleased]` → `[x.y.z] - YYYY-MM-DD`, add fresh `[Unreleased]`
-- Mental test: would a user notice the change? Yes → changelog. No → skip.
-
-Categories: `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`.
-
-## Deploy issue template
-
-Every version tag + deploy requires a dedicated Linear issue (team `Vpatrin`, labels `devops` + `chore`) with: pre-deploy checks, env var changes, infra prerequisites, migration order, post-deploy bootstrap, systemd updates, verification, rollback plan. The full body template lives in `.claude/skills/release/SKILL.md` (step 5).
+`exp/agentic` never ships: no git tags, no version bumps, no deploy issues. `CHANGELOG.md` is the main lane's release history; the crew leaves it alone. What changed is in the journal and the PRs.
 
 ## Decisions, not session logs
 
-No new session logs. Decisions live in the ticket (before code), then in the body of the commit that made each one (during code); `/pr` compiles them into the PR's Decisions section. Squash commits stay title-only and their `(#NNN)` links to the PR. The logs in `docs/session-logs/` stay as history.
-
-## Roadmap maintenance
-
-`docs/ROADMAP.md` holds phases and cross-cutting sections, one line or one paragraph per capability, with no per-issue checkboxes: issue progress lives in the phase's Linear project. A PR that starts a phase marks it *(in progress)* under Next; a PR that ends one moves it to Shipped. Only add meaningful capabilities — roadmaps are strategic, not operational. `/pr` checks it.
+Decisions live in the ticket (before code), then in the body of the commit that made each one (during code), then in the journal entry's Decisions line. Squash commits stay title-only and their `(#NNN)` links to the PR.

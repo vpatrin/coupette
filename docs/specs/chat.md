@@ -134,4 +134,3 @@ Rendered as clickable prompt chips; on click, submitted as a regular message.
 - **ADRs:** [`0005-rag-pipeline.md`](../adrs/0005-rag-pipeline.md), [`0007-sommelier-memory-architecture.md`](../adrs/0007-sommelier-memory-architecture.md)
 - **Agent rules (imperative form):** [`.claude/rules/rag.md`](../../.claude/rules/rag.md), [`.claude/rules/llm.md`](../../.claude/rules/llm.md)
 - **Related specs:** [`rag.md`](rag.md) (the retrieval pipeline this calls)
-- **Recent session logs:** look up via [`../session-logs/INDEX.md`](../session-logs/INDEX.md)
