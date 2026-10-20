@@ -21,6 +21,9 @@
 -include .env.local
 export
 
+# Dev server port; a worktree's run driver passes its own slot port.
+BACKEND_PORT ?= 8001
+
 # --- Help ---
 
 help:
@@ -62,7 +65,7 @@ dev:
 	./.superset/run.sh
 
 dev-backend:
-	cd backend && poetry run uvicorn backend.app:app --reload --port 8001
+	cd backend && poetry run uvicorn backend.app:app --reload --port $(BACKEND_PORT)
 
 dev-frontend:
 	cd frontend && yarn dev
