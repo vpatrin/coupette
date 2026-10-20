@@ -63,10 +63,6 @@ Linear project: *Weekly Digest*. A weekly, personalized summary of new and resto
 - Dark / light mode toggle — dark-only today; Tailwind `dark:` variant, `prefers-color-scheme` as the default
 - Infinite scroll — on search results and the journal, with TanStack Query's `useInfiniteQuery` and an `IntersectionObserver` sentinel
 
-### Dev tooling
-
-- MCP server / Sonnet + tools — expose Coupette data to Claude Code and Claude Desktop through MCP (`search_wines`, `get_product`, `get_user_watches`), then benchmark Haiku RAG against Sonnet + tools
-
 ### DevOps & CD pipeline
 
-Shipped: weekly DB backups with 30-day retention, Trivy scans in CI, build + scan + push to GHCR and automated deploy on tag push, a GitHub Release with the changelog, and a production environment with a main-only policy, tag protection, and environment-scoped secrets. Process: [DEVELOPMENT.md](DEVELOPMENT.md#deploy). Open platform work lives in the [infra ROADMAP](https://github.com/vpatrin/infra/blob/main/docs/ROADMAP.md); the engineering backlog lives in [ENGINEERING.md](ENGINEERING.md#backlog).
+Shipped: weekly DB backups with 30-day retention, Trivy scans in CI, build + scan + push to GHCR and automated deploy on tag push, a GitHub Release with the changelog, and a production environment scoped to `main` and `v*` tags, with environment-scoped secrets. Process: [DEVELOPMENT.md](DEVELOPMENT.md#deploy). Open platform work lives in the [infra ROADMAP](https://github.com/vpatrin/infra/blob/main/docs/ROADMAP.md); the engineering backlog lives in [ENGINEERING.md](ENGINEERING.md#backlog).

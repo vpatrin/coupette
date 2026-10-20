@@ -32,7 +32,7 @@ One line per area; the linked doc owns the detail.
 | Uptime | 99% | Uptime Kuma (infra repo) |
 | Data freshness | Scraper completes weekly; data < 8 days stale | Not measured |
 | Bot | Ack < 2 s | Not measured |
-| DB pool | `pool_size=3`, `max_overflow=2` per engine, sized for a 4 GB VPS that shares Postgres | Backend reads `DB_POOL_SIZE` / `DB_MAX_OVERFLOW`, default 10 / 10 (`core/config/settings.py`); `core/db/base.py:create_session_factory` passes neither (#314) |
+| DB pool | Scraper engine: `pool_size=3`, `max_overflow=2`, sized for a 4 GB VPS that shares Postgres. The backend keeps 10 / 10 for parallel facets queries ([SCALING.md](SCALING.md#2026-03-21--connection-pool-tuning-509)) | `core/db/base.py:create_session_factory` passes no pool args, so SQLAlchemy's 5 / 10 applies (#314) |
 | `/metrics` | Separate internal port | Served on the app port (`backend/app.py`) (#501) |
 
 ---
@@ -130,9 +130,10 @@ Ideas worth revisiting, one line each. Not scheduled.
 - **SSE chat streaming** — worth doing: the UX rule "Stream, don't spin" (`.claude/rules/frontend.md`) asks for token-by-token AI responses, and `send_message` waits for the full Claude reply. See [SCALING.md](SCALING.md#sse-streaming).
 - **Playwright E2E** — one test per critical journey (login → search → watch, a chat message, a logged tasting) against a real server.
 - **Idempotency keys** — an `Idempotency-Key` header cached 24 h in Redis on `POST /tastings` and `POST /chat/sessions`; until then, a disabled submit button covers most double submits.
-- **Background task queue** — procrastinate or pgqueuer on Postgres (no new infra) for fire-and-forget jobs such as Haiku signal extraction; a stepping stone before Temporal. See [SCALING.md](SCALING.md#async-task-queue).
+- **Background task queue** — fire-and-forget jobs such as Haiku signal extraction, off the request cycle; a stepping stone before Temporal. Tool choice: [SCALING.md](SCALING.md#async-task-queue).
 - **Prompt versioning + LLM observability** — log a prompt version hash with every LLM call in `recommendation_logs`; LangSmith or Braintrust to browse traces and compare prompt versions.
 - **Load testing phases 0–1** — see [Load testing](#load-testing).
-- **Embedding caching** — cache query embeddings in Redis by content hash, to cut OpenAI cost and 100–200 ms of search latency. See [SCALING.md](SCALING.md#embedding-cache).
+- **Embedding caching** — cache query embeddings by normalized query text, to cut OpenAI cost and search latency. Design: [SCALING.md](SCALING.md#embedding-cache).
+- **MCP server / Sonnet + tools** — expose Coupette data to Claude Code and Claude Desktop through MCP (`search_wines`, `get_product`, `get_user_watches`), then benchmark Haiku RAG against Sonnet + tools.
 
 **Someday:** Temporal (durable workflows) · NATS JetStream (event fan-out for notifications) · WebSockets (in-app notifications) · OpenTelemetry (end-to-end traces) · Sentry (error tracking) · DB read replica ([SCALING.md](SCALING.md#read-replica)).
