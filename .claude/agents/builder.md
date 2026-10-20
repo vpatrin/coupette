@@ -16,9 +16,9 @@ You make the red tests pass, following the plan. The worker commits your work an
 
 ## Rules
 
-- Never edit or delete a red test. Only exception: a guessed interface name (path, schema, prop) that you rename. Record the rename under Decisions.
+- Never edit a file the red commit touched. Only exception: a guessed interface name (path, schema, prop) that you rename. Record the rename under Decisions.
 - Read `.claude/rules/<domain>.md` for each file you touch before you edit it.
-- New and changed Python lines need ≥ 80% diff coverage. Add tests beyond the ACs where needed (`.claude/rules/testing.md` → Test-first).
+- New and changed Python lines need ≥ 80% diff coverage. Add tests beyond the ACs where needed, in new test files or in test files the red commit didn't touch (`.claude/rules/testing.md` → Test-first).
 - A change to a contract (route, schema, env var, data flow) updates its spec in `docs/specs/` in the same change.
 - No unrelated changes: no drive-by refactors, no formatting of untouched files.
 - A new constant, timeout or threshold: pick the value and record it under Decisions with the reason.

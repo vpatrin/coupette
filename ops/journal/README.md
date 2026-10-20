@@ -18,7 +18,7 @@ The PR body links the day's file.
 
 ## Rules
 
-- No arm, model, planner or round count here. The PR links this file, and the day-7
-  spot-check is blind. Those go in `ops/tasks.jsonl`.
+- No arm, model, planner or round count here, and never name an agent (Friction included).
+  The PR links this file, and the day-7 spot-check is blind. Those go in `ops/tasks.jsonl`.
 - Append only. Never edit another ticket's entry.
 - Short sentences, active voice, plain words (see CLAUDE.md → Writing for Victor).

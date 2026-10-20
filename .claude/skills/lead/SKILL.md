@@ -11,7 +11,7 @@ Work in the clone `~/coupette-exp`, on `exp/agentic`. Use absolute paths for cre
 
 Doors: `gh`, `git`, `~/.agent-harness/bin/exp-ws`, `~/.agent-harness/bin/exp-docker`, Linear team EXP. A guard denies a command? Don't retry it in another form. Note it in STATUS and end the wake (step 9).
 
-Note the run start time. The gate ends every run at 3 hours.
+Note the run start time. The gate blocks every tool call once the run is 3 hours old, so at 2 h 40 stop whatever you are doing and go to step 9. A worker still running is safe: it keeps going after you exit, and the next wake picks it up (step 1.6).
 
 ## 1. Orient
 
@@ -60,7 +60,7 @@ Up to 3 tickets per wake, one at a time. Don't start one after the run is 2 hour
    - Write the prompt to `/private/tmp/exp-lead/EXP-NN.prompt` (`mkdir -p /private/tmp/exp-lead` first): `/worker ticket EXP-NN arm=<arm> lane=<lane> models=<models> feature=<EXP-MM|none>`
    - `~/.agent-harness/bin/exp-ws create EXP-NN --prompt-file /private/tmp/exp-lead/EXP-NN.prompt`
    - Find the workspace in `exp-ws list` by its branch `exp-task/EXP-NN`; note its id and worktree path. Move the issue to In Progress.
-3. **Wait.** `python3 .claude/skills/lead/wait_done.py <worktree>` waits up to 9 minutes; repeat it. Every 30 minutes, read the worker's terminal. No `DONE` after 2.5 hours: park it (step 6).
+3. **Wait.** `python3 .claude/skills/lead/wait_done.py <worktree>` waits up to 9 minutes; repeat it. Every 30 minutes, read the worker's terminal. The run reaches 2 h 40: go to step 9 and leave the worker running.
 4. **Read** `<worktree>/.crew/result.json`.
    - `ready`: run `/pr` for the ticket, then `exp-ws retag <id> review` and comment the PR link on the issue.
    - `parked` or `failed`: go to step 6.

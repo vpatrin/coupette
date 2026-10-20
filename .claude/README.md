@@ -15,7 +15,7 @@ flowchart TD
     F --> P[pick a ticket: bugs first]
     P --> W[exp-ws create → worker workspace]
     W --> DONE[.crew/result.json + .crew/DONE]
-    DONE -- ready --> PR[/pr into exp/agentic/] --> CI{CI}
+    DONE -- ready --> PR["/pr into exp/agentic"] --> CI{CI}
     CI -- green --> M[merge the reviewed SHA · tag merged]
     CI -- red once --> REP[repair worker session] --> DONE
     DONE -- parked --> PK[comment · tag parked]
@@ -31,9 +31,9 @@ flowchart LR
     SET[setup §2] --> ARM{arm}
     ARM -- crew --> PL[planner] --> RT[red-test-writer<br/>red commit] --> BU[builder]
     ARM -- solo --> SB[solo-builder<br/>red commit, then code]
-    BU --> CR[/code-review high/]
+    BU --> CR["/code-review high"]
     SB --> CR
-    CR --> SR[/security-review/]
+    CR --> SR["/security-review"]
     SR -- Important or real finding --> RND[round: back to the builder] --> CR
     SR -- clean --> J[journal + tasks row] --> RES[result.json → DONE]
 ```

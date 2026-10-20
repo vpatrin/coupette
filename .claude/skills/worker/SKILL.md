@@ -28,6 +28,7 @@ Run `ops/CONTRACTS.md` §2 exactly, from the worktree root:
 ```bash
 ln -sf ~/coupette-exp/.env .env
 ~/.agent-harness/bin/exp-docker db up > .env.local
+grep -q '^DB_PORT=' .env.local                          # an empty .env.local would send make to slot 0
 for svc in core backend scraper bot; do (cd $svc && poetry install); done
 (cd frontend && yarn install --frozen-lockfile)
 make migrate && make seed
@@ -50,7 +51,7 @@ Fetch EXP-NN from Linear: title, ACs, the edge case that will bite, `Lane:`. The
 2. **red-test-writer** — give it the ACs, the edge case and the planner's Interfaces and Tests, nothing else. Rerun its tests yourself: each must fail on an assertion, or on an import of an interface the plan marks new. Commit the test files alone: `test: red tests for EXP-NN`. That SHA is the red commit. No testable behavior (docs or config only)? Use `Red: none — <reason>`.
 3. **builder** — give it the ACs, the plan, the red SHA and the test names. Then check its work yourself:
    - rerun its checks
-   - `git diff <red> -- <red test files>` is empty, except a rename it recorded
+   - `git diff <red> -- $(git diff --name-only <red>~1 <red>)` is empty: no file the red commit touched changed, except a rename it recorded
    - commit: `<type>: <ticket title> (EXP-NN)`, with its Decisions in the commit body
 
 **Solo arm** (`arm=solo`). Spawn one **solo-builder** with the ticket. It commits the red tests, then the code. Check that the red commit holds test files only, then rerun its checks.
@@ -104,7 +105,7 @@ Stops:
 
 The lead starts this in the ticket's workspace when CI failed (`reason=ci`) or the branch is behind `exp/agentic` (`reason=behind`).
 
-1. `rm -f .crew/DONE`. Read `.crew/result.json` for the last `reviewed_sha` and the arm. Redo the setup's `exp-docker db up` line.
+1. `rm -f .crew/DONE`. Read `.crew/result.json` for the last `reviewed_sha` and the arm. Redo the setup's `exp-docker db up` and `grep` lines.
 2. Fix:
    - `ci`: read the failed jobs (`gh run view <run id> --log-failed | tail -200`). The builder (solo arm: solo-builder) fixes them; commit `fix: repair CI (EXP-NN)`.
    - `behind`: `git fetch origin exp/agentic && git merge --no-edit origin/exp/agentic`. Merge, never rebase: a rebase needs a force push. The builder resolves conflicts; rerun the checks.

@@ -34,7 +34,7 @@ Each doc has clear consumers. Most are read on demand rather than auto-loaded.
 | `SECURITY.md` | worker on the risky lane · `/security-review` context | Auth + API diffs |
 | `specs/<x>.md` | planner (linked from the matching rule) | When touching subsystem X |
 | `ARCHITECTURE.md` | planner (cross-cutting changes) · strategist's stack review | Big-picture work |
-| `DEVELOPMENT.md` | worker (setup, migrations) | Migration work, local setup |
+| `DEVELOPMENT.md` | planner (dev tooling background) | Local setup; in the exp lane, `ops/CONTRACTS.md` §2 and `rules/migrations.md` win |
 | `SCALING.md` | planner on performance work | Operational events |
 | `adrs/<NNNN>-*.md` | planner when the touched rule links one | Read once, baseline context |
 
