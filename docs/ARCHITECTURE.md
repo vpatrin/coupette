@@ -111,7 +111,7 @@ The scraper writes to `products`, the backend reads from `products` and manages 
 
 ### pgvector for RAG retrieval
 
-Vector embeddings stored alongside relational data in the same PostgreSQL instance. Hybrid queries (vector similarity + SQL filters for category, price, country, availability) in one statement. No extra service, no vendor lock-in. See [ENGINEERING.md](ENGINEERING.md#ai--ml) for the full pipeline.
+Vector embeddings stored alongside relational data in the same PostgreSQL instance. Hybrid queries (vector similarity + SQL filters for category, price, country, availability) in one statement. No extra service, no vendor lock-in. See [specs/rag.md](specs/rag.md) for the full pipeline.
 
 ### Separate schemas per boundary
 

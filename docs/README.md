@@ -2,9 +2,9 @@
 
 ## Start here
 
-- [architecture.md](architecture.md) — system design in 1 page
-- [development.md](development.md) — local setup, dev workflow
-- [product-vision.md](product-vision.md) — what we're building, why
+- [ARCHITECTURE.md](ARCHITECTURE.md) — system design in 1 page
+- [DEVELOPMENT.md](DEVELOPMENT.md) — local setup, dev workflow
+- [PRODUCT_VISION.md](PRODUCT_VISION.md) — what we're building, why
 
 ## Subsystem deep dives
 
@@ -13,8 +13,8 @@
 
 ## Operations
 
-- [security.md](security.md) — threat model, controls, posture
-- [scaling.md](scaling.md) — operational scaling notes
+- [SECURITY.md](SECURITY.md) — threat model, controls, posture
+- [SCALING.md](SCALING.md) — operational scaling notes
 
 ## Decisions & history
 
@@ -23,8 +23,8 @@
 
 ## Planning
 
-- [roadmap.md](roadmap.md) — phases + cross-cutting work
-- [engineering.md](engineering.md) — engineering quality backlog
+- [ROADMAP.md](ROADMAP.md) — phases + cross-cutting work
+- [ENGINEERING.md](ENGINEERING.md) — engineering targets and backlog
 
 ---
 
@@ -34,14 +34,14 @@ Each doc has clear consumers. Most are read on demand rather than auto-loaded.
 
 | Doc | Who reads it | When |
 |---|---|---|
-| `roadmap.md` | `/breakdown` · `/release` · `/status` | Planning (phase context) |
-| `security.md` | `/feature` (risky lane) · reviewer (auth/user-data diffs) | Auth + API diffs |
+| `ROADMAP.md` | `/breakdown` · `/release` · `/status` | Planning (phase context) |
+| `SECURITY.md` | `/feature` (risky lane) · reviewer (auth/user-data diffs) | Auth + API diffs |
 | `specs/<x>.md` | `/feature` recon (linked from the matching rule) | When touching subsystem X |
-| `architecture.md` | `/feature` recon (cross-cutting changes) · humans | First read, big-picture work |
-| `development.md` | `/feature` (migrations) · new contributors | Migration work, local setup |
-| `engineering.md` | `/breakdown` (avoid duplicate work) · `/status` | Planning |
-| `scaling.md` | `/status --health` · ops at 3am | Operational events |
-| `product-vision.md` | Humans only | Interview / portfolio |
+| `ARCHITECTURE.md` | `/feature` recon (cross-cutting changes) · humans | First read, big-picture work |
+| `DEVELOPMENT.md` | `/feature` (migrations) · new contributors | Migration work, local setup |
+| `ENGINEERING.md` | `/breakdown` (avoid duplicate work) · `/status` | Planning |
+| `SCALING.md` | `/status --health` · ops at 3am | Operational events |
+| `PRODUCT_VISION.md` | Humans only | Interview / portfolio |
 | `adrs/<NNNN>-*.md` | `/feature` when the touched rule links one | Read once, baseline context |
 
 ## Where else docs live (not in `docs/`)

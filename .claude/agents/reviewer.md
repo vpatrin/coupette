@@ -42,7 +42,7 @@ From `/feature`, the prompt gives you: the ticket id and acceptance criteria ver
 
 ### Known gaps — don't write hollow checks
 
-No audit log for admin actions · no OAuth event logging · no log redaction filter · no per-user/IP login rate limit · no tracing (Prometheus only) · no real-DB test fixture (VPA-52).
+No audit log for admin actions · no OAuth event logging · no log redaction filter · no per-user/IP login rate limit · no tracing (Prometheus only) · no real-DB test fixture (`docs/ENGINEERING.md` backlog).
 
 ## Modes (`/review` arguments)
 

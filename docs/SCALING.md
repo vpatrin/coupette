@@ -339,7 +339,7 @@ Each tier should be validated with load tests before and after changes. Tooling,
 ## Related Documents
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) — system design, scaling path summary table
-- [ADR 0001: Modular Monolith](decisions/0001-modular-monolith.md) — why the architecture supports horizontal scaling
-- [ADR 0005: RAG Pipeline](decisions/0005-rag-pipeline.md) — LLM and vector search performance characteristics
+- [ADR 0001: Modular Monolith](adrs/0001-modular-monolith.md) — why the architecture supports horizontal scaling
+- [ADR 0005: RAG Pipeline](adrs/0005-rag-pipeline.md) — LLM and vector search performance characteristics
 - [ENGINEERING.md](ENGINEERING.md#sre) — SRE backlog (SLOs, health endpoints)
 - [Infra ROADMAP](https://github.com/vpatrin/infra/blob/main/docs/ROADMAP.md) — k3s migration, platform infrastructure
