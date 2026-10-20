@@ -22,7 +22,7 @@ Pipeline contract, file map, token budget, degradation cascade: [`docs/specs/rag
 1. **No SAQ impersonation** in any prompt (also in CLAUDE.md).
 2. **Embedding model or dimension change = catalog-wide re-embedding cost.** Surface the cost (catalog size × cost per embedding) before changing `core/embedding_constants.py` or the embedding model. Wait for explicit go-ahead.
 3. **Prompt-caching the static portion.** Add `cache_control` once a prompt's static prefix (tools + system) exceeds the model's minimum cacheable length (4096 tokens on Haiku 4.5) — below it the marker is a silent no-op. Confirm with `usage.cache_read_input_tokens`.
-4. **Token discipline.** Intent parsing is the highest-volume surface (every chat message, largest prompt). Measure tokens before adding context. Report the delta in the PR's Decisions section.
+4. **Token discipline.** Intent parsing is the highest-volume surface (every chat message, largest prompt). Measure tokens before adding context. Report the delta in the commit body.
 5. **Cold start.** Retrieval must work for users with no behavioral signal — intent + similarity only.
 
 ## Eval gate
