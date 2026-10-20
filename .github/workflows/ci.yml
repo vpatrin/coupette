@@ -75,7 +75,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           poetry-version: ${{ env.POETRY_VERSION }}
           install-args: --only dev
-      - run: make lint-backend
+      - run: cd backend && poetry run ruff check . && poetry run ruff format --check .
 
   lint-scraper:
     needs: [changes]
@@ -90,7 +90,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           poetry-version: ${{ env.POETRY_VERSION }}
           install-args: --only dev
-      - run: make lint-scraper
+      - run: cd scraper && poetry run ruff check . && poetry run ruff format --check .
 
   lint-core:
     needs: [changes]
@@ -105,7 +105,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           poetry-version: ${{ env.POETRY_VERSION }}
           install-args: --only dev
-      - run: make lint-core
+      - run: cd core && poetry run ruff check . && poetry run ruff format --check .
 
   lint-bot:
     needs: [changes]
@@ -120,7 +120,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           poetry-version: ${{ env.POETRY_VERSION }}
           install-args: --only dev
-      - run: make lint-bot
+      - run: cd bot && poetry run ruff check . && poetry run ruff format --check .
 
   lint-dockerfiles:
     needs: [changes]
@@ -155,7 +155,7 @@ jobs:
           cache: yarn
           cache-dependency-path: frontend/yarn.lock
       - run: cd frontend && yarn --frozen-lockfile
-      - run: make lint-frontend
+      - run: cd frontend && yarn eslint . && yarn tsc --noEmit && yarn prettier --check src/
 
   # Generated frontend types must match the backend's OpenAPI schema (make types).
   lint-api-types:
@@ -176,7 +176,7 @@ jobs:
           cache: yarn
           cache-dependency-path: frontend/yarn.lock
       - run: cd frontend && yarn --frozen-lockfile
-      - run: make types-check
+      - run: make types-check  # stays on make: OpenAPI dump, codegen, then a diff
 
   # ── Test ──────────────────────────────────────────────────────
 
@@ -192,7 +192,7 @@ jobs:
           service: backend
           python-version: ${{ env.PYTHON_VERSION }}
           poetry-version: ${{ env.POETRY_VERSION }}
-      - run: make coverage-backend
+      - run: cd backend && poetry run pytest --cov --cov-branch --cov-report=xml --cov-report=term -v
       - uses: codecov/codecov-action@v7
         with:
           files: backend/coverage.xml
@@ -211,7 +211,7 @@ jobs:
           service: scraper
           python-version: ${{ env.PYTHON_VERSION }}
           poetry-version: ${{ env.POETRY_VERSION }}
-      - run: make coverage-scraper
+      - run: cd scraper && poetry run pytest --cov --cov-branch --cov-report=xml --cov-report=term -v
       - uses: codecov/codecov-action@v7
         with:
           files: scraper/coverage.xml
@@ -230,7 +230,7 @@ jobs:
           service: bot
           python-version: ${{ env.PYTHON_VERSION }}
           poetry-version: ${{ env.POETRY_VERSION }}
-      - run: make coverage-bot
+      - run: cd bot && poetry run pytest --cov --cov-branch --cov-report=xml --cov-report=term -v
       - uses: codecov/codecov-action@v7
         with:
           files: bot/coverage.xml
@@ -250,7 +250,8 @@ jobs:
           cache: yarn
           cache-dependency-path: frontend/yarn.lock
       - run: cd frontend && yarn --frozen-lockfile
-      - run: make coverage-frontend
+      - run: cd frontend && yarn vitest run --coverage
+      - run: cp frontend/coverage/cobertura-coverage.xml frontend/coverage.xml
       - uses: codecov/codecov-action@v7
         with:
           files: frontend/coverage.xml
@@ -308,7 +309,11 @@ jobs:
           service: core
           python-version: ${{ env.PYTHON_VERSION }}
           poetry-version: ${{ env.POETRY_VERSION }}
-      - run: make audit-core
+      - name: pip-audit (ignores .pip-audit-ignore)
+        run: |
+          args=()
+          while read -r id _; do args+=(--ignore-vuln "$id"); done < <(grep -v -e '^#' -e '^$' .pip-audit-ignore || true)
+          cd core && poetry run pip-audit "${args[@]}"
 
   audit-backend:
     needs: [changes]
@@ -322,7 +327,11 @@ jobs:
           service: backend
           python-version: ${{ env.PYTHON_VERSION }}
           poetry-version: ${{ env.POETRY_VERSION }}
-      - run: make audit-backend
+      - name: pip-audit (ignores .pip-audit-ignore)
+        run: |
+          args=()
+          while read -r id _; do args+=(--ignore-vuln "$id"); done < <(grep -v -e '^#' -e '^$' .pip-audit-ignore || true)
+          cd backend && poetry run pip-audit "${args[@]}"
 
   audit-scraper:
     needs: [changes]
@@ -336,7 +345,11 @@ jobs:
           service: scraper
           python-version: ${{ env.PYTHON_VERSION }}
           poetry-version: ${{ env.POETRY_VERSION }}
-      - run: make audit-scraper
+      - name: pip-audit (ignores .pip-audit-ignore)
+        run: |
+          args=()
+          while read -r id _; do args+=(--ignore-vuln "$id"); done < <(grep -v -e '^#' -e '^$' .pip-audit-ignore || true)
+          cd scraper && poetry run pip-audit "${args[@]}"
 
   audit-bot:
     needs: [changes]
@@ -350,7 +363,11 @@ jobs:
           service: bot
           python-version: ${{ env.PYTHON_VERSION }}
           poetry-version: ${{ env.POETRY_VERSION }}
-      - run: make audit-bot
+      - name: pip-audit (ignores .pip-audit-ignore)
+        run: |
+          args=()
+          while read -r id _; do args+=(--ignore-vuln "$id"); done < <(grep -v -e '^#' -e '^$' .pip-audit-ignore || true)
+          cd bot && poetry run pip-audit "${args[@]}"
 
   audit-frontend:
     needs: [changes]
@@ -365,7 +382,7 @@ jobs:
           cache: yarn
           cache-dependency-path: frontend/yarn.lock
       - run: cd frontend && yarn --frozen-lockfile
-      - run: make audit-frontend
+      - run: make audit-frontend  # stays on make: yarn audit through scripts/yarn_audit_filter.jq
 
   gitleaks:
     runs-on: ubuntu-latest
@@ -431,9 +448,9 @@ jobs:
           cache: yarn
           cache-dependency-path: frontend/yarn.lock
       - run: cd frontend && yarn --frozen-lockfile
-      - run: make build-frontend
+      - run: cd frontend && yarn tsc -b && yarn vite build
       - name: Bundle size check
-        run: cd frontend && yarn size
+        run: cd frontend && yarn size-limit
 
   # ── Summary gates ─────────────────────────────────────────────
 
