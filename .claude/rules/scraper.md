@@ -11,7 +11,7 @@ SAQ scraping is a legal grey zone in Canada. Approach chosen: sitemap-first (mos
 
 ## Hard rules (non-negotiable)
 
-1. **Sitemap-only fetching.** Any new URL fetched MUST come from one of the official SAQ sitemaps below. If a change implies fetching anything else, STOP and surface to Victor before writing code. When a change adds a URL pattern, re-fetch the live robots.txt — never rely on a cached copy.
+1. **Sitemap-only fetching.** Any new URL fetched MUST come from one of the official SAQ sitemaps below. If a change implies fetching anything else, park the ticket with the reason. In the exp lane nothing fetches saq.com at all: no `scrape-*` target, no live robots.txt check, synthetic seed only (charter rule 2). Scraper changes are tested against fixtures.
 2. **Never fetch disallowed paths:** `/catalogsearch/` · `/catalog/product/view/` · filtered URLs (`?price`, `?availability`, `?appellation`, etc.) · `/checkout/` · `/customer/` · `/wishlist/` · any admin paths.
 3. **Rate limit.** 2-3 second minimum interval between requests. Reuse the existing rate-limited client — never instantiate `requests.Session()` or `httpx.Client()` fresh.
 4. **Paraphrase SAQ descriptions, never copy verbatim.** Always attribute SAQ as data source.

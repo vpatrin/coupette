@@ -11,7 +11,7 @@ paths:
 
 # Auth — SECURITY-SENSITIVE
 
-> Read whenever touching `backend/auth.py`, OAuth services, the waitlist, or any route with `Depends(verify_auth)`. Auth work is always the **risky lane** in `/feature`.
+> Read whenever touching `backend/auth.py`, OAuth services, the waitlist, or any route with `Depends(verify_auth)`. Auth work is always the **risky lane** (`rules/linear.md` → Lane).
 
 How it works — JWT, OAuth flows, bot secret, waitlist gate, file map: [`docs/specs/auth.md`](../../docs/specs/auth.md). Threat model: `docs/SECURITY.md`. ADRs: `docs/adrs/0004-*` (Telegram-first auth), `docs/adrs/0008-*` (OAuth2).
 
@@ -24,7 +24,7 @@ How it works — JWT, OAuth flows, bot secret, waitlist gate, file map: [`docs/s
 5. **OAuth callbacks:** validate origin / state parameter. Never trust the callback blindly.
 6. **CORS changes are deliberate.** Any change to CORS settings is recorded in the PR's Decisions with its reason.
 7. **Admin route check:** verify both per-route `Depends(...)` AND the `app.include_router(..., dependencies=[Depends(verify_admin)])` mount site. Protection may be applied at the router level (the admin router mount in `backend/app.py`) — a route without a per-route dep is NOT necessarily unprotected.
-8. **Unsure about a flow?** (OAuth state validation, a JWT edge case, a waitlist transition) Stop and ask Victor. Don't guess — auth mistakes ship to production.
+8. **Unsure about a flow?** (OAuth state validation, a JWT edge case, a waitlist transition) Read `docs/specs/auth.md` and the code path end to end. Still unsure: park the ticket with the open question in its notes. Don't guess — auth mistakes are the costliest kind.
 
 ## Required test scenarios for auth changes
 
@@ -32,4 +32,4 @@ happy path · token expiry · invalid/tampered token · unauthenticated request 
 
 ## Before the PR
 
-In `/feature`, the reviewer applies the security checklist in depth on auth paths (`AUTH-6`); outside it, run `/review security`. A Critical or High finding blocks the PR. If the change alters the threat model, update `docs/SECURITY.md` in the same PR.
+Auth tickets are risky lane: `/code-review xhigh`, then `/security-review`. A real security finding forces a round and blocks the merge until fixed. If the change alters the threat model, update `docs/SECURITY.md` in the same PR.

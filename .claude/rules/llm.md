@@ -37,9 +37,4 @@ Never write user-facing text implying affiliation with SAQ. Applies to system pr
 
 ## Evaluation
 
-`make eval` runs intent + curation scoring. Run after any prompt change. See `/eval-pipeline` skill.
-
-## When to use `/review ai` vs `/eval-pipeline`
-
-- `/review ai` for design review (new LLM surface, retrieval architecture, prompt strategy)
-- `/eval-pipeline` for score tuning on existing surfaces
+`make eval` runs intent + curation scoring, and `/eval-pipeline` tunes scores on existing surfaces. Both need embeddings, which the exp lane doesn't have (CLAUDE.md → Limits). Until then, a prompt change is proven by unit tests on the prompt builder and the parser, and the PR says `eval: not run — no embeddings`.

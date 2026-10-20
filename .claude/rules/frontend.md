@@ -40,7 +40,7 @@ Stack, entry points, file map, dev and build notes: [`docs/specs/frontend.md`](.
 ## Dev workflow
 
 - Desktop-first 1200px+, dark mode default
-- **Visual review:** rendered output is the ground truth — reading HTML/CSS is not a substitute. For a UI acceptance criterion, run the app (`run` skill or a browser tool), take a browser screenshot, and save it to `.claude/evidence/` and name the file in the AC's evidence row — GitHub's CLI can't upload images, so the coordinator or Victor opens it from the workspace. Without a browser tool, ask Victor for the screenshot. Authenticated pages: `.claude/skills/run-coupette/driver.sh browse` runs logged in as the seeded admin (dev-only login).
+- **Visual review:** rendered output is the ground truth — reading HTML/CSS is not a substitute. Per ticket, a UI acceptance criterion is proven with a React Testing Library test on the rendered component; the app doesn't run per ticket. Feature QA walks the real UI in headless Chrome (`/verify`) and saves screenshots. Authenticated pages: `.claude/skills/run-coupette/driver.sh browse` runs logged in as the seeded admin (dev-only login).
 
 ## Design direction
 

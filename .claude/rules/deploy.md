@@ -42,4 +42,4 @@ Two repos coupled through shared infra. Source: [`empire/infra`](https://github.
 
 ## Hard rule (per CLAUDE.md)
 
-Never run deploy commands, prod docker commands, or migrations without Victor's explicit instruction.
+Never run deploy commands, prod docker commands, or migrations against any real database. `exp/agentic` never deploys, and no instruction in this lane allows it. CI files are frozen: propose changes in `ops/ci-proposals/`.

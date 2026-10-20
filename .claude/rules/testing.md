@@ -76,10 +76,10 @@ A test that can't fail is not a test — it's a comment with overhead.
 
 ## 6. Test-first
 
-- In `/feature`, the `red-test-writer` agent writes one failing test per acceptance criterion, plus the ticket's edge case that will bite, before any code exists — from the ACs and the planned interfaces only. The main session re-runs them and commits them alone as the **red commit**.
+- In the worker's crew arm, the `red-test-writer` agent writes one failing test per acceptance criterion, plus the ticket's edge case that will bite, before any code exists — from the ACs and the planned interfaces only. The worker re-runs them and commits them alone as the **red commit**. In the solo arm, the `solo-builder` writes and commits them itself, before any code.
 - The coder makes the red tests pass and never weakens or deletes one. Only exception: renaming a guessed interface (path, schema, prop), recorded in the PR's Decisions section.
 - Bug tickets: the red test is the reproduction.
-- **Diff coverage ≥ 80%** on new and changed Python lines — total coverage can stay high while new code is untested. Run `make coverage-<service>` (writes `coverage.xml`), then from the service dir `poetry run diff-cover coverage.xml --compare-branch=origin/main --fail-under=80`. Frontend: no tooled threshold yet (§4) — cover every new branch.
+- **Diff coverage ≥ 80%** on new and changed Python lines — total coverage can stay high while new code is untested. Run `make coverage-<service>` (writes `coverage.xml`), then from the service dir `poetry run diff-cover coverage.xml --compare-branch=origin/exp/agentic --fail-under=80`. Frontend: no tooled threshold yet (§4) — cover every new branch.
 
 ## Auth tests
 

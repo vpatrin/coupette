@@ -1,31 +1,94 @@
 # Linear
 
-> Read before creating or editing anything in Linear — issues, projects, comments.
+> Read before creating or editing anything in Linear — issues and comments.
 
-Team `Vpatrin` (key `VPA` — issue ids are `VPA-NN`; MCP tools take the name `Vpatrin`). Initiative = product, project = deliverable. GitHub keeps PRs, Dependabot, and CI only — never open GitHub issues.
+Team `EXP` (issue ids `EXP-NN`). All crew work lives in the project "Agentic experiment". The crew writes issues and comments in team EXP only. It can't create labels, projects or documents, and it never deletes. GitHub keeps PRs and CI only — never open GitHub issues.
 
 ## Language
 
-Everything in English: titles, descriptions, comments, project summaries. (The app stays bilingual fr/en — that rule is for product copy, not Linear.) When an issue quotes actual app copy, keep the French string as-is in quotes.
+Everything in English: titles, descriptions, comments. (The app stays bilingual fr/en — that rule is for product copy, not Linear.) When an issue quotes actual app copy, keep the French string as-is in quotes.
 
 ## Titles
 
-`feat|fix|chore|refactor|docs: <verb phrase>` — Conventional Commit prefix. No sequence numbers (`feat: 1 — …` ❌) — execution order lives in the project, not the title. Workstream codes that carry meaning survive as a suffix: `feat: SQL signal aggregation service (B1)`.
+`feat|fix|chore|refactor|docs: <verb phrase>` — Conventional Commit prefix. No sequence numbers (`feat: 1 — …` ❌): build order lives in `blocked by` links, not titles.
 
-## Labels — every issue gets ≥2
+## Labels — only these, lowercase
 
-- Service: `api` · `scraper` · `bot` · `frontend` · `core` · `devops`
-- Type: `Bug` · `Feature` · `chore` · `refactor` · `docs` — casing as it exists in the workspace (`Bug`/`Feature` are Linear defaults; rename them lowercase in the Linear UI if wanted — MCP has no rename, and until then agents must use the capitalized names)
-- `Improvement` exists in the workspace but is unused — don't apply it
+- Type, exactly one: `feature` · `bug` · `improvement` (`feat` → `feature`, `fix` → `bug`, `chore`/`refactor`/`docs` → `improvement`)
+- Service, one or more: `api` · `scraper` · `bot` · `frontend` · `core` · `devops`
+- The thesis record carries `improvement` only.
+- A label you need doesn't exist? Don't invent one. Use the closest one, and add a line under For Victor in `ops/STATUS.md`.
 
-## Issue templates
+## Lane
 
-Feature, enabler, bug, and chore bodies live in the global `breakdown` skill (`~/.claude/skills/breakdown/templates/`). Pick by what the ticket IS, not by its label. Every ticket carries **`Lane: default | risky`** — risky when it touches auth, migrations (`core/db/`, `core/alembic/`), or RAG prompts, retrieval, or embeddings — and a verification line. Feature and enabler tickets also carry falsifiable ACs with **the edge case that will bite**; a bug's reproduction is its AC; a chore's Tasks stand in for ACs.
+Every ticket carries **`Lane: default | risky`**. Risky when it touches auth (the paths in `rules/auth.md`), migrations (`core/db/`, `core/alembic/`), or RAG prompts, retrieval or embeddings. The risky lane gets `/code-review xhigh` and is never a solo-arm ticket.
 
-Default to incremental delivery (one issue = one PR to main); propose a feature branch only when CLAUDE.md's three criteria all hold.
+## States
 
-## Branches & PRs — linking
+- **Todo**: ready to pick.
+- **In Progress**: a worker or QA run has it.
+- **Done**: a ticket is merged; a feature passed QA.
+- **Backlog**: parked. Never picked again; a smaller ticket may replace it.
 
-- Branch naming when an issue exists: `type/vpa-NN-short-description` (e.g. `feat/vpa-12-wine-availability`). The Linear GitHub integration auto-links the PR to the issue from the branch name; the statusline TICKET row lights up too. No issue → plain `type/short-description`.
-- PR title carries the id: `type: description (VPA-NN)`.
-- Magic words in the PR body (`Fixes VPA-12`, `Closes VPA-12`) move the issue to Done on squash merge — requires the Linear GitHub integration (Linear → Settings → Integrations → GitHub, connect `vpatrin/coupette`).
+## Feature (parent issue)
+
+Title `feat: <capability>`, label `feature` plus services. Body:
+
+```
+## Why
+<the user, the problem, the thesis line it serves — 2 or 3 sentences>
+
+## Journeys
+J1 <title>
+1. <do> → <expect>
+2. <do> → <expect>
+
+J2 <title>
+1. <do> → <expect>
+```
+
+- 2 to 5 journeys, written before any code. They are the QA contract (`/verify` parses this shape).
+- Each step is a user action and a result you can see in a screenshot or a response body.
+- Every journey runs on the synthetic seed, without saq.com and without embeddings.
+- Once the first child starts, never edit a journey. Add `J<n+1>` instead.
+
+## Ticket (child issue)
+
+Title `<type>: <verb phrase>`, a type label plus services, parent = the feature. Body:
+
+```
+## Goal
+<one sentence: the outcome a user or the code gains>
+
+## Acceptance criteria
+- [ ] <falsifiable: given …, when …, then …>
+
+## Edge case that will bite
+<one case>
+
+Lane: default | risky
+Verify: <the test or command that proves it>
+```
+
+## Bug
+
+Title `fix: <what breaks>`, label `bug` plus services, parent = the feature when QA found it. Body:
+
+```
+## Reproduction
+1. <step>
+Expected: <…>
+Observed: <…>
+
+Journey: EXP-MM J<n> | smoke test | none
+Introduced by: EXP-NN | unknown
+Lane: default | risky
+Verify: a red test reproduces it
+```
+
+The reproduction is the AC: the red test is the reproduction.
+
+## Branches and PRs
+
+- `exp-ws` creates the branch: `exp-task/EXP-NN` for a ticket, `exp-qa/EXP-MM` for QA.
+- PR title `<type>: <title> (EXP-NN)`. The body follows `ops/CONTRACTS.md` §1 and has no magic words: the lead moves the issue to Done after the merge.

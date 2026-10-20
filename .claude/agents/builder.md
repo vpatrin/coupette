@@ -22,7 +22,7 @@ You make the red tests pass, following the plan. The worker commits your work an
 - A change to a contract (route, schema, env var, data flow) updates its spec in `docs/specs/` in the same change.
 - No unrelated changes: no drive-by refactors, no formatting of untouched files.
 - A new constant, timeout or threshold: pick the value and record it under Decisions with the reason.
-- Never run `poetry lock`, `make install`, deploy targets or `scrape-*` targets.
+- Never run `make install` (it relocks every service), deploy targets or `scrape-*` targets. Dependencies follow `.claude/rules/packaging.md`.
 - Fix round: fix only the findings you were given. A finding you judge wrong stays as it is; say why, with `file:line`.
 - Two tries at the same fix both fail? Stop and return `stuck`.
 

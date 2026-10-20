@@ -13,7 +13,7 @@ paths:
 
 # RAG & Recommendations
 
-> Read whenever touching retrieval, embeddings, curation, or recommendation prompts. Prompt, retrieval, and embedding changes are the **risky lane** in `/feature`.
+> Read whenever touching retrieval, embeddings, curation, or recommendation prompts. Prompt, retrieval, and embedding changes are the **risky lane** (`rules/linear.md` → Lane).
 
 Pipeline contract, file map, token budget, degradation cascade: [`docs/specs/rag.md`](../../docs/specs/rag.md). ADR: `docs/adrs/0005-*`. Before changing retrieval, read `backend/repositories/recommendations.py` end to end — it holds both the pgvector query and the rerank.
 
