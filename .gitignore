@@ -61,3 +61,6 @@ backend/benchmarks/load/results/
 # UI/UX ideas - screenshots, mockups, etc.
 ui/
 .gitnexus
+
+# Crew worker state (ops/CONTRACTS.md §5)
+.crew/
