@@ -1,5 +1,3 @@
 # Session Logs
 
-History only: durable records of pipeline runs before VPA-51. No new logs are written. Decisions now live in the Linear ticket (before code) and the PR's Decisions section (during code); squash commit titles link to the PR through `(#NNN)`.
-
-See [`INDEX.md`](./INDEX.md) for the list. Logs are never deleted.
+Frozen history of pipeline runs before VPA-51 ([`INDEX.md`](./INDEX.md)); decisions now live in each PR's Decisions section.

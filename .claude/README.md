@@ -74,7 +74,7 @@ All agents use `model: inherit`.
 
 | Hook | Purpose | Provenance |
 |---|---|---|
-| `PreToolUse` Bash → `~/.claude/hooks/git-guard.py` (global) | Blocks tag pushes (tags deploy to prod), `gh release create`, pushes to main, AI attribution in commits and PRs | **Adapted**: the permissions docs warn that Bash argument rules are fragile (`git -C . push --tags` slips past a prefix deny), so this hook parses the command. Tested by a case table and a `claude -p` run |
+| `PreToolUse` Bash → `~/.claude/hooks/git-guard.py` (global) | Blocks tag pushes (tags deploy to prod), `gh release create`, `gh api` writes to git refs, git tags, and releases, pushes to main, AI attribution in commits and PRs | **Adapted**: the permissions docs warn that Bash argument rules are fragile (`git -C . push --tags` slips past a prefix deny), so this hook parses the command. Tested by a case table and a `claude -p` run |
 | `Stop` → [`stop-check.sh`](skills/feature/stop-check.sh) | Lint + tests (+ frontend build) for touched services before a `/feature` session may stop | **Anthropic** best practices (hooks for "actions that must happen every time"); HumanLayer (deterministic tools over the model). **Ours**: armed only while `progress.md` exists, cached by diff hash |
 | `SessionStart` → prints `progress.md` | A resumed, cleared, or compacted session knows where it is | **Adapted** from the harness post's `claude-progress.txt`. **Ours**: injected by a hook rather than re-read by instruction; plus best practices' compaction instruction in CLAUDE.md |
 | `.githooks/pre-push` (git) | Lock files, migration presence, tests of changed services | **Ours** |

@@ -22,6 +22,7 @@ htmlcov/
 # Environment variables — plaintext ignored, encrypted (.enc) committed
 **/*.env
 **/*.env.prod
+.env.local
 !**/*.env.enc
 !**/*.env.prod.enc
 .envrc
