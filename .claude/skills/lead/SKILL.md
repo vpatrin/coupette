@@ -9,7 +9,7 @@ You lead the crew for one wake. You decide, dispatch, open PRs and merge. You wr
 
 Work in the clone `~/coupette-exp`, on `exp/agentic`. Use absolute paths for crew files: `~/coupette-exp/ops/STATUS.md`, `~/coupette-exp/ops/STOP`.
 
-Doors: `gh`, `git`, `~/.agent-harness/bin/exp-ws`, `~/.agent-harness/bin/exp-docker`, Linear team EXP. A guard denies a command? Don't retry it in another form. Note it in STATUS and end the wake (step 9).
+Doors: `gh`, `git`, `/Users/victor/.agent-harness/bin/exp-ws`, `/Users/victor/.agent-harness/bin/exp-docker`, Linear team EXP. Call each wrapper as its own Bash command, by its absolute path: never inside a script, a loop, a chain (`&&`, `;`, `|`), a subshell or a redirect. The sandbox lets only that form reach the wrapper. A guard denies a command? Don't retry it in another form. Note it in STATUS and end the wake (step 9).
 
 Note the run start time. The gate blocks every tool call once the run is 3 hours old, so at 2 h 40 stop whatever you are doing and go to step 9. A worker still running is safe: it keeps going after you exit, and the next wake picks it up (step 1.6).
 
@@ -20,21 +20,22 @@ Note the run start time. The gate blocks every tool call once the run is 3 hours
 3. Read `ops/STATUS.md`, `ops/CONTRACTS.md` and the newest file in `ops/journal/`.
 4. Linear, team EXP, project "Agentic experiment": open features, the Todo queue, In Progress tickets.
 5. CI: `gh run list --branch exp/agentic --limit 3` and `gh pr list --base exp/agentic`.
-6. `exp-ws list`. Finish what an earlier wake left before you start new work:
+6. `/Users/victor/.agent-harness/bin/exp-ws list`. Finish what an earlier wake left before you start new work:
    - tag `dev` with `.crew/DONE`: continue at step 4.4
-   - tag `dev` without `DONE`: read its terminal (`exp-ws terminals`, `exp-ws read`). Still working: wait for it (step 4.3); it counts as a ticket. Idle: park it (step 4.6).
+   - tag `dev` without `DONE`: read its terminal (`/Users/victor/.agent-harness/bin/exp-ws terminals <id>`, then `/Users/victor/.agent-harness/bin/exp-ws read <id> <terminal id>`). Still working: wait for it (step 4.3); it counts as a ticket. Idle: park it (step 4.6).
    - tag `review`: its PR is open; continue at step 4.5
 
 ## 2. Smoke test
 
 `exp/agentic` must boot before you build on it. In the clone:
 
-```bash
-.claude/skills/run-coupette/driver.sh up && .claude/skills/run-coupette/driver.sh status
-.claude/skills/run-coupette/driver.sh down
-```
+1. `/Users/victor/.agent-harness/bin/exp-docker db up` — alone. It writes the clone's `.env.local`.
+2. `grep -q '^DB_PORT=' .env.local`
+3. `.claude/skills/run-coupette/driver.sh up && .claude/skills/run-coupette/driver.sh status`
+4. `.claude/skills/run-coupette/driver.sh down`
+5. `/Users/victor/.agent-harness/bin/exp-docker db down` — alone.
 
-On the first wake, or when a lockfile changed, first run the install lines of `ops/CONTRACTS.md` §2 in the clone (not the `.env` link: the clone has the real file).
+On the first wake, or when a lockfile changed, first run the install steps of `ops/CONTRACTS.md` §2 in the clone (not the `.env` link: the clone has the real file).
 
 It fails? File a bug ticket (Bug template, `.claude/rules/linear.md`) with the failing output, at the top of the queue. It is the next ticket. Count one failure.
 
@@ -58,26 +59,26 @@ Up to 3 tickets per wake, one at a time. Don't start one after the run is 2 hour
    - Arm: `solo` when the lane is default and the EXP number mod 3 is 0; `crew` otherwise.
    - Models: `opus`, or `sonnet` under step 7.
    - Write the prompt to `/private/tmp/exp-lead/EXP-NN.prompt` (`mkdir -p /private/tmp/exp-lead` first): `/worker ticket EXP-NN arm=<arm> lane=<lane> models=<models> feature=<EXP-MM|none>`
-   - `~/.agent-harness/bin/exp-ws create EXP-NN --prompt-file /private/tmp/exp-lead/EXP-NN.prompt`
-   - Find the workspace in `exp-ws list` by its branch `exp-task/EXP-NN`; note its id and worktree path. Move the issue to In Progress.
+   - `/Users/victor/.agent-harness/bin/exp-ws create EXP-NN --prompt-file /private/tmp/exp-lead/EXP-NN.prompt`
+   - Find the workspace in `/Users/victor/.agent-harness/bin/exp-ws list` by its branch `exp-task/EXP-NN`; note its id and worktree path. Move the issue to In Progress.
 3. **Wait.** `python3 .claude/skills/lead/wait_done.py <worktree>` waits up to 9 minutes; repeat it. Every 30 minutes, read the worker's terminal. The run reaches 2 h 40: go to step 9 and leave the worker running.
 4. **Read** `<worktree>/.crew/result.json`.
-   - `ready`: run `/pr` for the ticket, then `exp-ws retag <id> review` and comment the PR link on the issue.
+   - `ready`: run `/pr` for the ticket, then `/Users/victor/.agent-harness/bin/exp-ws retag <id> review` and comment the PR link on the issue.
    - `parked` or `failed`: go to step 6.
 5. **CI and merge.**
    - `gh pr checks <n> --watch --interval 60`. The call times out? Run it again.
-   - Green: `gh pr merge <n> --squash --match-head-commit <reviewed_sha>`. Then `exp-ws retag <id> merged`, move the issue to Done with a comment, and `git -C ~/coupette-exp pull --ff-only origin exp/agentic`.
-   - Red, first time: CI repair. `rm -f <worktree>/.crew/DONE`, write the prompt `/worker repair EXP-NN reason=ci run=<run id>`, then `exp-ws start-session <id> --prompt-file <file>`. Go back to 3. The repair's new `reviewed_sha` is the one you merge.
+   - Green: `gh pr merge <n> --squash --match-head-commit <reviewed_sha>`. Then `/Users/victor/.agent-harness/bin/exp-ws retag <id> merged`, move the issue to Done with a comment, and `git -C ~/coupette-exp pull --ff-only origin exp/agentic`.
+   - Red, first time: CI repair. `rm -f <worktree>/.crew/DONE`, write the prompt `/worker repair EXP-NN reason=ci run=<run id>`, then `/Users/victor/.agent-harness/bin/exp-ws start-session <id> --prompt-file <file>`. Go back to 3. The repair's new `reviewed_sha` is the one you merge.
    - `/pr` says the branch is behind `exp/agentic`: the same, with `reason=behind`.
    - Red after a repair: park it (step 6).
-6. **Park.** Comment the result's `notes` on the issue, move it to Backlog, `exp-ws retag <id> parked`. A parked ticket is never picked again; a smaller ticket may replace it. Count one failure.
+6. **Park.** Comment the result's `notes` on the issue, move it to Backlog, `/Users/victor/.agent-harness/bin/exp-ws retag <id> parked`. A parked ticket is never picked again; a smaller ticket may replace it. Count one failure.
 7. After each merge, check the feature (step 5).
 
 ## 5. Feature QA
 
 When every child of a feature is Done:
 
-1. Prompt: `/worker qa EXP-MM`, plus `journeys=J2,J4` on a re-walk. Then `exp-ws create-qa EXP-MM --prompt-file <file>`. Wait as in step 4.3.
+1. Prompt: `/worker qa EXP-MM`, plus `journeys=J2,J4` on a re-walk. Then `/Users/victor/.agent-harness/bin/exp-ws create-qa EXP-MM --prompt-file <file>`. Wait as in step 4.3.
 2. Read the result:
    - `pass`: move the feature to Done.
    - `fail`: its bug tickets exist as children of the feature, and they go to the top of the queue. When they are Done, run QA again on the failed journeys only.

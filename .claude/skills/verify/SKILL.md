@@ -24,12 +24,18 @@ Walk them exactly as written. Don't add, merge or soften a step.
 
 ## 2. Start the app
 
-```bash
-DRIVER=.claude/skills/run-coupette/driver.sh
-$DRIVER up          # DB, migrate, seed, backend, frontend, dev login; prints the URLs
-QA_DIR=~/.cache/coupette-run/qa/EXP-MM/$(date -u +%Y%m%d-%H%M)
-mkdir -p "$QA_DIR"
-```
+1. `/Users/victor/.agent-harness/bin/exp-docker db up` — its own Bash command, by this absolute path, with no chain or redirect. It writes `.env.local` with the DB and Redis values.
+2. `grep -q '^DB_PORT=' .env.local` — must succeed.
+3. Then:
+
+   ```bash
+   DRIVER=.claude/skills/run-coupette/driver.sh
+   $DRIVER up          # reads DB and Redis from .env.local; migrate, seed, backend, frontend, dev login; prints the URLs
+   QA_DIR=~/.cache/coupette-run/qa/EXP-MM/$(date -u +%Y%m%d-%H%M)
+   mkdir -p "$QA_DIR"
+   ```
+
+The driver makes no Docker calls. Its run files live in `~/.cache/coupette-run/runs/<id>`.
 
 `up` fails? Every journey fails with `observed: "app did not start: <last error line>"`. Write the report (step 4) and stop.
 
@@ -43,7 +49,7 @@ Map each step to driver calls (step syntax in `.claude/skills/run-coupette/SKILL
 For each step:
 
 1. Run it and read the full output: the step result, console errors, and `/api/*` responses ≥ 400.
-2. Open the screenshot with Read. Copy it into `$QA_DIR`.
+2. Open the screenshot with Read (`browse` prints its path). Copy it into `$QA_DIR`.
 3. Write `observed` as what you saw, in one sentence, with numbers and status codes.
 4. The step passes only when `observed` matches `expect`. A driver error, a console error or an API response ≥ 400 during the step fails it.
 
@@ -64,6 +70,8 @@ It prints the summary and owns the exit code: 0 when every journey passed, 1 whe
 ```bash
 $DRIVER down
 ```
+
+Then `/Users/victor/.agent-harness/bin/exp-docker db down`, as its own command.
 
 Return the report path, the summary line, and the checker's exit code.
 

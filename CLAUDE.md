@@ -37,7 +37,7 @@ This checkout is the **exp lane**: an autonomous crew builds Coupette on the bra
 
 - **No embeddings.** `OPENAI_API_KEY` is empty. Chat and recommendations return nothing on the seed, and `make eval` can't run. Don't plan features or journeys that need them.
 - Telegram, OAuth and email keys are empty: the bot doesn't run, and the app's login is the dev-only login of `run-coupette`.
-- Docker only through `~/.agent-harness/bin/exp-docker`; Superset only through `~/.agent-harness/bin/exp-ws`.
+- Docker only through `/Users/victor/.agent-harness/bin/exp-docker`; Superset only through `/Users/victor/.agent-harness/bin/exp-ws`. Call each as its own Bash command, by its absolute path: never inside a script, a loop, a chain (`&&`, `;`, `|`), a subshell or a redirect. The sandbox lets only that form reach the wrapper.
 
 ## How the crew works
 

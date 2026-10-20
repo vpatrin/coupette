@@ -20,20 +20,19 @@ Contracts you must keep: `ops/CONTRACTS.md` §2 (setup), §4 (QA report), §5 (r
 - A guard or the sandbox denies a command? Don't retry it in another form. End with `status: failed` and quote the denial in `notes`.
 - To stop the whole crew, write the reason to `~/coupette-exp/ops/STOP` (absolute path; the gate reads only that one).
 - Record the start time (`date -u +%FT%TZ`) for `ops/tasks.jsonl`.
+- Call `/Users/victor/.agent-harness/bin/exp-docker` and `/Users/victor/.agent-harness/bin/exp-ws` each as its own Bash command, by its absolute path: never inside a script, a loop, a chain (`&&`, `;`, `|`), a subshell or a redirect. The sandbox lets only that form reach the wrapper.
 
 ## Setup (every mode)
 
-Run `ops/CONTRACTS.md` §2 exactly, from the worktree root:
+Run `ops/CONTRACTS.md` §2 from the worktree root, one Bash command per step:
 
-```bash
-ln -sf ~/coupette-exp/.env .env
-~/.agent-harness/bin/exp-docker db up > .env.local
-grep -q '^DB_PORT=' .env.local                          # an empty .env.local would send make to slot 0
-for svc in core backend scraper bot; do (cd $svc && poetry install); done
-(cd frontend && yarn install --frozen-lockfile)
-make migrate && make seed
-mkdir -p .crew
-```
+1. `ln -sf ~/coupette-exp/.env .env`
+2. `/Users/victor/.agent-harness/bin/exp-docker db up` — alone. It writes `.env.local` in this worktree and prints the values.
+3. `grep -q '^DB_PORT=' .env.local` — must succeed; otherwise `make` would use slot 0.
+4. `for svc in core backend scraper bot; do (cd $svc && poetry install); done` — never `poetry lock`
+5. `(cd frontend && yarn install --frozen-lockfile)`
+6. `make migrate && make seed` — throwaway DB only, synthetic catalog
+7. `mkdir -p .crew`
 
 A step fails? Retry it once. Still failing: write the result with `status: failed`, then `DONE`.
 
@@ -98,14 +97,14 @@ Stops:
 
 1. `git push -u origin exp-task/EXP-NN`. Push a parked ticket too: its branch keeps the work.
 2. Write `.crew/result.json` (`ops/CONTRACTS.md` §5). The `Red` value uses a literal em dash: `none — <reason>`.
-3. `~/.agent-harness/bin/exp-docker db down`
+3. `/Users/victor/.agent-harness/bin/exp-docker db down` — alone.
 4. Write `.crew/DONE` last: `touch .crew/DONE`.
 
 ## Mode `repair`
 
 The lead starts this in the ticket's workspace when CI failed (`reason=ci`) or the branch is behind `exp/agentic` (`reason=behind`).
 
-1. `rm -f .crew/DONE`. Read `.crew/result.json` for the last `reviewed_sha` and the arm. Redo the setup's `exp-docker db up` and `grep` lines.
+1. `rm -f .crew/DONE`. Read `.crew/result.json` for the last `reviewed_sha` and the arm. Redo setup steps 2 and 3.
 2. Fix:
    - `ci`: read the failed jobs (`gh run view <run id> --log-failed | tail -200`). The builder (solo arm: solo-builder) fixes them; commit `fix: repair CI (EXP-NN)`.
    - `behind`: `git fetch origin exp/agentic && git merge --no-edit origin/exp/agentic`. Merge, never rebase: a rebase needs a force push. The builder resolves conflicts; rerun the checks.
@@ -125,7 +124,7 @@ The lead starts this in a QA workspace (branch `exp-qa/EXP-MM`, on `exp/agentic`
    {"ticket": "EXP-MM", "mode": "qa", "status": "pass|fail|failed", "report": "<path to report.json>", "bugs": ["EXP-…"], "notes": "<one paragraph>"}
    ```
 
-4. `~/.agent-harness/bin/exp-docker db down`, then `touch .crew/DONE`.
+4. `/Users/victor/.agent-harness/bin/exp-docker db down` — alone. Then `touch .crew/DONE`.
 
 ## End
 
