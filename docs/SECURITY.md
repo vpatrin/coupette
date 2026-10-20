@@ -180,7 +180,7 @@ The Telegram bot checks user registration before handling any message:
 
 ## Rate Limiting
 
-**Backend (SlowAPI):** Tiered per-user rate limits via `slowapi`. Keyed by user ID (JWT) or IP (unauthenticated). Limits: 100/min global, 10/min auth, 3/min waitlist, 20/min LLM. ADR: [0009-rate-limiting-tiered-strategy](decisions/0009-rate-limiting-tiered-strategy.md).
+**Backend (SlowAPI):** Tiered per-user rate limits via `slowapi`. Keyed by user ID (JWT) or IP (unauthenticated). Limits: 100/min global, 10/min auth, 3/min waitlist, 20/min LLM. ADR: [0009-rate-limiting-tiered-strategy](adrs/0009-rate-limiting-tiered-strategy.md).
 
 **Bot:** Per-user sliding window rate limiter. Silently drops updates from users exceeding the threshold.
 
