@@ -12,6 +12,7 @@ The PR body links the day's file.
 - What changed: <outcome first, one or two short sentences>
 - Decisions: <choice> over <rejected option>, because <reason> | none
 - Findings: code review <n> Important, <n> Nit (fixed <n>); security <n> real (fixed <n>)
+- Important kinds: <a few words per Important or real security finding> | none
 - Friction: <what in .claude/ slowed the run, and which file> | none
 ```
 
