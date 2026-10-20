@@ -172,4 +172,3 @@ Unique constraint on `(provider, provider_user_id)`.
 - **ADRs:** [`0004-telegram-first-auth.md`](../adrs/0004-telegram-first-auth.md) (original auth strategy, replaced by OAuth), [`0008-oauth2-security-design.md`](../adrs/0008-oauth2-security-design.md) (OAuth2 design — see the note under Security mechanisms)
 - **Agent rules (imperative form):** [`.claude/rules/auth.md`](../../.claude/rules/auth.md) — security-sensitive imperatives, required test scenarios, the security review an auth PR needs (`/review security`)
 - **Threat model:** [`../SECURITY.md`](../SECURITY.md)
-- **Recent session logs:** look up via [`../session-logs/INDEX.md`](../session-logs/INDEX.md)

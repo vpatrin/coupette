@@ -133,4 +133,3 @@ Curation input = system prompt + up to 10 history messages + the query + 5 wine 
 - **Agent rules (imperative form):** [`.claude/rules/rag.md`](../../.claude/rules/rag.md), [`.claude/rules/llm.md`](../../.claude/rules/llm.md)
 - **Related specs:** [`chat.md`](chat.md) (the consumer), [`scraper.md`](scraper.md) (the ingestion path)
 - **Eval iteration skill:** [`/eval-pipeline`](../../.claude/skills/eval-pipeline/SKILL.md)
-- **Recent session logs:** look up via [`../session-logs/INDEX.md`](../session-logs/INDEX.md)

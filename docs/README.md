@@ -4,7 +4,6 @@
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) — system design in 1 page
 - [DEVELOPMENT.md](DEVELOPMENT.md) — local setup, dev workflow
-- [PRODUCT_VISION.md](PRODUCT_VISION.md) — what we're building, why
 
 ## Subsystem deep dives
 
@@ -16,15 +15,13 @@
 - [SECURITY.md](SECURITY.md) — threat model, controls, posture
 - [SCALING.md](SCALING.md) — operational scaling notes
 
-## Decisions & history
+## Decisions
 
 - [adrs/](adrs/) — significant technical decisions (rare, formal)
-- [session-logs/](session-logs/) — past pipeline runs (history; no new logs — decisions now live in tickets and PR bodies)
 
 ## Planning
 
-- [ROADMAP.md](ROADMAP.md) — phases + cross-cutting work
-- [ENGINEERING.md](ENGINEERING.md) — engineering targets and backlog
+Product direction, features and their tickets live in Linear (team EXP). The crew's state lives in [`../ops/`](../ops/): `STATUS.md`, the journal, and the contracts between its parts.
 
 ---
 
@@ -34,24 +31,21 @@ Each doc has clear consumers. Most are read on demand rather than auto-loaded.
 
 | Doc | Who reads it | When |
 |---|---|---|
-| `ROADMAP.md` | `/breakdown` · `/release` · `/status` | Planning (phase context) |
-| `SECURITY.md` | `/feature` (risky lane) · reviewer (auth/user-data diffs) | Auth + API diffs |
-| `specs/<x>.md` | `/feature` recon (linked from the matching rule) | When touching subsystem X |
-| `ARCHITECTURE.md` | `/feature` recon (cross-cutting changes) · humans | First read, big-picture work |
-| `DEVELOPMENT.md` | `/feature` (migrations) · new contributors | Migration work, local setup |
-| `ENGINEERING.md` | `/breakdown` (avoid duplicate work) · `/status` | Planning |
-| `SCALING.md` | `/status --health` · ops at 3am | Operational events |
-| `PRODUCT_VISION.md` | Humans only | Interview / portfolio |
-| `adrs/<NNNN>-*.md` | `/feature` when the touched rule links one | Read once, baseline context |
+| `SECURITY.md` | worker on the risky lane · `/security-review` context | Auth + API diffs |
+| `specs/<x>.md` | planner (linked from the matching rule) | When touching subsystem X |
+| `ARCHITECTURE.md` | planner (cross-cutting changes) · strategist's stack review | Big-picture work |
+| `DEVELOPMENT.md` | worker (setup, migrations) | Migration work, local setup |
+| `SCALING.md` | planner on performance work | Operational events |
+| `adrs/<NNNN>-*.md` | planner when the touched rule links one | Read once, baseline context |
 
 ## Where else docs live (not in `docs/`)
 
 | Location | Purpose |
 |---|---|
 | [`.claude/rules/*.md`](../.claude/rules/) | Agent-facing imperative rules — auto-load when Claude edits matching files |
-| [`.claude/agents/*.md`](../.claude/agents/) | Subagents: `red-test-writer`, `reviewer`, `gardener` |
-| [`.claude/skills/`](../.claude/skills/) | Skills (`/feature`, `/review`, `/pr`, …) |
+| [`.claude/agents/*.md`](../.claude/agents/) | Subagents: `strategist`, `web-reader`, `planner`, `red-test-writer`, `builder`, `solo-builder`, `qa` |
+| [`.claude/skills/`](../.claude/skills/) | Skills (`/lead`, `/worker`, `/verify`, `/pr`, …) |
 | [`CLAUDE.md`](../CLAUDE.md) | Project meta + hard rules (loaded every session) |
-| [`CHANGELOG.md`](../CHANGELOG.md) | User-facing release notes |
+| [`CHANGELOG.md`](../CHANGELOG.md) | Release history of the main lane |
 
-See [`.claude/README.md`](../.claude/README.md) for the `/feature` flow.
+See [`.claude/README.md`](../.claude/README.md) for the crew's flow.

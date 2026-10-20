@@ -64,4 +64,3 @@ A typical user flow:
 
 - **ADRs:** [`0006-react-shadcn-frontend.md`](../adrs/0006-react-shadcn-frontend.md), [`0011-tanstack-query.md`](../adrs/0011-tanstack-query.md)
 - **Agent rules (imperative form):** [`.claude/rules/frontend.md`](../../.claude/rules/frontend.md) — UX bible, component conventions, i18n rules
-- **Recent session logs:** look up via [`../session-logs/INDEX.md`](../session-logs/INDEX.md)

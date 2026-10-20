@@ -120,4 +120,3 @@ The scraper records availability transitions and delists as immutable `stock_eve
 
 - **ADRs:** [`0003-bot-as-api-client.md`](../adrs/0003-bot-as-api-client.md), [`0004-telegram-first-auth.md`](../adrs/0004-telegram-first-auth.md)
 - **Agent rules (imperative form):** [`.claude/rules/bot.md`](../../.claude/rules/bot.md)
-- **Recent session logs:** look up via [`../session-logs/INDEX.md`](../session-logs/INDEX.md)
