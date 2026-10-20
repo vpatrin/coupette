@@ -191,7 +191,7 @@ Dev tooling project — expose Coupette data to Claude Code / Claude Desktop via
 - [x] docker-compose.prod.yml — GHCR images, restart policies, no dev volumes (#364)
 - [x] Automated deploy on tag push (`deploy_frontend.sh` + `deploy_backend.sh` via SSH)
 - [x] Auto-create GitHub Release with changelog on tag push
-- [x] Production environment — GitHub Environment limited to `main` and `v*` tags; CD deploys only commits on main (VPA-53)
+- [x] Production environment — GitHub Environment limited to `main` and `v*` tags; the `on-main` CD job rejects commits not on main — see [Deploy](DEVELOPMENT.md#deploy) (VPA-53)
 - [x] Environment-scoped secrets — move deploy secrets from repo-level to production environment (prerequisite: automated CD or k3s migration)
 
 Platform-level concerns (monitoring alerts, secrets management, IaC, staging, K8s) are tracked in the [infra ROADMAP](https://github.com/vpatrin/infra/blob/main/docs/ROADMAP.md). Engineering backlog (testing, observability, SRE) is tracked in [ENGINEERING.md](ENGINEERING.md#backlog).

@@ -107,7 +107,7 @@ Docker log rotation configured per service (10MB × 3 files = 30MB cap). Platfor
 - Automated deploy on tag push via SSH — see [DEVELOPMENT.md](DEVELOPMENT.md#deploy)
 - Production secrets encrypted with sops + age, decrypted at deploy time
 - GitHub Release auto-created with changelog on tag push
-- Production environment limited to `main` and `v*` tags; CD deploys only commits on main (VPA-53)
+- Production environment limited to `main` and `v*` tags; the `on-main` CD job rejects commits not on main — see [Deploy](DEVELOPMENT.md#deploy) (VPA-53)
 
 **Docker:**
 
