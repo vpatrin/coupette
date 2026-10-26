@@ -9,7 +9,7 @@ dynamic = ["dependencies"]
 package-mode = false
 
 [tool.poetry.dependencies]
-fastapi = ">=0.143.3"
+fastapi = ">=0.161.1"
 uvicorn = { version = ">=0.54.0", extras = ["standard"] }
 sqlalchemy = "^2.1"
 asyncpg = "^0.32"
@@ -22,7 +22,7 @@ pyjwt = "^2.15.1"
 prometheus-client = "^0.26.0"
 prometheus-fastapi-instrumentator = "^8.1.0"
 email-validator = "^2.3.0"
-resend = "^2.49.1"
+resend = "^2.50.0"
 redis = {version = ">=8.1.0", extras = ["asyncio"]}
 slowapi = "^0.1.10"
 gunicorn = ">=26.2.0"
@@ -33,7 +33,7 @@ pip-audit = ">=2.10.1"
 pytest = ">=9.1.1"
 pytest-asyncio = ">=1.4.0"
 pytest-cov = ">=6.0"
-ruff = "^0.17.1"
+ruff = "^0.17.2"
 diff-cover = "^10.6.0"
 
 [tool.pytest.ini_options]
